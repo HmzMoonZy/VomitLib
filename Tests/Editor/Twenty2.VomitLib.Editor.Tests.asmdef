@@ -1,0 +1,25 @@
+{
+    "name": "Twenty2.Vomitlib.Editor.Tests",
+    "rootNamespace": "",
+    "references": [
+        "Twenty2.VomitLib.Editor",
+        "Twenty2.VomitLib",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

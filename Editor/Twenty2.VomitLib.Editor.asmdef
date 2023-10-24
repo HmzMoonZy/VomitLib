@@ -1,0 +1,18 @@
+{
+    "name": "Twenty2.VomitLib.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Twenty2.VomitLib"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
