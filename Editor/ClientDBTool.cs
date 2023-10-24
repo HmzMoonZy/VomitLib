@@ -22,7 +22,7 @@ namespace Twenty2.VomitLib.Editor
             
             //https://luban.doc.code-philosophy.com/docs/manual/commandtools#unity--c--json
             string cmd = 
-                $" {config.ClientServerDllPath} -t all -c cs-simple-json -d json --conf {config.ConfigPath} -x outputCodeDir={config.GenCodePath} -x outputDataDir={config.JsonOutputPath} -x l10n.textProviderFile=*@{config.LocalizationPath}";
+                $" {config.ClientServerDllPath} -t all -c cs-simple-json -d json --conf {config.ConfigPath} -x outputCodeDir={config.GenCodePath} -x outputDataDir={config.JsonOutputPath} -x l10n.textProviderFile=*@{config.LocalizationPath} -d text-list -x l10n.textListFile=textList.txt";
 
             Debug.Log(cmd);
             
