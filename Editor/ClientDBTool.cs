@@ -21,12 +21,13 @@ namespace Twenty2.VomitLib.Editor
             var config = Vomit.RuntimeConfig.ClientDBConfig;
             
             //https://luban.doc.code-philosophy.com/docs/manual/commandtools#unity--c--json
-            string cmd = $" {config.ClientServerDllPath} -t all -c cs-simple-json -d json --conf {config.ConfigPath} -x outputCodeDir={config.GenCodePath} -x outputDataDir={config.JsonOutputPath}";
+            string cmd = 
+                $" {config.ClientServerDllPath} -t all -c cs-simple-json -d json --conf {config.ConfigPath} -x outputCodeDir={config.GenCodePath} -x outputDataDir={config.JsonOutputPath} -x l10n.textProviderFile=*@{config.LocalizationPath}";
 
             Debug.Log(cmd);
             
             var process = _Run(
-                "dotnet",
+                "dotnet.exe",
                 cmd,
                 ".",
                 true
@@ -39,9 +40,9 @@ namespace Twenty2.VomitLib.Editor
             log[0] = process.StandardOutput.ReadToEnd();
             if (process.ExitCode != 0)
             {
-                Debug.LogError("Error  生成出现错误");
                 log[1] = process.StandardError.ReadToEnd();
                 EditorUtility.DisplayDialog("ClientDBTool Error", log[1], "ok");
+                Debug.Log(log[0]);
                 Debug.LogError(log[1]);
                 return;
             }
