@@ -25,8 +25,6 @@ namespace Twenty2.VomitLib.ClientDB
         public string LocalizationPath;
 
         public string JsonOutputPath;
-        
-        public string Suffix = "dat";
 
         public string GenCodePath;
         

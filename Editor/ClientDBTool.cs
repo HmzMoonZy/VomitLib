@@ -21,19 +21,12 @@ namespace Twenty2.VomitLib.Editor
             var config = Vomit.RuntimeConfig.ClientDBConfig;
             
             //https://luban.doc.code-philosophy.com/docs/manual/commandtools#unity--c--json
-            string cmd = 
-                @$" {config.ClientServerDllPath} ^
- -t all ^
- -c cs-simple-json ^
- -d json ^
- --conf {config.ConfigPath} ^
- -x outputCodeDir={config.GenCodePath} ^
- -x outputDataDir={config.JsonOutputPath}";
+            string cmd = $" {config.ClientServerDllPath} -t all -c cs-simple-json -d json --conf {config.ConfigPath} -x outputCodeDir={config.GenCodePath} -x outputDataDir={config.JsonOutputPath}";
 
             Debug.Log(cmd);
             
             var process = _Run(
-                "dotnet.exe",
+                "dotnet",
                 cmd,
                 ".",
                 true
@@ -41,17 +34,20 @@ namespace Twenty2.VomitLib.Editor
 
             
             #region 捕捉生成错误
-            string processLog = process.StandardOutput.ReadToEnd();
-            Debug.Log(processLog);
-            
+
+            string[] log = new string[2];
+            log[0] = process.StandardOutput.ReadToEnd();
             if (process.ExitCode != 0)
             {
                 Debug.LogError("Error  生成出现错误");
-                EditorUtility.DisplayDialog("ClientDBTool Error", processLog, "ok");
-                Debug.LogError(processLog);
+                log[1] = process.StandardError.ReadToEnd();
+                EditorUtility.DisplayDialog("ClientDBTool Error", log[1], "ok");
+                Debug.LogError(log[1]);
+                return;
             }
             #endregion
-
+            
+            Debug.Log(log[0]);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
@@ -91,9 +87,10 @@ namespace Twenty2.VomitLib.Editor
                     WorkingDirectory = working_dir,
                     RedirectStandardOutput = redirect_standard_output,
                     RedirectStandardError = redirect_standard_error,
-                    Verb = "runas",
                 };
 
+                Debug.Log($"dir: {Path.GetFullPath(working_dir)}, command: {exe} {arguments}");
+                
                 Process process = Process.Start(info);
 
                 if (wait_exit)
