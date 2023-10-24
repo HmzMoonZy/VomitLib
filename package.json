@@ -9,6 +9,7 @@
   "description": "\u96c6\u6210 QFrame \\ UniTask \\ Addressable\n\n\u5e76\u5229\u7528\u5176\u5b9e\u73b0\u4e86\u5404\u79cd\u65b9\u4fbf\u7684\u6846\u67b6\u548c\u5de5\u5177",
   "dependencies": {
     "com.unity.addressables": "1.21.18",
-    "com.cysharp.unitask": "2.4.0"
+    "com.cysharp.unitask": "2.4.0",
+    "com.code-philosophy.luban": "1.0.0"
   }
 }

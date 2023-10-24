@@ -19,19 +19,16 @@ namespace Twenty2.VomitLib.Editor
         public static void GenerateDataTool()
         {
             var config = Vomit.RuntimeConfig.ClientDBConfig;
-
+            
+            //https://luban.doc.code-philosophy.com/docs/manual/commandtools#unity--c--json
             string cmd = 
-                @$" ExternalTools/Luban/Luban.ClientServer.dll -j cfg -- ^
- -d {config.RootXmlPath} ^
- --input_data_dir {config.ExcelPath} ^
- --gen_types code_cs_unity_json,data_json ^
- -s all ^
- --output_data_dir {config.JsonOutputPath} ^
- --output_code_dir {config.GenCodePath} ^
- --output:data:file_extension {config.Suffix} ^
- --l10n:input_text_files {config.LocalizationPath}  ^
- --l10n:text_field_name text_cn  ^
- --l10n:output_not_translated_text_file {config.JsonOutputPath}/_not_translated_text.txt";
+                @$" {config.ClientServerDllPath} ^
+ -t all ^
+ -c cs-simple-json ^
+ -d json ^
+ --conf {config.ConfigPath} ^
+ -x outputCodeDir={config.GenCodePath} ^
+ -x outputDataDir={config.JsonOutputPath}";
 
             Debug.Log(cmd);
             

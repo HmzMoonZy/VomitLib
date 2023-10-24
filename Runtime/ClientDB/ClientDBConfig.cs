@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using QFramework;
+using UnityEngine.Serialization;
 
 namespace Twenty2.VomitLib.ClientDB
 {
@@ -17,7 +18,7 @@ namespace Twenty2.VomitLib.ClientDB
     {
         public string ClientServerDllPath;
 
-        public string RootXmlPath;
+        public string ConfigPath;
 
         public string ExcelPath;
 
