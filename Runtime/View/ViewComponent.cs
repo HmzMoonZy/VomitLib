@@ -2,7 +2,7 @@
 
 namespace Twenty2.VomitLib.View
 {
-    public class ViewComponent : MonoBehaviour
+    public class ViewComponent : MonoController
     {
         // private ViewLogic _parentView;
         //
