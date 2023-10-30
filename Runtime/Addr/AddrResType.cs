@@ -10,14 +10,14 @@ namespace Twenty2.VomitLib.Addr
     {
         public readonly Type Type;
 
-        public readonly byte SubType;
+        public readonly int SubType;
         
         public AddrResType(Type type, object subType)
         {
             try
             {
                 Type = type;
-                SubType = (byte) subType;
+                SubType = (int)subType;
             }
             catch (Exception e)
             {
