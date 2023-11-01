@@ -206,6 +206,9 @@ namespace Twenty2.VomitLib.View
             _registeredViewCloseOnceActions[typeof(T).Name] += callback;
         }
 
+        /// <summary>
+        /// 获取 T 类型的 ViewLogic.
+        /// 只要它在缓存中,就能被获取到.
         public static T GetView<T>() where T : ViewLogic
         {
             if (!_viewMap.TryGetValue(typeof(T).Name, out var info))
@@ -232,6 +235,12 @@ namespace Twenty2.VomitLib.View
             var maxLayer = _visibleViewMap.Values.Max(info => info.Config.Layer);
             var maxSort = _visibleViewMap.Values.Where(info => info.Config.Layer == maxLayer).Max(info => info.SortOrder);
             return _visibleViewMap.Values.First(info => info.SortOrder == maxSort && info.Config.Layer == maxLayer);
+        }
+
+        public static bool IsViewVisible<T>() where T : ViewLogic
+        {
+            var view = GetView<T>();
+            return view != null && view.IsVisible;
         }
         
         /// <summary>
