@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace Twenty2.VomitLib.View
 {
-    public abstract class ViewLogic : MonoBehaviour
+    public abstract class ViewLogic : MonoController
     {
         /// <summary>
         /// UI 的名称, 必须是唯一标识.

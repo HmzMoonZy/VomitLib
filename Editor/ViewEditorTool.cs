@@ -89,13 +89,8 @@ using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using Twenty2.VomitLib.View;
 
-public partial class {selectName} : ViewLogic, IController
+public partial class {selectName} : ViewLogic
 {{
-    public IArchitecture GetArchitecture()
-    {{
-        return {Vomit.RuntimeConfig.ArchitectureName}.Interface;
-    }}
-
     public override UniTask OnOpened()
     {{
         return UniTask.CompletedTask;
