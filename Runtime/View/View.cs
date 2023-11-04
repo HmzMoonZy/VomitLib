@@ -138,6 +138,11 @@ namespace Twenty2.VomitLib.View
             
             return (T) logic;
         }
+        
+        public static T OpenViewAsync<T>() where T : ViewLogic, new ()
+        {
+            throw new NotImplementedException();
+        }
 
         public static void CloseView<T>() where T : ViewLogic
         {
