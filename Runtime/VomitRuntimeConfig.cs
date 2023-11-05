@@ -8,9 +8,6 @@ namespace Twenty2.VomitLib
     [CreateAssetMenu(fileName = "VomitLibConfig", menuName = "VomitLib/CreateConfig", order = 0)]
     public class VomitRuntimeConfig : ScriptableObject
     {
-        [Header("QFramework 架构名称")]
-        public string ArchitectureName;
-        
         [Header("View 配置")] 
         public ViewFrameworkConfig ViewFrameworkConfig;
 
