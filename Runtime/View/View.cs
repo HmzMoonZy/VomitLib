@@ -139,9 +139,47 @@ namespace Twenty2.VomitLib.View
             return (T) logic;
         }
         
-        public static T OpenViewAsync<T>() where T : ViewLogic, new ()
+        /// <summary>
+        /// 异步打开一个View.
+        /// </summary>
+        /// <code>
+        /// 直到加载完成,这个方法是同步的.
+        /// 但是自己实现的OnOpen,如一些动画效果是异步的.
+        /// 可以等待.
+        /// </code>
+        public static async UniTask<T> OpenViewAsync<T>() where T : ViewLogic, new ()
         {
-            throw new NotImplementedException();
+            var viewName = typeof(T).Name;
+
+            if (_visibleViewMap.TryGetValue(viewName, out var logic))
+            {
+                LogKit.I($"Try to open an already showed the View : {viewName}");
+                return (T)logic;
+            }
+
+            logic = LoadOrGenerateViewLogic<T>();
+
+            if (logic.Config.EnableAutoMask)
+            {
+                AutoGenerateViewMask(logic);
+            }
+            
+            if (!logic.gameObject.activeSelf)
+            {
+                logic.gameObject.SetActive(true);
+            }
+
+            logic.Parent(Root);
+            logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+            logic.ViewCanvas.worldCamera = ViewCamera;
+            logic.ViewCanvas.sortingLayerID = (int) logic.Config.Layer;
+            logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
+            
+            _visibleViewMap.Add(viewName, logic);
+
+            await logic.OnOpened();
+            
+            return (T) logic;
         }
 
         public static void CloseView<T>() where T : ViewLogic
