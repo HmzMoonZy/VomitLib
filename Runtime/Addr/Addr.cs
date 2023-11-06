@@ -16,6 +16,7 @@ namespace Twenty2.VomitLib.Addr
     /// 于是,这个类则提供,通过[类型]+[资源名]的方式来自动拼接[唯一的资源名].
     /// 因为对于大多数项目,同一种类的资源命名规则理应是统一的.
     /// </code>
+    //  TODO 资源释放 
     public static class Addr
     {
         private static Dictionary<AddrResType, Func<string, string>> splicingRule = new ();

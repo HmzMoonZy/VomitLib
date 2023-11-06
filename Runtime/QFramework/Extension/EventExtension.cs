@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 
 namespace Twenty2.VomitLib
 {
+    // TODO List池.
     public static class EventExtension
     {
         public static Dictionary<string, List<UniTask>> s_taskListMap = new();

@@ -170,42 +170,4 @@ namespace Twenty2.VomitLib.View
 
         #endregion
     }
-
-    /// <summary>
-    /// 一个呼出且需要监听事件的ViewLogic
-    /// </summary>
-    /// <typeparam name="TEvent"></typeparam>
-    public abstract class ViewLogic<TEvent> : ViewLogic where TEvent : struct
-    {
-        private bool _openFinishToken;
-        
-        public override UniTask OnOpened()
-        {
-            this.RegisterViewEvent<TEvent>(OnOpen);
-
-            return UniTask.WaitUntil(() => _openFinishToken);
-        }
-
-
-        protected virtual void OnOpen(TEvent e)
-        {
-            OpenDone();
-        }
-
-        protected void OpenDone()
-        {
-            _openFinishToken = true;
-        }
-    }
-    
-    public static class ViewLogicExtension
-    {
-        public static UniTask<TLogic> WithEvent<TLogic, TEvent>(this UniTask<TLogic> task, TEvent eventParam)
-            where TLogic : ViewLogic 
-            where TEvent : struct
-        {
-            Vomit.Interface.SendEvent(eventParam);
-            return task;
-        }
-    }
 }
