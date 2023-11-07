@@ -118,7 +118,7 @@ public class Test : MonoController, ICanSendEvent
 
 ### UI框架 - View
 #### 配置参数
-![](https://github.com/HmzMoonZy/VomitLib/tree/master/Documentation/images/ViewConfig.png)
+![ViewConfig](https://github.com/HmzMoonZy/VomitLib/tree/master/Documentation/images/ViewConfig.png)
 - ViewAddressable Prefix : View预制体在可寻址地址前缀 `[ViewAddressable Prefix]/ViewLogin.prefab`
 - ViewComponent Addressable Prefix : View组件在可寻址地址的前缀 `[ViewComponent Addressable Prefix]/VCBackpackItemToken.prefab`
 - Auto Mask Color : 自动生成遮罩的RGBA
