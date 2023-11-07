@@ -20,6 +20,25 @@
 - [Addressable](https://docs.unity.cn/Packages/com.unity.addressables@1.14/manual/index.html)
 - [Luban](https://github.com/focus-creative-games/luban)
 
+### 提供的功能
+- 符合 Unity 原生开发习惯的UI框架(已实现)
+- 基于 Addressables 的资源加载功能 (已实现)
+
+
+- 更方便的QFramewrok (持续开发中)
+
+
+- 基于 Luban 本地数据库 API (整合中)
+- 客户端网络库 (整合中)
+- 音频系统(整合中)
+- 平台发布工具(Steam \ TapTap)(整合中)
+
+
+- 状态机 + Procedure (参考中)
+
+
+- P2P 网络游戏开发框架(做梦中)
+
 ###### **使用前**
 1. 需要知道 QFramework 的使用方式(仅核心架构)
 2. 需要知道 UniTask`await` / `async` 的基本内容
