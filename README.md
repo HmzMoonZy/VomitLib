@@ -25,6 +25,50 @@
 2. 在 UPM 中安装 UniTask `https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask`
 3. 在 UPM 中安装 VomitLib `https://github.com/HmzMoonZy/VomitLib.git`
 
+###### **项目验证** <font style="background: red">开发中...</font>
+1. [史莱姆咖啡厅]()  
+ 个人独立开发项目 #模拟经营 #Roguelike #放置
+2. [剑蛊骰]()      
+   个人独立开发项目 #回合制 #Roguelike
+<details>
+    <summary>回合制战斗流程代码</summary>  
+
+```csharp
+        // 广播事件
+        await SetBattleState(BattleLoopState.Before);
+        // 回合制循环
+        while (true)
+        {
+            // 回合开始
+            await SetBattleState(BattleLoopState.RoundStart);
+            await ProcessRoundStartState();
+            // AI 行动
+            await SetBattleState(BattleLoopState.AI);
+            await ProcessAIState();
+            // 玩家行动
+            await SetBattleState(BattleLoopState.Player);
+            await ProcessPlayerState();
+            // 处理对抗
+            await SetBattleState(BattleLoopState.AD);
+            await ProcessADState();
+            // 战斗结束.
+            if (CheckBattleEnd(out var isWinner))
+            {
+                battleResult.IsWinner = isWinner;
+                break;
+            }
+            // 回合结束
+            await SetBattleState(BattleLoopState.RoundEnd);
+            await ProcessRoundEndState();
+        }
+        // 结算
+        await SetBattleState(BattleLoopState.Settle);
+        await ProcessSettlementState();
+        await this.SendAsyncEvent(battleResult);
+```
+</details>
+
+
 
 ### 上手指南
 
