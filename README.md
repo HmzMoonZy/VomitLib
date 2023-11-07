@@ -4,21 +4,27 @@
 
 <font style="background: red">施工中...</font> <font style="background: red">开发中...</font>
 
-个人的基于 [QFramework](https://github.com/liangxiegame/QFramework) + [UniTask](https://github.com/Cysharp/UniTask) + [Addressable](https://docs.unity.cn/Packages/com.unity.addressables@1.14/manual/index.html) 的小游戏快速开发框架 
+个人的基于 [QFramework](https://github.com/liangxiegame/QFramework) + [UniTask](https://github.com/Cysharp/UniTask) + [Addressable](https://docs.unity.cn/Packages/com.unity.addressables@1.14/manual/index.html) + [Luban](https://github.com/focus-creative-games/luban) 的小游戏快速开发框架 
 
-`项目名称是对自己的自嘲,对所有前辈保持最大尊重!`
+`在开发了多个小游戏的DEMO后根据个人习惯提炼出的框架,目前仍在整合中...`
+
+`本质上是基于 QF 的二次开发,所有设计规范都遵循 QF 的设计. `
+
+`项目名称是对自己的自嘲,对所有前辈和同行保持最大尊重!`
 
 <!-- PROJECT SHIELDS -->
-### 使用到的框架
+### 使用到的库
 
 - [QFramework](https://github.com/liangxiegame/QFramework)
 - [UniTask](https://github.com/Cysharp/UniTask)
 - [Addressable](https://docs.unity.cn/Packages/com.unity.addressables@1.14/manual/index.html)
+- [Luban](https://github.com/focus-creative-games/luban)
 
-###### **开发目标**
+###### **使用前**
 1. 需要知道 QFramework 的使用方式(仅核心架构)
-2. 需要知道 UniTask 的使用方式
+2. 需要知道 UniTask`await` / `async` 的基本内容
 3. 避免更多的学习成本, 其余部分尽量采用 Unity 原生设计,包括 UI 框架 和 资源框架.
+4. (可选) 了解 Luban 的使用方式
 
 ###### **安装步骤**
 1. 在 UPM 中安装 Addressables
