@@ -13,24 +13,18 @@ namespace Twenty2.VomitLib
         public static Dictionary<string, List<UniTask>> s_taskListMap = new();
         
         public static Dictionary<Type, List<UniTask>> s_asyncEventCache = new();
-
-        /// <summary>
-        /// 返回当前事件的任务列表, 如果没有则新建一个.
-        /// </summary>
-        /// <returns></returns>
-        public static List<UniTask> GetTaskList<T>(this T e) where T : struct
+        
+        public static UniTask SendAsyncEvent<T>(this ICanSendEvent self, T e) where T : struct
         {
-            string key = typeof(T).Name;
-
-            if (s_taskListMap.TryGetValue(key, out var list)) return list;
-        
-            list = new List<UniTask>();
-        
-            s_taskListMap.Add(key, list);
-        
-            return list;
+            self.SendEvent(e);
+            return e.WhenAll();
         }
-    
+        
+        public static UniTask SendAsyncEvent<T>(this ICanSendEvent self) where T : struct
+        {
+            return self.SendAsyncEvent(new T());
+        }
+        
         /// <summary>
         /// 增加一个事件
         /// </summary>
@@ -42,7 +36,7 @@ namespace Twenty2.VomitLib
             
             LogKit.I($"{e.GetType().Name} 添加任务!! 当前任务数量 : {taskList.Count}");
         }
-
+        
         /// <summary>
         /// 返回所有任务的 WhenAll 事件.
         /// 返回后清空事件.
@@ -64,16 +58,23 @@ namespace Twenty2.VomitLib
                 s_taskListMap.Remove(key);
             });
         }
-        
-        public static UniTask SendAsyncEvent<T>(this ICanSendEvent self, T e) where T : struct
+
+        /// <summary>
+        /// 返回当前事件的任务列表, 如果没有则新建一个.
+        /// </summary>
+        /// <returns></returns>
+        private static List<UniTask> GetTaskList<T>(this T e) where T : struct
         {
-            self.SendEvent(e);
-            return e.WhenAll();
+            string key = typeof(T).Name;
+
+            if (s_taskListMap.TryGetValue(key, out var list)) return list;
+        
+            list = new List<UniTask>();
+        
+            s_taskListMap.Add(key, list);
+        
+            return list;
         }
         
-        public static UniTask SendAsyncEvent<T>(this ICanSendEvent self) where T : struct
-        {
-            return self.SendAsyncEvent(new T());
-        }
     }
 }
