@@ -65,10 +65,15 @@ namespace Twenty2.VomitLib
             });
         }
         
-        public static UniTask SendAsyncEvent<T>(this ICanSendEvent canEvent, T e) where T : struct
+        public static UniTask SendAsyncEvent<T>(this ICanSendEvent self, T e) where T : struct
         {
-            canEvent.SendEvent(e);
+            self.SendEvent(e);
             return e.WhenAll();
+        }
+        
+        public static UniTask SendAsyncEvent<T>(this ICanSendEvent self) where T : struct
+        {
+            return self.SendAsyncEvent(new T());
         }
     }
 }
