@@ -117,12 +117,33 @@ public class Test : MonoController, ICanSendEvent
 ```
 
 ### UI框架 - View
-- `VomitConfig` 中填入View部分的参数
+#### 配置参数
+![](https://github.com/HmzMoonZy/VomitLib/tree/master/Documentation/images/ViewConfig.png)
+- ViewAddressable Prefix : View预制体在可寻址地址前缀 `[ViewAddressable Prefix]/ViewLogin.prefab`
+- ViewComponent Addressable Prefix : View组件在可寻址地址的前缀 `[ViewComponent Addressable Prefix]/VCBackpackItemToken.prefab`
+- Auto Mask Color : 自动生成遮罩的RGBA
+- Default Font : 默认字体
+- Script Generate Path : UI代码自动生成路径
+- View Resolution : View 试图的开发分辨率
 
 #### 制作UI 
 1. 在 Unity 的 Hierarchy 中选择 `Create-UI-VomitCanvas` 或 `Create-UI-VomitCanvas(No Raycast)` 后者无法做射线检测,性能更优.
-2. 将制作好的 UI 做成预制体,在Project面板中选择`Create-Vomit-View-ViewScript` 自动生成和预制体同名的View代码.
-3. 在项目中使用View:
+2. 将制作好的 UI 做成预制体, 在Project面板中选择`Create-Vomit-View-ViewScript` 自动生成和预制体同名的View代码.
+
+### ViewConfig
+- 每个VomitCanvas都会携带一个通用的 ViewConfig 组件.
+- Layer : 层级配置
+- EnableAutoMask : 是否自动开启遮罩
+- ClickMaskTriggerClose : 点击自动生成的遮罩是否触发关闭面板
+- AutoDefaultFont : 是否自动替换默认字体
+- EnableLocalization : 是否自动进行本地化
+- IsCache : 关闭后是否缓存
+- AutoBindButtons : 是否自动绑定按钮事件
+
+### ViewLogic & ViewLogic<T>
+- 自动生成的 View 代码继承自 ViewLogic.
+- 你可以手动替换为 ViewLogic<T>, T为自动绑定的响应事件.
+
 ```csharp
     // 同步打开一个 View
     View.OpenView<ViewTest>();
