@@ -1,229 +1,290 @@
-# Package Starter Kit
-
-The purpose of this starter kit is to provide the data structure and development guidelines for new packages meant for the **Unity Package Manager (UPM)**.
-
-## Are you ready to become a package?
-The Package Manager is a work in progress for Unity. Because of that, your package needs to meet these criteria to become an official Unity package:
-- **Your code accesses public Unity C# APIs only.**
-- **Your code doesn't require security, obfuscation, or conditional access control.**
 
 
-## Package structure
+# Vomit Lib
 
-```none
-<root>
-  ├── package.json
-  ├── README.md
-  ├── CHANGELOG.md
-  ├── Third Party Notices.md
-  ├── Editor
-  │   ├── Twenty2.Vomitlib.Editor.asmdef
-  │   └── EditorExample.cs
-  ├── Runtime
-  │   ├── Twenty2.Vomitlib.asmdef
-  │   └── RuntimeExample.cs
-  ├── Tests
-  │   ├── .tests.json
-  │   ├── Editor
-  │   │   ├── Twenty2.Vomitlib.Editor.Tests.asmdef
-  │   │   └── EditorExampleTest.cs
-  │   └── Runtime
-  │        ├── Twenty2.Vomitlib.Tests.asmdef
-  │        └── RuntimeExampleTest.cs
-  ├── Samples
-  │   └── Example
-  │       ├── .sample.json
-  │       └── SampleExample.cs
-  └── Documentation
-       ├── VomitLib.md
-       └── Images
+<font style="background: red">施工中...</font> <font style="background: red">开发中...</font>
+
+个人的基于 [QFramework](https://github.com/liangxiegame/QFramework) + [UniTask](https://github.com/Cysharp/UniTask) + [Addressable](https://docs.unity.cn/Packages/com.unity.addressables@1.14/manual/index.html) 的小游戏快速开发框架 
+
+`项目名称是对自己的自嘲,对所有前辈保持最大尊重!`
+
+<!-- PROJECT SHIELDS -->
+### 使用到的框架
+
+- [QFramework](https://github.com/liangxiegame/QFramework)
+- [UniTask](https://github.com/Cysharp/UniTask)
+- [Addressable](https://docs.unity.cn/Packages/com.unity.addressables@1.14/manual/index.html)
+
+###### **开发目标**
+1. 需要知道 QFramework 的使用方式(仅核心架构)
+2. 需要知道 UniTask 的使用方式
+3. 避免更多的学习成本, 其余部分尽量采用 Unity 原生设计,包括 UI 框架 和 资源框架.
+
+###### **安装步骤**
+1. 在 UPM 中安装 Addressables
+2. 在 UPM 中安装 UniTask `https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask`
+3. 在 UPM 中安装 VomitLib `https://github.com/HmzMoonZy/VomitLib.git`
+
+
+### 上手指南
+
+- 在 Assets/Resources/ 下创建 VomitConfig 根据工程配置全局数据
+- 拖入 `ViewRoot.prefab`
+- 在合适的时机调用 `Vomit.Init(IArchitecture architecture)`
+```csharp
+public class V : QFramework.Architecture<V>
+{
+    protected override void Init(){ }
+}
+
+public class Test : MonoController, ICanSendEvent
+{
+    void Start()
+    {
+        // 初始化框架
+        Vomit.Init(V.Interface);
+    }
+
 ```
 
-## Develop your package
-Package development works best within the Unity Editor.  Here's how to get started:
-
-1. Enter your package name. The name you choose should contain your default organization followed by the name you typed. For example: `Twenty2.Vomitlib`.
-
-2. [Enter the information](#FillOutFields) for your package in the `package.json` file.
-
-3. [Rename and update](#Asmdef) assembly definition files.
-
-4. [Document](#Doc) your package.
-
-5. [Add samples](#Populate) to your package (code & assets).
-
-6. [Validate](#Valid) your package.
-
-7. [Add tests](#Tests) to your package.
-
-8. Update the `CHANGELOG.md` file. 
-
-    Every new feature or bug fix should have a trace in this file. For more details on the chosen changelog format, see [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
-
-9. Make sure your package [meets all legal requirements](#Legal).
-
-10. Publish your package.
-
-
-
-<a name="FillOutFields"></a>
-### Completing the package manifest
-
-You can either modify the package manifest (`package.json`) file directly in the Inspector or by using an external editor. 
-
-To use the Inspector, select the `package.json` file in the Project browser. The **Package VomitLib Manifest** page opens for editing.
-
-Update these required attributes in the `package.json` file: 
-
-| **Attribute name:** | **Description:**                                             |
-| ------------------- | ------------------------------------------------------------ |
-| **name**            | The officially registered package name. This name must conform to the [Unity Package Manager naming convention](https://docs.unity3d.com/Manual/upm-manifestPkg.html#name), which uses reverse domain name notation. For example: <br />`"com.[YourCompanyName].[your-package-name]"` |
-| **displayName**     | A user-friendly name to appear in the Unity Editor (for example, in the Project Browser, the Package Manager window, etc.). For example: <br />`"Terrain Builder SDK"` <br/>__NOTE:__ Use a display name that will help users understand what your package is intended for. |
-| **version**         | The package version number (**'MAJOR.MINOR.PATCH"**). This value must respect [semantic versioning](http://semver.org/). For more information, see [Package version](https://docs.unity3d.com/Manual/upm-manifestPkg.html#pkg-ver) in the Unity User Manual. |
-| **unity**           | The lowest Unity version the package is compatible with. If omitted, the package is considered compatible with all Unity versions. <br /><br />The expected format is "**&lt;MAJOR&gt;.&lt;MINOR&gt;**" (for example, **2018.3**). |
-| **description**     | A brief description of the package. This is the text that appears in the [details view](upm-ui-details) of the Packages window. Any [UTF-8](https://en.wikipedia.org/wiki/UTF-8) character code is supported. This means that you can use special formatting character codes, such as line breaks (**\n**) and bullets (**\u25AA**). |
-
-Update the following recommended fields in file **package.json**:
-
-| **Attribute name:** | **Description:**                                             |
-| ------------------- | ------------------------------------------------------------ |
-| **dependencies**    | A map of package dependencies. Keys are package names, and values are specific versions. They indicate other packages that this package depends on. For more information, see [Dependencies](https://docs.unity3d.com/Manual/upm-dependencies.html) in the Unity User Manual.<br /><br />**NOTE**: The Package Manager does not support range syntax, only **SemVer** versions. |
-| **keywords**        | An array of keywords used by the Package Manager search APIs. This helps users find relevant packages. |
-
-
-
-<a name="Asmdef"></a>
-### Updating the Assembly Definition files
-
-You must associate scripts inside a package to an assembly definition file (.asmdef). Assembly definition files are the Unity equivalent to a C# project in the .NET ecosystem. You must set explicit references in the assembly definition file to other assemblies (whether in the same package or in external packages). See [Assembly Definitions](https://docs.unity3d.com/Manual/ScriptCompilationAssemblyDefinitionFiles.html) for more details.
-
-Use these conventions for naming and storing your assembly definition files to ensure that the compiled assembly filenames follow the [.NET Framework Design Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/):
-
-* Store Editor-specific code under a root editor assembly definition file:
-
-  `Editor/Twenty2.Vomitlib.Editor.asmdef`
-
-* Store runtime-specific code under a root runtime assembly definition file:
-
-  `Runtime/Twenty2.Vomitlib.asmdef`
-
-* Configure related test assemblies for your editor and runtime scripts:
-
-  `Tests/Editor/Twenty2.Vomitlib.Editor.Tests.asmdef`
-
-  `Tests/Runtime/Twenty2.Vomitlib.Tests.asmdef`
-
-To get a more general view of a recommended package folder layout, see [Package layout](https://docs.unity3d.com/Manual/cus-layout.html).
-
-
-
-<a name="Doc"></a>
-### Providing documentation
-
-Use the `Documentations~/VomitLib.md` documentation file to create preliminary, high-level documentation. This document should introduce users to the features and sample files included in your package.  Your package documentation files will be used to generate online and local docs, available from the Package Manager UI.
-
-**Document your public APIs**
-* All public APIs need to be documented with **XmlDoc**.
-* API documentation is generated from [XmlDoc tags](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/xmldoc/xml-documentation-comments) included with all public APIs found in the package. See [Editor/EditorExample.cs](Editor/EditorExample.cs) for an example.
-
-
-
-
-<a name="Populate"></a>
-### Adding Assets to your package
-
-If your package contains a sample, rename the `Samples/Example` folder, and update the `.sample.json` file in it.
-
-In the case where your package contains multiple samples, you can make a copy of the `Samples/Example` folder for each sample, and update the `.sample.json` file accordingly.
-
-Similar to `.tests.json` file, there is a `"createSeparatePackage"` field in `.sample.json`. If set to true, the CI will create a separate package for the sample.
-
-Delete the `Samples` folder altogether if your package does not need samples.
-
-As of Unity release 2019.1, the Package Manager recognizes the `/Samples` directory in a package. Unity doesn't automatically import samples when a user adds the package to a Project. However, users can click a button in the details view of a package in the **Packages** window to optionally import samples into their `/Assets` directory.
-
-
-
-
-<a name="Valid"></a>
-### Validating your package
-
-Before you publish your package, you need to make sure that it passes all the necessary validation checks by using the Package Validation Suite extension (optional).
-
-Once you install the Validation Suite package, a **Validate** button appears in the details view of a package in the **Packages** window. To install the extension, follow these steps:
-
-1. Point your Project manifest to a staging registry by adding this line to the manifest: 
-    `"registry": "https://staging-packages.unity.com"`
-2. Install the **Package Validation Suite v0.3.0-preview.13** or above from the **Packages** window in Unity. Make sure the package scope is set to **All Packages**, and select **Show preview packages** from the **Advanced** menu.
-3. After installation, a **Validate** button appears in the **Packages** window. Click the button to run a series of tests, then click the **See Results** button for additional information:
-    * If it succeeds, a green bar with a **Success** message appears.
-    * If it fails, a red bar with a **Failed** message appears.
-
-**NOTE:** The validation suite is still in preview.
-
-
-
-
-<a name="Tests"></a>
-### Adding tests to your package
-
-All packages must contain tests.  Tests are essential for Unity to ensure that the package works as expected in different scenarios.
-
-**Editor tests**
-* Write all your Editor Tests in `Tests/Editor`
-
-**Playmode Tests**
-
-* Write all your Playmode Tests in `Tests/Runtime`.
-
-#### Separating the tests from the package
-
-You can create a separate package for the tests, which allows you to exclude a large number of tests and Assets from being published in your main package, while still making it easy to test it.
-
-Open the `Tests/.tests.json` file and set the **createSeparatePackage** attribute:
-
-| **Value to set:** | **Result:**                                                  |
-| ----------------- | ------------------------------------------------------------ |
-| **true**          | CI creates a separate package for these tests. At publish time, the Package Manager adds metadata to link the packages together. |
-| **false**         | Keep the tests as part of the published package.             |
-
-
-
-<a name="Legal"></a>
-### Meeting the legal requirements
-
-You can use the Third Party Notices.md file to make sure your package meets any legal requirements. For example, here is a sample license file from the Unity Timeline package:
-
+### UI框架 - View
+- `VomitConfig` 中填入View部分的参数
+
+#### 制作UI 
+1. 在 Unity 的 Hierarchy 中选择 `Create-UI-VomitCanvas` 或 `Create-UI-VomitCanvas(No Raycast)` 后者无法做射线检测,性能更优.
+2. 将制作好的 UI 做成预制体,在Project面板中选择`Create-Vomit-View-ViewScript` 自动生成和预制体同名的View代码.
+3. 在项目中使用View:
+```csharp
+    // 同步打开一个 View
+    View.OpenView<ViewTest>();
+    // 异步打开一个 View, 可以在 View 的 OnOpen 中实现动画效果.
+    await View.OpenViewAsync<ViewTest>();
+    // 在打开时通过 QFramework 的事件系统 View 传递参数.
+    await View.OpenViewAsync<ViewTest>().WithEvent(new ViewTestEvent {Params = "NewTest!"})
 ```
-Unity Timeline copyright © 2017-2019 Unity Technologies ApS
 
-Licensed under the Unity Companion License for Unity-dependent projects--see [Unity Companion License](http://www.unity3d.com/legal/licenses/Unity_Companion_License).
+### 扩展QF - 异步事件
+QF 提供了非常好用的事件系统. 
 
-Unless expressly provided otherwise, the Software under this license is made available strictly on an “AS IS” BASIS WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. Please review the license for details on these and other terms and conditions.
+实际开发中有时希望等待事件回调.
+
+这里扩展更方便的方法.
+```csharp
+    // 声明一个事件
+    public struct TestEvent
+    {
+        public string Name;
+    }
+    
+    // IController \ ICanSendEvent
+    public class Test : MonoController, ICanSendEvent
+    {
+        async void Start()
+       {
+            // 初始化
+            Vomit.Init(V.Interface);
+           
+            // 注册异步任务
+            this.RegisterAliveEvent<TestEvent>(e =>
+            {
+                e.AddTask(UniTask.Create(async () =>
+                {
+                    await UniTask.WaitForSeconds(2);    // 延迟 2s.
+                    LogKit.I(e.Name);
+                }));
+            });
+           
+            // 注册同步任务
+            this.RegisterAliveEvent<TestEvent>(e =>
+            {
+                LogKit.I(e.Name);
+            });
+        
+            // 等待事件回调完成
+            await this.SendAsyncEvent(new TestEvent() {Name = "Hi"});
+            
+            // 所有事件回调执行完毕后调用
+            LogKit.I("Finish!");
+    }
+}
 
 ```
 
 
 
-#### Third Party Notices
 
-If your package has third-party elements, you can include the licenses in a Third Party Notices.md file. You can include a **Component Name**, **License Type**, and **Provide License Details** section for each license you want to include. For example:
 
-```
-This package contains third-party software components governed by the license(s) indicated below:
+[//]: # (```sh)
 
-Component Name: Semver
+[//]: # (git clone https://github.com/shaojintian/Best_README_template.git)
 
-License Type: "MIT"
+[//]: # (```)
 
-[SemVer License](https://github.com/myusername/semver/blob/master/License.txt)
+[//]: # ()
+[//]: # (### 文件目录说明)
 
-Component Name: MyComponent
+[//]: # (eg:)
 
-License Type: "MyLicense"
+[//]: # ()
+[//]: # (```)
 
-[MyComponent License](https://www.mycompany.com/licenses/License.txt)
+[//]: # (filetree )
 
-```
+[//]: # (├── ARCHITECTURE.md)
 
-**NOTE**: Any URLs you use should point to a location that contains the reproduced license and the copyright information (if applicable).
+[//]: # (├── LICENSE.txt)
+
+[//]: # (├── README.md)
+
+[//]: # (├── /account/)
+
+[//]: # (├── /bbs/)
+
+[//]: # (├── /docs/)
+
+[//]: # (│  ├── /rules/)
+
+[//]: # (│  │  ├── backend.txt)
+
+[//]: # (│  │  └── frontend.txt)
+
+[//]: # (├── manage.py)
+
+[//]: # (├── /oa/)
+
+[//]: # (├── /static/)
+
+[//]: # (├── /templates/)
+
+[//]: # (├── useless.md)
+
+[//]: # (└── /util/)
+
+[//]: # ()
+[//]: # (```)
+
+[//]: # ()
+[//]: # ()
+[//]: # ()
+[//]: # ()
+[//]: # ()
+[//]: # (### 开发的架构)
+
+[//]: # ()
+[//]: # (请阅读[ARCHITECTURE.md]&#40;https://github.com/shaojintian/Best_README_template/blob/master/ARCHITECTURE.md&#41; 查阅为该项目的架构。)
+
+[//]: # ()
+[//]: # (### 部署)
+
+[//]: # ()
+[//]: # (暂无)
+
+[//]: # ()
+[//]: # (### 使用到的框架)
+
+[//]: # ()
+[//]: # (- [xxxxxxx]&#40;https://getbootstrap.com&#41;)
+
+[//]: # (- [xxxxxxx]&#40;https://jquery.com&#41;)
+
+[//]: # (- [xxxxxxx]&#40;https://laravel.com&#41;)
+
+[//]: # ()
+[//]: # (### 贡献者)
+
+[//]: # ()
+[//]: # (请阅读**CONTRIBUTING.md** 查阅为该项目做出贡献的开发者。)
+
+[//]: # ()
+[//]: # (#### 如何参与开源项目)
+
+[//]: # ()
+[//]: # (贡献使开源社区成为一个学习、激励和创造的绝佳场所。你所作的任何贡献都是**非常感谢**的。)
+
+[//]: # ()
+[//]: # ()
+[//]: # (1. Fork the Project)
+
+[//]: # (2. Create your Feature Branch &#40;`git checkout -b feature/AmazingFeature`&#41;)
+
+[//]: # (3. Commit your Changes &#40;`git commit -m 'Add some AmazingFeature'`&#41;)
+
+[//]: # (4. Push to the Branch &#40;`git push origin feature/AmazingFeature`&#41;)
+
+[//]: # (5. Open a Pull Request)
+
+[//]: # ()
+[//]: # ()
+[//]: # ()
+[//]: # (### 版本控制)
+
+[//]: # ()
+[//]: # (该项目使用Git进行版本管理。您可以在repository参看当前可用版本。)
+
+[//]: # ()
+[//]: # (### 作者)
+
+[//]: # ()
+[//]: # (xxx@xxxx)
+
+[//]: # ()
+[//]: # (知乎:xxxx  &ensp; qq:xxxxxx)
+
+[//]: # ()
+[//]: # (*您也可以在贡献者名单中参看所有参与该项目的开发者。*)
+
+[//]: # ()
+[//]: # (### 版权说明)
+
+[//]: # ()
+[//]: # (该项目签署了MIT 授权许可，详情请参阅 [LICENSE.txt]&#40;https://github.com/shaojintian/Best_README_template/blob/master/LICENSE.txt&#41;)
+
+[//]: # ()
+[//]: # (### 鸣谢)
+
+[//]: # ()
+[//]: # ()
+[//]: # (- [GitHub Emoji Cheat Sheet]&#40;https://www.webpagefx.com/tools/emoji-cheat-sheet&#41;)
+
+[//]: # (- [Img Shields]&#40;https://shields.io&#41;)
+
+[//]: # (- [Choose an Open Source License]&#40;https://choosealicense.com&#41;)
+
+[//]: # (- [GitHub Pages]&#40;https://pages.github.com&#41;)
+
+[//]: # (- [Animate.css]&#40;https://daneden.github.io/animate.css&#41;)
+
+[//]: # (- [xxxxxxxxxxxxxx]&#40;https://connoratherton.com/loaders&#41;)
+
+[//]: # ()
+[//]: # (<!-- links -->)
+
+[//]: # ([your-project-path]:shaojintian/Best_README_template)
+
+[//]: # ([contributors-shield]: https://img.shields.io/github/contributors/shaojintian/Best_README_template.svg?style=flat-square)
+
+[//]: # ([contributors-url]: https://github.com/shaojintian/Best_README_template/graphs/contributors)
+
+[//]: # ([forks-shield]: https://img.shields.io/github/forks/shaojintian/Best_README_template.svg?style=flat-square)
+
+[//]: # ([forks-url]: https://github.com/shaojintian/Best_README_template/network/members)
+
+[//]: # ([stars-shield]: https://img.shields.io/github/stars/shaojintian/Best_README_template.svg?style=flat-square)
+
+[//]: # ([stars-url]: https://github.com/shaojintian/Best_README_template/stargazers)
+
+[//]: # ([issues-shield]: https://img.shields.io/github/issues/shaojintian/Best_README_template.svg?style=flat-square)
+
+[//]: # ([issues-url]: https://img.shields.io/github/issues/shaojintian/Best_README_template.svg)
+
+[//]: # ([license-shield]: https://img.shields.io/github/license/shaojintian/Best_README_template.svg?style=flat-square)
+
+[//]: # ([license-url]: https://github.com/shaojintian/Best_README_template/blob/master/LICENSE.txt)
+
+[//]: # ([linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555)
+
+[//]: # ([linkedin-url]: https://linkedin.com/in/shaojintian)
+
+[//]: # ()
+
+
