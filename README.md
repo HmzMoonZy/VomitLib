@@ -153,6 +153,51 @@ public class Test : MonoController, ICanSendEvent
     await View.OpenViewAsync<ViewTest>().WithEvent(new ViewTestEvent {Params = "NewTest!"})
 ```
 
+### 资源框架-Addr
+#### 为什么是 Addressables ?
+- Unity 官方库,并且已经更新多年
+- 可视化的性能分析
+- 通常以文件夹划分Bundle,开发中操作更简单和直观.尤其是规模不大的项目.
+- 如今的资源各种bundle框架已经非常成熟,要封装和替换都非常简单.
+- UniTask 原生支持
+#### 怎么使用
+- 按照正常的方式使用Addressable
+- AA 在原先的 AB 基础上做了增强,本质上提供了 [通过资源的唯一名称(寻址地址)找到这个资源], 而无需关心资源具体位置.
+- 实习使用中我们经常会拼接各种冗长的字符串去确定这个唯一的地址.
+- 于是,ADDR则提供,通过[类型]+[资源索引]的方式来自动拼接[唯一的资源名]
+- 因为对于同一种类的资源命名规则理应是统一的.
+```csharp
+    // 注册一类资源的索引拼接规则, 这里是不同骰子点数的Sprite
+    Addr.RegisterRule<Sprite>(Constant.AssetType.Sprite.Dice, s => $"Sprites/Dices/Dice{s}@png.png");
+    
+    // 同步加载点数3的骰子
+    Sprite dice3Sprite = Addr.Load<Sprite>(Constant.AssetType.Sprite.Dice, 3);
+    
+    // 异步加载点数6的骰子
+    Sprite dice6Sprite = await Addr.LoadAsync<Sprite>(Constant.AssetType.Sprite.Dice, 6);
+    
+    // 异步加载点数5的骰子
+    Addr.LoadAsync<Sprite>(Constant.AssetType.Sprite.Dice, 5, sprite => {
+        image.sprite = sprite;
+    });
+    
+    // 可以同时异步加载所有图标而无需担心重复Load
+    for(var itemID in Backpack.List)
+    {
+        Addr.LoadAsync<GameObejct>(Constant.AssetType.GameObejct.ItemToken, itemID, token => {
+            token.Init(itemID);
+        });
+    }
+    
+    // 或是借助UniTask
+    for(var itemID in Backpack.List)
+    {
+        var id = itemID;
+        UniTask.Create(async () => {await Addr.LoadAsync<GameObejct>(Constant.AssetType.GameObejct.ItemToken, itemID).Init(id)});
+    }
+    
+```
+
 ### 扩展QF - 异步事件
 QF 提供了非常好用的事件系统. 
 
