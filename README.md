@@ -163,7 +163,7 @@ public class Test : MonoController, ICanSendEvent
 #### 怎么使用
 - 按照正常的方式使用Addressable
 - AA 在原先的 AB 基础上做了增强,本质上提供了 [通过资源的唯一名称(寻址地址)找到这个资源], 而无需关心资源具体位置.
-- 实习使用中我们经常会拼接各种冗长的字符串去确定这个唯一的地址.
+- 实际使用中我们经常会拼接各种冗长的字符串去确定这个唯一的地址.
 - 于是,ADDR则提供,通过[类型]+[资源索引]的方式来自动拼接[唯一的资源名]
 - 因为对于同一种类的资源命名规则理应是统一的.
 ```csharp
@@ -197,6 +197,66 @@ public class Test : MonoController, ICanSendEvent
     }
     
 ```
+
+### 本地数据库-CilentDB
+####
+- 基于luban的客户端数据库扩展
+#### 配置ClientDB Config
+- lubandll路径
+- lubanconfig 路径
+- 自动 C# 代码生成路径
+- 数据文件生成路径
+- 本地化数据路径
+#### 如何使用?
+```csharp
+    
+    public class ClientDB 
+    {
+        public static Tables T => ClientDB<Tables>.T;
+        
+        public static void Init()
+        {
+            // Tables 为鲁班生成代码
+            ClientDB<Tables>.Init(new Tables(Loader, true));
+        }
+        
+        private static JSONNode Loader(string fileName)
+        {
+            // 加载数据文件
+            var asset = Addr.Load<TextAsset>(Constant.AssetType.Text.LubanData, fileName);
+            string json = asset.text;
+            Addressables.Release(asset);
+            return JSON.Parse(json);
+        }
+    }
+    
+    // 更多时候,我们不是所有数据都通过excel配置.
+    // 类似技能数据这种复杂数据,我配置excel会配到头晕,于是更喜欢自己的数据配置器
+    public class SkillData : IEditable  // 实现 IEditable 接口
+    {
+        public int GetID();
+
+        public string GetName();
+    }
+    
+    // 扩展 Tables 
+    public partial class Tables
+    {
+        // CustomTable<T> 提供和Luban生成代码风格一致的数据表
+        public CustomTable<SkillData> TbSkill;
+        
+        public Tables(System.Func<string, JSONNode> loader, bool useSelfData) : this(loader)
+        {
+            // 加载自己实现的配置文件
+            TbSkill = new CustomTable<SkillData>(Addr.Load<TextAsset>(Constant.AssetType.Text.JGTData, nameof(SkillData)).text);
+        }
+    }
+    
+    // 正常使用它
+    ExecuteSkill(ClientDB.T.TbSkill[1001].Logic);
+    
+```
+
 
 ### 扩展QF - 异步事件
 QF 提供了非常好用的事件系统. 
