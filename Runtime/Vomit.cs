@@ -13,6 +13,17 @@ namespace Twenty2.VomitLib
         public static void Init(IArchitecture architecture)
         {
             Interface = architecture;
+
+            // 遍历所有异步事件
+            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (var type in assembly.GetTypes())
+                {
+                    if (!type.IsValueType || !type.HasAttribute<AsyncEventAttribute>()) continue;
+                    
+                    AsyncEventExtension.Register(type.Name);
+                }
+            }
         }
 
         public static VomitRuntimeConfig RuntimeConfig

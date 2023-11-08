@@ -160,13 +160,14 @@ QF 提供了非常好用的事件系统.
 
 这里扩展更方便的方法.
 ```csharp
-    // 声明一个事件
+    // 声明一个异步事件
+    [AsyncEvent]
     public struct TestEvent
     {
         public string Name;
     }
     
-    // IController \ ICanSendEvent
+    // ICanSendEvent
     public class Test : MonoController, ICanSendEvent
     {
         async void Start()
@@ -184,7 +185,7 @@ QF 提供了非常好用的事件系统.
                 }));
             });
            
-            // 注册同步任务
+            // 也可以注册同步任务
             this.RegisterAliveEvent<TestEvent>(e =>
             {
                 LogKit.I(e.Name);

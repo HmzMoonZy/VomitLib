@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using Cysharp.Threading.Tasks;
 using QFramework;
@@ -7,12 +8,15 @@ using QFramework;
 namespace Twenty2.VomitLib
 {
     // TODO List池.
-    // TODO 异步事件标签缓存
-    public static class EventExtension
+    public static class AsyncEventExtension
     {
-        public static Dictionary<string, List<UniTask>> s_taskListMap = new();
-        
-        public static Dictionary<Type, List<UniTask>> s_asyncEventCache = new();
+        private static Dictionary<string, List<UniTask>> s_taskListMap = new();
+
+        public static void Register(string key)
+        {
+            s_taskListMap.Add(key, null);
+            LogKit.I($"注册异步事件{key}");
+        }
         
         public static UniTask SendAsyncEvent<T>(this ICanSendEvent self, T e) where T : struct
         {
@@ -28,7 +32,6 @@ namespace Twenty2.VomitLib
         /// <summary>
         /// 增加一个事件
         /// </summary>
-        /// <param name="task"></param>
         public static void AddTask<T>(this T e, UniTask task) where T : struct
         {
             var taskList = GetTaskList(e);
@@ -55,7 +58,7 @@ namespace Twenty2.VomitLib
             {
                 await UniTask.WhenAll(GetTaskList(e));
 
-                s_taskListMap.Remove(key);
+                s_taskListMap[key] = null;
             });
         }
 
@@ -67,11 +70,14 @@ namespace Twenty2.VomitLib
         {
             string key = typeof(T).Name;
 
-            if (s_taskListMap.TryGetValue(key, out var list)) return list;
-        
-            list = new List<UniTask>();
-        
-            s_taskListMap.Add(key, list);
+            if (!s_taskListMap.TryGetValue(key, out var list))
+            {
+                throw new NotSupportedException($"{key}不是[AsyncEvent]");
+            }
+
+            list ??= new List<UniTask>();
+
+            s_taskListMap[key] = list;
         
             return list;
         }
