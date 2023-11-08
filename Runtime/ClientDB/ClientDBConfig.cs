@@ -20,8 +20,6 @@ namespace Twenty2.VomitLib.ClientDB
 
         public string ConfigPath;
 
-        public string ExcelPath;
-
         public string LocalizationPath;
 
         public string JsonOutputPath;
