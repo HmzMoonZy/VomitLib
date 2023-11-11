@@ -5,7 +5,7 @@ namespace Twenty2.VomitLib.Tools
     /// <summary>
     /// 自增工具
     /// </summary>
-    public static class SIT
+    public static class IDKit
     {
         private static Dictionary<System.Type, int> _map = new();
 
