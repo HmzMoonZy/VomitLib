@@ -116,6 +116,89 @@ public class Test : MonoController, ICanSendEvent
 
 ```
 
+### 流程控制-Procedure
+- Procedure 是管理程序全局状态的有限状态机.
+- 灵感来自 GF 的 Procedure.
+
+```csharp
+    // 声明Procedure的状态枚举
+    public enum ProcedureState { Launch, Home, Town, Battle,}
+    
+    // 声明一个启动流程类,并且作为入口流程.
+    [Procedure(ProcedureID = ProcedureState.Launch, IsEntry = true)]
+    public class ProcedureLaunch : ProcedureState
+    {
+        public override bool Condition() => false;  // 不可逆
+        
+        public override void Enter()
+        {
+            // Do something...
+            ChangeState(JGT.JGTProcedure.Home);     // 切换状态
+        }
+
+        public override void Exit()
+        {
+            LogKit.I("启动流程结束!");
+        }
+    }
+    
+    // 声明一个主页流程类
+    [Procedure(ProcedureID = ProcedureState.Home)]
+    public class ProcedureHome : ProcedureState
+    {
+        public override bool Condition()
+        {
+            return CurrentProcedure == ProcedureState.Launch;   // 启动流程 => 主页流程
+        }
+        
+        public override void Enter()
+        {
+            // Do something...
+            ChangeState(JGT.JGTProcedure.Town);     // 切换状态
+        }
+
+        public override void Exit()
+        {
+            LogKit.I("主页流程结束!");
+        }
+    }
+    
+    // 声明一个城镇流程类
+    [Procedure(ProcedureID = ProcedureState.Town)]
+    public class ProcedureTown : ProcedureState
+    {
+        public override bool Condition()
+        {
+            // 启动流程 => 城镇流程 ; 战斗流程 => 城镇流程
+            return CurrentProcedure == ProcedureState.Home || CurrentProcedure == ProcedureState.Battle;   
+        }
+        
+        public override void Enter()
+        {
+            if(PrevProcedure == ProcedureState.Home)
+            {
+                // 进入游戏逻辑
+            }
+            
+            if(PrevProcedure == ProcedureState.Battle)
+            {
+                // 战斗归来逻辑
+            }
+          
+            // Do something...
+        }
+
+        public override void Exit() { }
+    }
+    
+    private void Start()
+    {
+        Procedure<ProcedureState>.Init();
+        
+        Procedure<ProcedureState>.Start();  // 启动入口流程状态机
+    }
+```
+
 ### UI框架 - View
 #### 配置参数
 ![ViewConfig](https://github.com/HmzMoonZy/VomitLib/tree/master/Documentation/images/ViewConfig.png)

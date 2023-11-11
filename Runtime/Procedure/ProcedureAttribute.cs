@@ -1,10 +1,9 @@
-﻿
-    using System;
+﻿using System;
 
-    [AttributeUsage(AttributeTargets.Class)]
-    public class ProcedureAttribute : Attribute
-    {
-        public object ProcedureID;
+[AttributeUsage(AttributeTargets.Class)]
+public class ProcedureAttribute : Attribute
+{
+    public object ProcedureID;
 
-        public bool IsEntry;
-    }
+    public bool IsEntry;
+}
