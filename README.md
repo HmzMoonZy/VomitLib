@@ -1,5 +1,3 @@
-
-
 # Vomit Lib
 
 <font style="background: red">施工中...</font> <font style="background: red">开发中...</font>
@@ -8,11 +6,12 @@
 
 `在开发了多个小游戏的DEMO后根据个人习惯提炼出的框架,目前仍在整合中...`
 
-`本质上是基于 QF 的二次开发,所有设计规范都遵循 QF 的设计. `
+`本质上是基于 QF 的二次开发,所有设计规范都遵循 QF 的设计.只进行扩展,不修改.确保理解上无偏差.`
 
 `项目名称是对自己的自嘲,对所有前辈和同行保持最大尊重!`
 
 <!-- PROJECT SHIELDS -->
+
 ### 使用到的库
 
 - [QFramework](https://github.com/liangxiegame/QFramework)
@@ -21,84 +20,41 @@
 - [Luban](https://github.com/focus-creative-games/luban)
 
 ### 提供的功能
-- 符合 Unity 原生开发习惯的UI框架(已实现)
-- 基于 Addressables 的资源加载功能 (已实现)
 
+##### 可用(待完善)
+- 符合 Unity 原生开发习惯的 UI 框架
+- 基于 Addressables 的资源框架
+- 参考 GF 的 Procedure 框架
+- 基于 Luban 本地数据库 API
+- 简单的音频系统
 
-- 更方便的QFramewrok (持续开发中)
-
-
-- 基于 Luban 本地数据库 API (整合中)
-- 客户端网络库 (整合中)
-- 音频系统(整合中)
-- 平台发布工具(Steam \ TapTap)(整合中)
-
-
-- 状态机 + Procedure (参考中)
-
-
+###### 不可用
+- 客户端网络
+- 平台*TapTap\Steam*发布工具
 - P2P 网络游戏开发框架(做梦中)
 
-###### **使用前**
+### **使用前**
 1. 需要知道 QFramework 的使用方式(仅核心架构)
 2. 需要知道 UniTask`await` / `async` 的基本内容
-3. 避免更多的学习成本, 其余部分尽量采用 Unity 原生设计,包括 UI 框架 和 资源框架.
-4. (可选) 了解 Luban 的使用方式
+3. (可选) 了解 Luban 的使用方式
 
-###### **安装步骤**
+### **安装步骤**
 1. 在 UPM 中安装 Addressables
 2. 在 UPM 中安装 UniTask `https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask`
 3. 在 UPM 中安装 VomitLib `https://github.com/HmzMoonZy/VomitLib.git`
+4. (可选) 在 UPM 中安装 Luban `https://github.com/focus-creative-games/luban`
+5. 在 Assets/Resources/ 下创建 VomitConfig 根据工程配置全局数据
+6. (可选) 拖入 `ViewRoot.prefab`
+7. (可选) 配置 ViewLayout
 
-###### **项目验证** <font style="background: red">开发中...</font>
-1. [史莱姆咖啡厅]()  
- 个人独立开发项目 #模拟经营 #Roguelike #放置
-2. [剑蛊骰]()      
-   个人独立开发项目 #回合制 #Roguelike
-<details>
-    <summary>回合制战斗流程代码</summary>  
-
-```csharp
-        // 广播事件
-        await SetBattleState(BattleLoopState.Before);
-        // 回合制循环
-        while (true)
-        {
-            // 回合开始
-            await SetBattleState(BattleLoopState.RoundStart);
-            await ProcessRoundStartState();
-            // AI 行动
-            await SetBattleState(BattleLoopState.AI);
-            await ProcessAIState();
-            // 玩家行动
-            await SetBattleState(BattleLoopState.Player);
-            await ProcessPlayerState();
-            // 处理对抗
-            await SetBattleState(BattleLoopState.AD);
-            await ProcessADState();
-            // 战斗结束.
-            if (CheckBattleEnd(out var isWinner))
-            {
-                battleResult.IsWinner = isWinner;
-                break;
-            }
-            // 回合结束
-            await SetBattleState(BattleLoopState.RoundEnd);
-            await ProcessRoundEndState();
-        }
-        // 结算
-        await SetBattleState(BattleLoopState.Settle);
-        await ProcessSettlementState();
-        await this.SendAsyncEvent(battleResult);
-```
-</details>
-
-
+### **项目验证** <font style="background: red">开发中...</font>
+- [史莱姆咖啡厅]()  
+个人独立开发项目 #模拟经营 #Roguelike #放置
+- [剑蛊骰]()      
+ 个人独立开发项目 #回合制 #Roguelike
 
 ### 上手指南
 
-- 在 Assets/Resources/ 下创建 VomitConfig 根据工程配置全局数据
-- 拖入 `ViewRoot.prefab`
 - 在合适的时机调用 `Vomit.Init(IArchitecture architecture)`
 ```csharp
 public class V : QFramework.Architecture<V>
@@ -116,7 +72,7 @@ public class Test : MonoController, ICanSendEvent
 
 ```
 
-### 流程控制-Procedure
+## 流程控制-Procedure
 - Procedure 是管理程序全局状态的有限状态机.
 - 灵感来自 GF 的 Procedure.
 
@@ -199,8 +155,8 @@ public class Test : MonoController, ICanSendEvent
     }
 ```
 
-### UI框架 - View
-#### 配置参数
+## UI框架 - View
+### 配置参数
 ![ViewConfig](https://github.com/HmzMoonZy/VomitLib/tree/master/Documentation/images/ViewConfig.png)
 - ViewAddressable Prefix : View预制体在可寻址地址前缀 `[ViewAddressable Prefix]/ViewLogin.prefab`
 - ViewComponent Addressable Prefix : View组件在可寻址地址的前缀 `[ViewComponent Addressable Prefix]/VCBackpackItemToken.prefab`
@@ -209,7 +165,7 @@ public class Test : MonoController, ICanSendEvent
 - Script Generate Path : UI代码自动生成路径
 - View Resolution : View 试图的开发分辨率
 
-#### 制作UI 
+### 制作UI 
 1. 在 Unity 的 Hierarchy 中选择 `Create-UI-VomitCanvas` 或 `Create-UI-VomitCanvas(No Raycast)` 后者无法做射线检测,性能更优.
 2. 将制作好的 UI 做成预制体, 在Project面板中选择`Create-Vomit-View-ViewScript` 自动生成和预制体同名的View代码.
 
@@ -236,14 +192,14 @@ public class Test : MonoController, ICanSendEvent
     await View.OpenViewAsync<ViewTest>().WithEvent(new ViewTestEvent {Params = "NewTest!"})
 ```
 
-### 资源框架-Addr
+## 资源框架-Addr
 #### 为什么是 Addressables ?
 - Unity 官方库,并且已经更新多年
 - 可视化的性能分析
 - 通常以文件夹划分Bundle,开发中操作更简单和直观.尤其是规模不大的项目.
 - 如今的资源各种bundle框架已经非常成熟,要封装和替换都非常简单.
 - UniTask 原生支持
-#### 怎么使用
+### 怎么使用
 - 按照正常的方式使用Addressable
 - AA 在原先的 AB 基础上做了增强,本质上提供了 [通过资源的唯一名称(寻址地址)找到这个资源], 而无需关心资源具体位置.
 - 实际使用中我们经常会拼接各种冗长的字符串去确定这个唯一的地址.
@@ -281,7 +237,7 @@ public class Test : MonoController, ICanSendEvent
     
 ```
 
-### 本地数据库-CilentDB
+## 本地数据库-CilentDB
 ####
 - 基于luban的客户端数据库扩展
 #### 配置ClientDB Config
@@ -340,8 +296,7 @@ public class Test : MonoController, ICanSendEvent
     
 ```
 
-
-### 扩展QF - 异步事件
+## 扩展QF - 异步事件
 QF 提供了非常好用的事件系统. 
 
 实际开发中有时希望等待事件回调.
