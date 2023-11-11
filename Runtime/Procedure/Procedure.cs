@@ -58,7 +58,7 @@ namespace Twenty2.VomitLib.Procedure
         public static void Change(T id)
         {
             s_fsm.ChangeState(id);
-            LogKit.I($"切换状态! {CurrentState} => {id}");
+            LogKit.I($"切换状态! {PreviousState} => {id}");
         }
     }
 

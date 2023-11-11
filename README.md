@@ -175,18 +175,15 @@ public class Test : MonoController, ICanSendEvent
         
         public override void Enter()
         {
-            if(PrevProcedure == ProcedureState.Home)
-            {
-                // 进入游戏逻辑
-            }
+            if(PrevProcedure == ProcedureState.Home) {/* 进入游戏逻辑 */}
             
-            if(PrevProcedure == ProcedureState.Battle)
-            {
-                // 战斗归来逻辑
-            }
-          
+            if(PrevProcedure == ProcedureState.Battle) {/* 战斗归来逻辑 */}
+            
             // Do something...
         }
+        
+        public override void OnUpdate() { }     // OnFixUpdate 
+        public override void OnFixUpdate() { }  // OnFixUpdate
 
         public override void Exit() { }
     }
