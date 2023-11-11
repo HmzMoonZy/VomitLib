@@ -1,9 +1,6 @@
-﻿using QFramework;
-using Twenty2.VomitLib.ClientDB;
-using Twenty2.VomitLib.View;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace Twenty2.VomitLib
+namespace Twenty2.VomitLib.Config
 {
     [CreateAssetMenu(fileName = "VomitLibConfig", menuName = "VomitLib/CreateConfig", order = 0)]
     public class VomitRuntimeConfig : ScriptableObject

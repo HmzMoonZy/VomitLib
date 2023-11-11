@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Twenty2.VomitLib.View
+namespace Twenty2.VomitLib.Config
 {
     [Serializable]
     public class ViewFrameworkConfig

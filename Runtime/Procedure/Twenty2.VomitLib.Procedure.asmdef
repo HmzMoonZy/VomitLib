@@ -1,11 +1,11 @@
 {
     "name": "Twenty2.VomitLib.Procedure",
-    "rootNamespace": "",
+    "rootNamespace": "Twenty2.VomitLib.Procedure",
     "references": [
-        "GUID:4babb9e845adc724180db4fda15f7c16",
         "GUID:038dff00bcd140258ec2ecc4c541bea0",
         "GUID:9e97e42c28a41430880bee376c274c86",
-        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:e57019d1e0c7f6943b33bef3b102e263"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

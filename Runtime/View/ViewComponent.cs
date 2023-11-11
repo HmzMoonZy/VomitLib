@@ -1,5 +1,6 @@
 ﻿using QFramework;
 using UnityEngine;
+using Twenty2.VomitLib;
 
 namespace Twenty2.VomitLib.View
 {
