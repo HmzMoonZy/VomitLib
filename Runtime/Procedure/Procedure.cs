@@ -9,10 +9,6 @@ namespace Twenty2.VomitLib.Procedure
     {
         public static FSM<T> s_fsm;
 
-        public static T CurrentState => (T) s_fsm.CurrentStateId;
-        
-        public static T PreviousState => (T) s_fsm.CurrentStateId;
-
         private static T s_entryID;
         
         public static void Init()
@@ -57,8 +53,9 @@ namespace Twenty2.VomitLib.Procedure
 
         public static void Change(T id)
         {
+            LogKit.I($"切换状态! {s_fsm.PreviousStateId} => {id}");
+            
             s_fsm.ChangeState(id);
-            LogKit.I($"切换状态! {PreviousState} => {id}");
         }
     }
 
