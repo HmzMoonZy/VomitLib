@@ -10,6 +10,8 @@ namespace Twenty2.VomitLib.Procedure
         public static FSM<T> s_fsm;
 
         public static T CurrentState => (T) s_fsm.CurrentStateId;
+        
+        public static T PreviousState => (T) s_fsm.CurrentStateId;
 
         private static T s_entryID;
         
