@@ -174,7 +174,10 @@ public class Test : MonoController, ICanSendEvent
         }
         
         public override void Enter()
-        {
+        {   
+            // 监听战斗开始事件, 切换状态.
+            this.RegisterEvent<BattleStart> (e => ChangeState(ProcedureState.Battle));
+            
             if(PrevProcedure == ProcedureState.Home) {/* 进入游戏逻辑 */}
             
             if(PrevProcedure == ProcedureState.Battle) {/* 战斗归来逻辑 */}
