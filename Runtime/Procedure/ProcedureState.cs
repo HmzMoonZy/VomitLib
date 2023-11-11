@@ -3,7 +3,7 @@ using QFramework;
 
 namespace Twenty2.VomitLib.Procedure
 {
-    public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, IState where T : struct
+    public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState where T : struct
     {
         protected FSM<T> _procedure => Procedure<T>.s_fsm;
 
