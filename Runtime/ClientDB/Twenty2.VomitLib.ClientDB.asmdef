@@ -1,13 +1,13 @@
 {
-    "name": "Twenty2.VomitLib.Editor",
+    "name": "Twenty2.VomitLib.ClientDB",
     "rootNamespace": "",
     "references": [
-        "Twenty2.VomitLib",
-        "Twenty2.VomitLib.ClientDB"
+        "GUID:2a81c6962524d424a8ef5072bd3b0fa0",
+        "GUID:9e97e42c28a41430880bee376c274c86",
+        "GUID:038dff00bcd140258ec2ecc4c541bea0",
+        "GUID:fa46ebf71bbd0d84baf3c7f76e8c4a55"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

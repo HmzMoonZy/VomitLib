@@ -1,9 +1,12 @@
 ﻿using System;
 
-[AttributeUsage(AttributeTargets.Class)]
-public class ProcedureAttribute : Attribute
+namespace Twenty2.VomitLib.Procedure
 {
-    public object ProcedureID;
+    [AttributeUsage(AttributeTargets.Class)]
+    public class ProcedureAttribute : Attribute
+    {
+        public object ProcedureID;
 
-    public bool IsEntry;
+        public bool IsEntry;
+    }
 }
