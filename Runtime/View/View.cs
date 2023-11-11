@@ -252,6 +252,7 @@ namespace Twenty2.VomitLib.View
         /// <summary>
         /// 获取 T 类型的 ViewLogic.
         /// 只要它在缓存中,就能被获取到.
+        /// </summary>
         public static T GetView<T>() where T : ViewLogic
         {
             if (!_viewMap.TryGetValue(typeof(T).Name, out var info))
