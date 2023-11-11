@@ -7,6 +7,8 @@ namespace Twenty2.VomitLib.Procedure
     {
         protected FSM<T> _procedure => Procedure<T>.s_fsm;
 
+        protected T CurrentStateID => _procedure.CurrentStateId;
+
         public abstract void Enter();
 
         public abstract void Exit();
@@ -26,6 +28,11 @@ namespace Twenty2.VomitLib.Procedure
         /// </summary>
         public virtual void OnGUI()
         {
+        }
+
+        protected void ChangeState(T id)
+        {
+            _procedure.ChangeState(id);
         }
 
         // TODO 
