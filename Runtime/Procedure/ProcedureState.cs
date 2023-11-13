@@ -53,6 +53,7 @@ namespace Twenty2.VomitLib.Procedure
             {
                 unRegister.UnRegister();
             }
+            _registers.Clear();
             OnExit();
         }
 
