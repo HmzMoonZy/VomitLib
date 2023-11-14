@@ -72,17 +72,27 @@ public class Test : MonoController, ICanSendEvent
 
 ```
 
-## 流程控制-Procedure
-- Procedure 是管理程序全局状态的有限状态机.
-- 灵感来自 GF 的 Procedure.
+## 流程控制层-Procedure
+### 为什么需要 Procedure?
+- 在QF原本的设计中,将整个 MVC 系统划分为 `System` `Controller` `Model`, 它们各自实现不同的`ICanXXX`接口以实现不同的能力,并遵循调用规范
+- 在规范中, `System` 的职能是分担 `Controller` 层的逻辑而无法复用`Command`
+- 实际开发中, 我们往往会有一个或多个 `Super Controller` 或 `Super System` 去同时肩负 `ICanSendCommand` 和 `ICanSendEvent`.
 
+### Procedure
+- Procedure 是管理程序全局状态的有限状态机 灵感来自 GF 的 Procedure
+- Procedure 提供了这个超级控制器的职能,它用于控制流程.
+- 利用 Procedure , 可以把 `"流程"` 这一比较底层的概念包装起来,由它去调用各个组件,而无需定义类似`LaunchDone` `LoginSuc` `ConnectSuc`的事件让各个组件去监听它.
+```csharp
+public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState
+```
+### 怎么使用
 ```csharp
     // 声明Procedure的状态枚举
-    public enum ProcedureState { Launch, Home, Town, Battle,}
+    public enum GameProcedureState { Launch, Home, Town, Battle,}
     
     // 声明一个启动流程类,并且作为入口流程.
-    [Procedure(ProcedureID = ProcedureState.Launch, IsEntry = true)]
-    public class ProcedureLaunch : ProcedureState
+    [Procedure(ProcedureID = GameProcedureState.Launch, IsEntry = true)]
+    public class ProcedureLaunch : ProcedureState<GameProcedureState>
     {
         public override bool Condition() => false;  // 不可逆
         
@@ -99,8 +109,8 @@ public class Test : MonoController, ICanSendEvent
     }
     
     // 声明一个主页流程类
-    [Procedure(ProcedureID = ProcedureState.Home)]
-    public class ProcedureHome : ProcedureState
+    [Procedure(ProcedureID = GameProcedureState.Home)]
+    public class ProcedureHome : ProcedureState<GameProcedureState>
     {
         public override bool Condition()
         {
@@ -109,19 +119,21 @@ public class Test : MonoController, ICanSendEvent
         
         public override void Enter()
         {
-            // Do something...
+            View.Open<ViewHome>();
+            // Do something...   
             ChangeState(JGT.JGTProcedure.Town);     // 切换状态
         }
 
         public override void Exit()
         {
+            View.Close<ViewHome>();
             LogKit.I("主页流程结束!");
         }
     }
     
     // 声明一个城镇流程类
-    [Procedure(ProcedureID = ProcedureState.Town)]
-    public class ProcedureTown : ProcedureState
+    [Procedure(ProcedureID = GameProcedureState.Town)]
+    public class ProcedureTown : ProcedureState<GameProcedureState>
     {
         public override bool Condition()
         {
@@ -131,8 +143,8 @@ public class Test : MonoController, ICanSendEvent
         
         public override void Enter()
         {   
-            // 监听战斗开始事件, 切换状态.
-            this.RegisterEvent<BattleStart> (e => ChangeState(ProcedureState.Battle));
+            // 监听战斗开始事件, 切换状态, 事件自动取消监听
+            this.RegisterProcedureEvent<BattleStart> (e => ChangeState(ProcedureState.Battle));
             
             if(PrevProcedure == ProcedureState.Home) {/* 进入游戏逻辑 */}
             
@@ -149,9 +161,7 @@ public class Test : MonoController, ICanSendEvent
     
     private void Start()
     {
-        Procedure<ProcedureState>.Init();
-        
-        Procedure<ProcedureState>.Start();  // 启动入口流程状态机
+        Procedure<ProcedureState>.Init();       // 启动 Entry Procedure
     }
 ```
 

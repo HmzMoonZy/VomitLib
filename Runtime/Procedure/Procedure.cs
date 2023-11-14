@@ -11,6 +11,10 @@ namespace Twenty2.VomitLib.Procedure
 
         private static T s_entryID;
         
+        /// <summary>
+        /// 初始化流程系统
+        /// </summary>
+        /// <param name="isStart">启动入口流程</param>
         public static void Init(bool isStart = true)
         {
             Fsm = new();
@@ -31,39 +35,65 @@ namespace Twenty2.VomitLib.Procedure
 
 
             if (isStart) Start();
+            return;
+
+            static void AutoRegisterProcedureState()
+            {
+                foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    foreach (var type in assembly.GetTypes())
+                    {
+                        if (!type.HasAttribute<ProcedureAttribute>()) continue;
+
+                        var attr = type.GetAttribute<ProcedureAttribute>();
+                        var id = (T) attr.ProcedureID;
+                        var obj = (IState) Activator.CreateInstance(type);
+
+                        LogKit.I($"创建 Procedure {id}");
+
+                        Fsm.AddState(id, obj);
+
+                        if (attr.IsEntry) s_entryID = id;
+                    }
+                }
+            }
         }
 
+        /// <summary>
+        /// 启动入口流程
+        /// </summary>
         public static void Start()
         {
             Fsm.StartState(s_entryID);
         }
 
-        public static void Change(T id)
+        /// <summary>
+        /// 当前流程ID
+        /// </summary>
+        /// <returns></returns>
+        public static T GetCurrState()
         {
-            LogKit.I($"切换状态! {Fsm.PreviousStateId} => {id}");
-
-            Fsm.ChangeState(id);
+            return Fsm.CurrentStateId;
+        }
+        
+        /// <summary>
+        /// 上一个流程ID
+        /// </summary>
+        /// <returns></returns>
+        public static T GetPrevState()
+        {
+            return Fsm.PreviousStateId;
         }
 
-        private static void AutoRegisterProcedureState()
+        /// <summary>
+        /// 切换流程
+        /// </summary>
+        /// <param name="id"></param>
+        public static void Change(T id)
         {
-            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
-            {
-                foreach (var type in assembly.GetTypes())
-                {
-                    if (!type.HasAttribute<ProcedureAttribute>()) continue;
-
-                    var attr = type.GetAttribute<ProcedureAttribute>();
-                    var id = (T) attr.ProcedureID;
-                    var obj = (IState) Activator.CreateInstance(type);
-
-                    LogKit.I($"创建 Procedure {id}");
-
-                    Fsm.AddState(id, obj);
-
-                    if (attr.IsEntry) s_entryID = id;
-                }
-            }
+            Fsm.ChangeState(id);
+            
+            LogKit.I($"切换状态! {Fsm.PreviousStateId} => {id}");
         }
     }
 }
