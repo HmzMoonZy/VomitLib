@@ -11,10 +11,13 @@ namespace Twenty2.VomitLib
     public static class AsyncEventExtension
     {
         private static Dictionary<string, List<UniTask>> s_taskListMap = new();
+        
+        private static Dictionary<string, Action> s_taskDone = new();
 
         public static void Register(string key)
         {
             s_taskListMap.Add(key, null);
+            s_taskDone.Add(key, null);
             LogKit.I($"注册异步事件{key}");
         }
         
@@ -39,6 +42,12 @@ namespace Twenty2.VomitLib
             
             LogKit.I($"{e.GetType().Name} 添加任务!! 当前任务数量 : {taskList.Count}");
         }
+
+        public static void Done<T>(this T e, Action onDone)
+        {
+            string key = typeof(T).Name;
+            s_taskDone[key] += onDone;
+        }
         
         /// <summary>
         /// 返回所有任务的 WhenAll 事件.
@@ -58,6 +67,8 @@ namespace Twenty2.VomitLib
             {
                 await UniTask.WhenAll(GetTaskList(e));
 
+                s_taskDone[key]?.Invoke();
+                s_taskDone[key] = null;
                 s_taskListMap[key] = null;
             });
         }
