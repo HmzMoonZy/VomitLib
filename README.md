@@ -307,49 +307,56 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
 ```
 
 ## 扩展QF - 异步事件
-QF 提供了非常好用的事件系统. 
-
-实际开发中有时希望等待事件回调.
-
-这里扩展更方便的方法.
+- QF 提供了非常好用的事件系统.
+- 实际开发中有时希望等待事件回调.
+- 这里扩展更方便的方法.
 ```csharp
     // 声明一个异步事件
     [AsyncEvent]
-    public struct TestEvent
-    {
-        public string Name;
-    }
+    public struct TestEvent { public string Name; }
     
     // ICanSendEvent
     public class Test : MonoController, ICanSendEvent
     {
         async void Start()
-       {
-            // 初始化
-            Vomit.Init(V.Interface);
-           
+        {
             // 注册异步任务
             this.RegisterAliveEvent<TestEvent>(e =>
             {
                 e.AddTask(UniTask.Create(async () =>
                 {
                     await UniTask.WaitForSeconds(2);    // 延迟 2s.
-                    LogKit.I(e.Name);
+                    LogKit.I($"{e.Name} With Async Call");
                 }));
             });
-           
+            
             // 也可以注册同步任务
             this.RegisterAliveEvent<TestEvent>(e =>
             {
                 LogKit.I(e.Name);
             });
-        
+            
+            // 异步任务完成回调事件, 通常多个controller层会监听同一个异步事件,但不一定都提供异步方法.
+            this.RegisterAliveEvent<TestAsyncEvent>(e =>
+            {
+                e.Done(() =>
+                {
+                    LogKit.I("I know this event done!");
+                });
+            });
+            
             // 等待事件回调完成
             await this.SendAsyncEvent(new TestEvent() {Name = "Hi"});
             
             // 所有事件回调执行完毕后调用
             LogKit.I("Finish!");
-    }
+            
+            
+            // Hi
+            // Hi With AsyncCall
+            // I know this event done!
+            // Finish
+       }
 }
 
 ```
