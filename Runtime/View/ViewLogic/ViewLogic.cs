@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using QFramework;
 using UnityEngine;
@@ -34,6 +35,8 @@ namespace Twenty2.VomitLib.View
         }
 
         private ViewConfig _config;
+
+        private CancellationTokenSource _closeCts;
 
         public ViewConfig Config
         {
@@ -75,6 +78,7 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         public virtual void OnCreated()
         {
+           
         }
 
         /// <summary>
@@ -87,12 +91,6 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         public virtual UniTask OnClose()
         {
-            foreach (var unRegister in _viewEvents)
-            {
-                unRegister.UnRegister();
-            }
-            _viewEvents.Clear();
-
             return UniTask.CompletedTask;
         }
 
@@ -112,12 +110,35 @@ namespace Twenty2.VomitLib.View
         {
             _viewEvents.Add(Vomit.Interface.RegisterEvent(onEvent));
         }
+
+        public void UnRegisterAllViewEvents()
+        {
+            foreach (var unRegister in _viewEvents)
+            {
+                unRegister.UnRegister();
+            }
+            _viewEvents.Clear();
+        }
         
         
 
         #endregion
 
         #region API
+
+        public void Dispose()
+        {
+            _closeCts?.Cancel();
+            _closeCts?.Dispose();
+            _closeCts = null;
+        }
+        
+        protected CancellationToken GetViewCloseCancellationToken()
+        {
+            _closeCts ??= new CancellationTokenSource();
+            
+            return _closeCts.Token;
+        }
 
         protected void CloseSelf()
         {

@@ -199,7 +199,9 @@ namespace Twenty2.VomitLib.View
             // 清除可见字典
             _visibleViewMap.Remove(logic.Name);
             // 回调生命周期事件
+            logic.UnRegisterAllViewEvents();
             logic.OnClose().Forget();
+            
 
             // 不可见
             if (logic.Config.IsCache)
