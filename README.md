@@ -315,19 +315,13 @@ QF 提供了非常好用的事件系统.
 ```csharp
     // 声明一个异步事件
     [AsyncEvent]
-    public struct TestEvent
-    {
-        public string Name;
-    }
+    public struct TestEvent { public string Name; }
     
     // ICanSendEvent
     public class Test : MonoController, ICanSendEvent
     {
         async void Start()
-       {
-            // 初始化
-            Vomit.Init(V.Interface);
-           
+        {
             // 注册异步任务
             this.RegisterAliveEvent<TestEvent>(e =>
             {
@@ -337,19 +331,28 @@ QF 提供了非常好用的事件系统.
                     LogKit.I(e.Name);
                 }));
             });
-           
+            
             // 也可以注册同步任务
             this.RegisterAliveEvent<TestEvent>(e =>
             {
                 LogKit.I(e.Name);
             });
-        
+            
+            // 异步任务回调事件
+            this.RegisterAliveEvent<TestAsyncEvent>(e =>
+            {
+                e.Done(() =>
+                {
+                    LogKit.I("I know this event done!");
+                });
+            });
+            
             // 等待事件回调完成
             await this.SendAsyncEvent(new TestEvent() {Name = "Hi"});
             
             // 所有事件回调执行完毕后调用
             LogKit.I("Finish!");
-    }
+       }
 }
 
 ```
