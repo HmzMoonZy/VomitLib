@@ -201,7 +201,7 @@ namespace Twenty2.VomitLib.View
             // 回调生命周期事件
             logic.UnRegisterAllViewEvents();
             logic.OnClose().Forget();
-            
+            logic.Dispose();
 
             // 不可见
             if (logic.Config.IsCache)
