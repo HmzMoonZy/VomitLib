@@ -24,41 +24,18 @@ namespace Twenty2.VomitLib
 
             return UniTask.WaitWhile(() => s_waitEventToken.ContainsKey(typeof(T)));
         }
-
-        public static void BreakAll()
-        {
-            foreach (var (key, unRegister) in s_waitEventToken)
-            {
-                s_waitEventToken[key].UnRegister();
-                s_waitEventToken.Remove(key);
-            }
-        }
-
-        public static void BreakWaitEvent(Type type)
-        {
-            try
-            {
-                s_waitEventToken[type].UnRegister();
-                s_waitEventToken.Remove(type);
-            }
-            catch (Exception e)
-            {
-                LogKit.E($"BreakWaitEvent Error : {type.Name}");
-            }
-
-        }
         
         public static void BreakWaitEvent<T>()
         {
             try
             {
-                var key = typeof(T);
-                s_waitEventToken[key].UnRegister();
-                s_waitEventToken.Remove(typeof(T));
+                var keyType = typeof(T);
+                s_waitEventToken[keyType].UnRegister();
+                s_waitEventToken.Remove(keyType);
             }
             catch (Exception e)
             {
-                LogKit.E($"BreakWaitEvent Error : {typeof(T).Name}");
+                LogKit.W($"BreakWaitEvent Error : {typeof(T).Name}");
             }
 
         }
