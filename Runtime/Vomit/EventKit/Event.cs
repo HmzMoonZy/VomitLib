@@ -11,18 +11,24 @@ namespace Twenty2.VomitLib
         private static Dictionary<Type, IUnRegister> s_waitEventToken = new();
         
         // TODO : UniTask.WhenAny 支持
-        public static UniTask WaitEvent<T>() where T : struct
+        public static async UniTask<T> WaitEvent<T>() where T : struct
         {
             var key = typeof(T);
+
+            T result = default;
+            
             if (!s_waitEventToken.ContainsKey(key))
             {
                 s_waitEventToken.Add(key, Vomit.Interface.RegisterEvent<T>(e =>
                 {
+                    result = e;
                     BreakWaitEvent<T>();
                 }));
             }
 
-            return UniTask.WaitWhile(() => s_waitEventToken.ContainsKey(typeof(T)));
+            await UniTask.WaitWhile(() => s_waitEventToken.ContainsKey(typeof(T)));
+            
+            return result;
         }
         
         public static void BreakWaitEvent<T>()
