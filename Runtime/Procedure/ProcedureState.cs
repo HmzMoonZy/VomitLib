@@ -82,7 +82,7 @@ namespace Twenty2.VomitLib.Procedure
         }
 
 
-        protected void RegisterProcedureEvent(Action<T> action)
+        protected void RegisterProcedureEvent<TEvent>(Action<TEvent> action) where TEvent : struct
         {
             _registers.Add(this.RegisterEvent(action));
             
