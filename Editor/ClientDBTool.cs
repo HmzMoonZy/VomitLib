@@ -37,12 +37,18 @@ pause";
             };
 
             var process = Process.Start(startInfo);
+
+            if (process == null) return;
             
-            if (process != null)
-            {
-                process.WaitForExit();
-                process.Dispose();
-            }
+            process.WaitForExit();
+            
+            process.Dispose();
+
+            
+            AssetDatabase.Refresh();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            AssetDatabase.SaveAssets();
         }
     }
 }
