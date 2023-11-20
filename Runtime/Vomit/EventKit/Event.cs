@@ -36,6 +36,41 @@ namespace Twenty2.VomitLib
             
             return result;
         }
+
+        public static async UniTask<(int winArgumentIndex, T1 result1, T2 result2)> WaitEvent<T1, T2>() where T1 : struct where T2 : struct
+        {
+
+           (int winArgumentIndex, T1 result1, T2 result2) result = await UniTask.WhenAny(WaitEvent<T1>(), WaitEvent<T2>());
+
+           if (result.winArgumentIndex == 0) BreakWaitEvent<T2>();
+           if (result.winArgumentIndex == 1) BreakWaitEvent<T1>();
+           
+            return result;
+        }
+        
+        public static async UniTask<(int winArgumentIndex, T1 result1, T2 result2, T3 result3)> WaitEvent<T1, T2, T3>() where T1 : struct where T2 : struct where T3 : struct
+        {
+
+            (int winArgumentIndex, T1 result1, T2 result2, T3 result3) result = await UniTask.WhenAny(WaitEvent<T1>(), WaitEvent<T2>(), WaitEvent<T3>());
+
+            switch (result.winArgumentIndex)
+            {
+                case 0:
+                    BreakWaitEvent<T2>();
+                    BreakWaitEvent<T3>();
+                    break;
+                case 1:
+                    BreakWaitEvent<T1>();
+                    BreakWaitEvent<T3>();
+                    break;
+                case 2:
+                    BreakWaitEvent<T1>();
+                    BreakWaitEvent<T2>();
+                    break;
+            }
+
+            return result;
+        }
         
         /// <summary>
         /// 取消 WaitEvent.
