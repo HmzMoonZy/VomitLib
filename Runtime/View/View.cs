@@ -236,13 +236,20 @@ namespace Twenty2.VomitLib.View
             }
         }
         
-        public static void CloseAll(string[] ignores)
+        public static string[] CloseAll(string[] ignores)
         {
+            string[] result = new string[_visibleViewMap.Count - ignores.Length];
+            int index = 0;
             foreach (var l in _visibleViewMap.Values.ToList())
             {
-                if (ignores.Contains(l.Name)) continue;
+                string key = l.Name;
+                if (ignores.Contains(key)) continue;
+                result[index] = key;
+                index++;
                 CloseView(l);
             }
+
+            return result;
         }
 
         public static void RegisterViewClosedOnce<T>(Action callback) where T : ViewLogic
