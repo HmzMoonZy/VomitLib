@@ -62,13 +62,7 @@ namespace Twenty2.VomitLib.View
         /// 用于测试绑定按钮的方法.
         /// </summary>
         private static Action _beforeClickButton;
-
-
-        private static Dictionary<string, Action> _registeredViewActions = new Dictionary<string, Action>();
         
-        private static Dictionary<string, Action> _registeredViewCloseOnceActions = new Dictionary<string, Action>();
-
-
         static View()
         {
             Root = Object.FindObjectOfType<ViewRoot>();
@@ -93,14 +87,7 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         /// <param name="action"></param>
         public static void SetBeforeClickBtnAction(Action action) => _beforeClickButton = action;
-
-        // public static void SetButtonClickSEAction(Action onClickSEAction)
-        // {
-        //     _helper.PlayButtonClickSe = onClickSEAction;
-        // }
-
-
-
+        
         /// <summary>
         /// 打开一个和 T 同名的 View.
         /// </summary>
@@ -219,12 +206,6 @@ namespace Twenty2.VomitLib.View
                 _viewMap.Remove(logic.Name);
                 Addressables.ReleaseInstance(logic.gameObject);
             }
-
-            if (_registeredViewCloseOnceActions.TryGetValue(logic.Name, out var onceAction))
-            {
-                onceAction?.Invoke();
-                _registeredViewCloseOnceActions[logic.Name] = null;    
-            }
             
         }
 
@@ -250,12 +231,6 @@ namespace Twenty2.VomitLib.View
             }
 
             return result;
-        }
-
-        public static void RegisterViewClosedOnce<T>(Action callback) where T : ViewLogic
-        {
-            _registeredViewCloseOnceActions.TryAdd(typeof(T).Name, null);
-            _registeredViewCloseOnceActions[typeof(T).Name] += callback;
         }
 
         /// <summary>
