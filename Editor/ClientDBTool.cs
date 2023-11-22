@@ -15,6 +15,21 @@ namespace Twenty2.VomitLib.Editor
                 Process.Start(directoryInfo.FullName);
         }
 
+        [MenuItem("VomitLib/ClientDB/生成数据层(Clean)")]
+        public static void ClearAndGenerateData()
+        {
+            var config = Vomit.RuntimeConfig.ClientDBConfig;
+            
+            DirectoryInfo dir = new DirectoryInfo(config.JsonOutputPath);
+        
+            foreach (var fileInfo in dir.GetFiles())
+            {
+                File.Delete(fileInfo.FullName);
+            }
+
+            GenerateData();
+        }
+
         [MenuItem("VomitLib/ClientDB/生成数据层")]
         public static void GenerateData()
         {
