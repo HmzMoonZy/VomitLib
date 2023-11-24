@@ -1,6 +1,6 @@
 {
     "Id": "",
-    "Version": "v1.0.102",
+    "Version": "v1.0.112",
     "Type": 0,
     "AccessRight": 0,
     "DownloadUrl": "",
@@ -11,10 +11,10 @@
     ],
     "DocUrl": "https://liangxiegame.com",
     "Readme": {
-        "version": "v1.0.102",
-        "content": "ResKit 增加 AssetBundle 的 Example",
+        "version": "v1.0.112",
+        "content": "ConsoleKit 游戏结束时清空窗口",
         "author": "liangxie",
-        "date": "2023 年 11 月 06 日 13:04",
+        "date": "2023 年 11 月 14 日 01:34",
         "PackageId": ""
     }
 }
