@@ -1,4 +1,6 @@
-﻿namespace Twenty2.VomitLib.Audio
+﻿using System.Collections.Generic;
+
+namespace Twenty2.VomitLib.Audio
 {
     using System;
     using Cysharp.Threading.Tasks;
@@ -23,6 +25,8 @@
         private static AudioSource _as;
 
         private static Func<string, AudioClip> _onSearchAudioClip;
+
+        private static Dictionary<string, AudioClip> _audioClipsCache = new();
 
         public static void Init(Func<string, AudioClip> onSearchAudioClip = null, float bgmFactors = 0.8f,
             float bgmVolume = 1f, float seFactors = 1f, float seVolume = 1f)
@@ -61,7 +65,7 @@
 
         public static void PlayBgm(string bgm, bool isLoop = true)
         {
-            PlayBgm(_onSearchAudioClip.Invoke(bgm), isLoop);
+            PlayBgm(SearchAudio(bgm), isLoop);
         }
 
         public static void PlayBgm(AudioClip bgm, Action onPlayFinished)
@@ -77,7 +81,7 @@
 
         public static void PlayBgm(string bgm, Action onPlayFinished)
         {
-            PlayBgm(_onSearchAudioClip.Invoke(bgm), onPlayFinished);
+            PlayBgm(SearchAudio(bgm), onPlayFinished);
         }
 
         public static void PlaySE(AudioClip se)
@@ -87,7 +91,19 @@
 
         public static void PlaySE(string se)
         {
-            PlaySE(_onSearchAudioClip.Invoke(se));
+            PlaySE(SearchAudio(se));
+        }
+
+        private static AudioClip SearchAudio(string key)
+        {
+            if (_audioClipsCache.TryGetValue(key, out var ret))
+            {
+                return ret;
+            }
+
+            _audioClipsCache.Add(key, _onSearchAudioClip.Invoke(key));
+
+            return _audioClipsCache[key];
         }
     }
 }
