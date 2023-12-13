@@ -42,10 +42,7 @@
 1. 在 UPM 中安装 Addressables
 2. 在 UPM 中安装 UniTask `https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask`
 3. 在 UPM 中安装 VomitLib `https://github.com/HmzMoonZy/VomitLib.git`
-4. (可选) 在 UPM 中安装 Luban `https://github.com/focus-creative-games/luban`
-5. 在 Assets/Resources/ 下创建 VomitConfig 根据工程配置全局数据
-6. (可选) 拖入 `ViewRoot.prefab`
-7. (可选) 配置 ViewLayout
+4. 在 Assets/Resources/ 下创建 VomitConfig 根据工程配置全局数据
 
 ### **项目验证** <font style="background: red">开发中...</font>
 - [史莱姆咖啡厅]()  
@@ -53,16 +50,18 @@
 - [剑蛊骰]()      
  个人独立开发项目 #回合制 #Roguelike
 
-### 上手指南
+# 上手指南
 
+## 初始化
 - 在合适的时机调用 `Vomit.Init(IArchitecture architecture)`
+
 ```csharp
 public class V : QFramework.Architecture<V>
 {
     protected override void Init(){ }
 }
 
-public class Test : MonoController, ICanSendEvent
+public class Launcher : MonoController, ICanSendEvent
 {
     void Start()
     {
@@ -72,23 +71,24 @@ public class Test : MonoController, ICanSendEvent
 
 ```
 
-## 流程控制层-Procedure
-### 为什么需要 Procedure?
-- 在QF原本的设计中,将整个 MVC 系统划分为 `System` `Controller` `Model`, 它们各自实现不同的`ICanXXX`接口以实现不同的能力,并遵循调用规范
-- 在规范中, `System` 的职能是分担 `Controller` 层的逻辑而无法复用`Command`
-- 实际开发中, 我们往往会有一个或多个 `Super Controller` 或 `Super System` 去同时肩负 `ICanSendCommand` 和 `ICanSendEvent`.
-
-### Procedure
+## 流程层 Procedure
+### Procedure 是什么?
 - Procedure 是管理程序全局状态的有限状态机 灵感来自 GF 的 Procedure
-- Procedure 提供了这个超级控制器的职能,它用于控制流程.
-- 利用 Procedure , 可以把 `"流程"` 这一比较底层的概念包装起来,由它去调用各个组件,而无需定义类似`LaunchDone` `LoginSuc` `ConnectSuc`的事件让各个组件去监听它.
+- Procedure 提供了**超级控制器**的职能,能够调用`SendEvent` 和 `SendCommand`
 ```csharp
 public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState
 ```
+### 为什么需要 Procedure?
+- 在QF原本的设计中,将整个 MVC 系统划分为 `System` `Controller` `Model`, 它们各自实现不同的`ICanXXX`接口以实现不同的能力,并遵循调用规范,通过`SendCommand` 和 `SendEvent` 来相互通信.
+- 在规范中, `System` 的职能是分担 `Controller` 层的逻辑而无法复用`Command`
+- 实际开发中, 我们往往会有一个或多个 `Super Controller` 或 `Super System` 去实现 `ICanSendCommand` 和 `ICanSendEvent`.
+- 有了Procedure层, 还能规范全局的 UI调用 BGM调用, 做到谁呼出,谁关闭.
+- 可以根据 Procedure 划分 Model 的设计, 避免整个项目只有一个Model用来做全局数据存储的尴尬问题.
+
 ### 怎么使用
 ```csharp
     // 声明Procedure的状态枚举
-    public enum GameProcedureState { Launch, Home, Town, Battle,}
+    public enum GameProcedureState { Launch, Home, Town, Battle,}   // 启动流程, 主页流程, 城镇流程, 战斗流程
     
     // 声明一个启动流程类,并且作为入口流程.
     [Procedure(ProcedureID = GameProcedureState.Launch, IsEntry = true)]
@@ -99,7 +99,7 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
         public override void Enter()
         {
             // Do something...
-            ChangeState(JGT.JGTProcedure.Home);     // 切换状态
+            ChangeState(JGT.JGTProcedure.Home);     // 进入主界面流程
         }
 
         public override void Exit()
@@ -119,14 +119,14 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
         
         public override void Enter()
         {
-            View.Open<ViewHome>();
+            View.Open<ViewHome>();                  // 打开主页UI
             // Do something...   
             ChangeState(JGT.JGTProcedure.Town);     // 切换状态
         }
 
         public override void Exit()
         {
-            View.Close<ViewHome>();
+            View.Close<ViewHome>();                 // 关闭主页UI
             LogKit.I("主页流程结束!");
         }
     }
@@ -141,7 +141,7 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
             return CurrentProcedure == ProcedureState.Home || CurrentProcedure == ProcedureState.Battle;   
         }
         
-        public override void Enter()
+        public async override  void Enter()
         {   
             // 监听战斗开始事件, 切换状态, 事件自动取消监听
             this.RegisterProcedureEvent<BattleStart> (e => ChangeState(ProcedureState.Battle));
@@ -149,23 +149,113 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
             if(PrevProcedure == ProcedureState.Home) {/* 进入游戏逻辑 */}
             
             if(PrevProcedure == ProcedureState.Battle) {/* 战斗归来逻辑 */}
-            
-            // Do something...
         }
         
-        public override void OnUpdate() { }     // OnFixUpdate 
-        public override void OnFixUpdate() { }  // OnFixUpdate
+        public override void OnUpdate() { }     // 提供 Update 方法
+        public override void OnFixUpdate() { }  // 提供 FixUpdate 方法
 
         public override void Exit() { }
     }
+   
+```
+
+## 扩展QF
+###  优雅的监听仅一次的事件
+```csharp
+ public class ArenaSystem : AbstractSystem
+ {
+     
+     public async void Continue()
+     {
+        // ...
+        await DrawRewardCard(3);        // 抽取三张奖励卡
+
+        // (int winArgumentIndex, EArena.ConfirmCard result1, EArena.ConfirmCard result2)
+        var result = await Event.WaitEvent<EArena.ConfirmCard, EArena.SkipReward>();        // 等待玩家选择奖励或是跳过奖励,支持同时监听多个事件, 相当于 WhenAny()
+        
+        if(result.winArgumentIndex == 0)
+        {
+            // 确认奖励
+        }
+        
+        if(result.winArgumentIndex == 1)
+        {
+            // 跳过奖励
+        }
+        await ClearAllCards();
+        await ChangeArenaState(ArenaState.Rewarded);
+        await UniTask.WaitForSeconds(1);
+     }
+ }
+
+```
+
+###  异步事件
+- QF 提供了非常好用的事件系统.
+- 实际开发中有时希望等待事件回调.
+- 这里扩展更方便的方法.
+```csharp
+    // 声明一个异步事件
+    [AsyncEvent]
+    public struct TestEvent { public string Str; }
     
-    private void Start()
+    // ICanSendEvent
+    public class Test : MonoController, ICanSendEvent
     {
-        Procedure<ProcedureState>.Init();       // 启动 Entry Procedure
-    }
+        async UniTask Delay(string str)
+        {
+            await UniTask.WaitForSeconds(2);    // 延迟 2s.
+            LogKit.I($"{str} With Async Call");
+        }
+        
+        async void Start()
+        {
+            // 注册异步任务
+            this.RegisterAliveEvent<TestEvent>(e =>
+            {
+                e.AddTask(Delay(e.Str));
+            });
+            
+            // 也可以注册同步任务
+            this.RegisterAliveEvent<TestEvent>(e =>
+            {
+                LogKit.I(e.Str);
+            });
+            
+            // 异步任务完成回调事件, 通常多个controller层会监听同一个异步事件,但不一定都提供异步方法.
+            this.RegisterAliveEvent<TestAsyncEvent>(e =>
+            {
+                e.Done(() =>
+                {
+                    LogKit.I("I know this event done!");
+                });
+            });
+            
+            // 广播异步事件并等待
+            await this.SendAsyncEvent(new TestEvent() {Str = "Hi"});
+            
+            // 所有事件回调执行完毕后调用
+            LogKit.I("Finish!");
+            
+            // > Hi
+            // > Hi With AsyncCall
+            // > I know this event done!
+            // > Finish
+       }
+}
+
 ```
 
 ## UI框架 - View
+### 为什么还要自己实现一个UI框架? 
+- UI框架的实现并不难, 但是大多是UI框架的学习成本却很高.花费时间学习不同的概念去实现同一件事让我感觉非常奇怪.
+- 大多数UI框架会联动一套资源框架.
+
+### 提供了什么?
+- 整个UI开发体验上遵循原生的开发体验,仅仅提供几个增强选项.
+- 自动遮罩 \ 自动切换字体 \ 层级配置 \ 本地化 \ 自动绑定按钮事件
+- 没有代码生成, 使用 [SerializeField] 其实也可以相当优雅.
+
 ### 配置参数
 ![ViewConfig](https://github.com/HmzMoonZy/VomitLib/tree/master/Documentation/images/ViewConfig.png)
 - ViewAddressable Prefix : View预制体在可寻址地址前缀 `[ViewAddressable Prefix]/ViewLogin.prefab`
@@ -173,7 +263,7 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
 - Auto Mask Color : 自动生成遮罩的RGBA
 - Default Font : 默认字体
 - Script Generate Path : UI代码自动生成路径
-- View Resolution : View 试图的开发分辨率
+- View Resolution : View 视图的开发分辨率
 
 ### 制作UI 
 1. 在 Unity 的 Hierarchy 中选择 `Create-UI-VomitCanvas` 或 `Create-UI-VomitCanvas(No Raycast)` 后者无法做射线检测,性能更优.
@@ -191,15 +281,31 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
 
 ### ViewLogic & ViewLogic<T>
 - 自动生成的 View 代码继承自 ViewLogic.
-- 你可以手动替换为 ViewLogic<T>, T为自动绑定的响应事件.
 
 ```csharp
     // 同步打开一个 View
     View.OpenView<ViewTest>();
     // 异步打开一个 View, 可以在 View 的 OnOpen 中实现动画效果.
     await View.OpenViewAsync<ViewTest>();
-    // 在打开时通过 QFramework 的事件系统 View 传递参数.
+    // 在打开时通过 QFramework 的事件系统 View 链式传递参数.
     await View.OpenViewAsync<ViewTest>().WithEvent(new ViewTestEvent {Params = "NewTest!"})
+        
+        
+    // 登陆界面   
+    public partial class ViewLogin : ViewLogic  // partial 关键字, 另一部分用于绑定UI组件
+    {
+         public override UniTask OnOpened()
+         {
+             // Do something...
+         }
+     
+         // 自动绑定 UnityEditor 中的 BtnLogin
+         private void __OnClick_BtnLogin()
+         {
+             LogKit.I("Click BtnLogin");
+         }
+        
+    }
 ```
 
 ## 资源框架-Addr
@@ -207,7 +313,7 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
 - Unity 官方库,并且已经更新多年
 - 可视化的性能分析
 - 通常以文件夹划分Bundle,开发中操作更简单和直观.尤其是规模不大的项目.
-- 如今的资源各种bundle框架已经非常成熟,要封装和替换都非常简单.
+- 面向接口, 要封装和替换成其它资源框架都非常简单.
 - UniTask 原生支持
 ### 怎么使用
 - 按照正常的方式使用Addressable
@@ -223,7 +329,7 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
     Sprite dice3Sprite = Addr.Load<Sprite>(Constant.AssetType.Sprite.Dice, 3);
     
     // 异步加载点数6的骰子
-    Sprite dice6Sprite = await Addr.LoadAsync<Sprite>(Constant.AssetType.Sprite.Dice, 6);
+    Sprite dice6Sprite = Addr.LoadAsync<Sprite>(Constant.AssetType.Sprite.Dice, 6).Forget();
     
     // 异步加载点数5的骰子
     Addr.LoadAsync<Sprite>(Constant.AssetType.Sprite.Dice, 5, sprite => {
@@ -305,65 +411,6 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
     ExecuteSkill(ClientDB.T.TbSkill[1001].Logic);
     
 ```
-
-## 扩展QF - 异步事件
-- QF 提供了非常好用的事件系统.
-- 实际开发中有时希望等待事件回调.
-- 这里扩展更方便的方法.
-```csharp
-    // 声明一个异步事件
-    [AsyncEvent]
-    public struct TestEvent { public string Name; }
-    
-    // ICanSendEvent
-    public class Test : MonoController, ICanSendEvent
-    {
-        async void Start()
-        {
-            // 注册异步任务
-            this.RegisterAliveEvent<TestEvent>(e =>
-            {
-                e.AddTask(UniTask.Create(async () =>
-                {
-                    await UniTask.WaitForSeconds(2);    // 延迟 2s.
-                    LogKit.I($"{e.Name} With Async Call");
-                }));
-            });
-            
-            // 也可以注册同步任务
-            this.RegisterAliveEvent<TestEvent>(e =>
-            {
-                LogKit.I(e.Name);
-            });
-            
-            // 异步任务完成回调事件, 通常多个controller层会监听同一个异步事件,但不一定都提供异步方法.
-            this.RegisterAliveEvent<TestAsyncEvent>(e =>
-            {
-                e.Done(() =>
-                {
-                    LogKit.I("I know this event done!");
-                });
-            });
-            
-            // 等待事件回调完成
-            await this.SendAsyncEvent(new TestEvent() {Name = "Hi"});
-            
-            // 所有事件回调执行完毕后调用
-            LogKit.I("Finish!");
-            
-            
-            // Hi
-            // Hi With AsyncCall
-            // I know this event done!
-            // Finish
-       }
-}
-
-```
-
-
-
-
 
 [//]: # (```sh)
 
