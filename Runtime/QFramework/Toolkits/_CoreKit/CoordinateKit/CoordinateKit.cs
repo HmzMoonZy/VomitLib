@@ -1,6 +1,14 @@
 ﻿using UnityEngine;
 
-
+/// <summary>
+/// 坐标系转换工具
+/// </summary>
+/// <code>
+/// S - Screen
+/// W - World
+/// U - UI
+/// M - TileMap
+/// </code>
 public static class CoordinateKit
 {
     private static Camera s_mainCamera;

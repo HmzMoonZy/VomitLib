@@ -2,11 +2,9 @@
 
 <font style="background: red">施工中...</font> <font style="background: red">开发中...</font>
 
-个人的基于 [QFramework](https://github.com/liangxiegame/QFramework) + [UniTask](https://github.com/Cysharp/UniTask) + [Addressable](https://docs.unity.cn/Packages/com.unity.addressables@1.14/manual/index.html) + [Luban](https://github.com/focus-creative-games/luban) 的小游戏快速开发框架 
+个人的基于 [QFramework](https://github.com/liangxiegame/QFramework) | [UniTask](https://github.com/Cysharp/UniTask) | [Addressable](https://docs.unity.cn/Packages/com.unity.addressables@1.14/manual/index.html) | [Luban](https://github.com/focus-creative-games/luban) 的小游戏快速开发框架
 
 `在开发了多个小游戏的DEMO后根据个人习惯提炼出的框架,目前仍在整合中...`
-
-`本质上是基于 QF 的二次开发,所有设计规范都遵循 QF 的设计.只进行扩展,不修改.确保理解上无偏差.`
 
 `项目名称是对自己的自嘲,对所有前辈和同行保持最大尊重!`
 
@@ -20,17 +18,16 @@
 - [Luban](https://github.com/focus-creative-games/luban)
 
 ### 提供的功能
-
 ##### 可用(待完善)
-- 符合 Unity 原生开发习惯的 UI 框架
-- 基于 Addressables 的资源框架
-- 参考 GF 的 Procedure 框架
-- 基于 Luban 本地数据库 API
-- 简单的音频系统
+- <a href="#procedure"> 扩展QF, 添加了易用的 Procedure 层 </a>
+- <a href="#view"> 符合 Unity 原生开发习惯的 UI框架 </a>
+- <a href="#addr"> 基于 Addressables 的资源框架 </a>
+- <a href="#clientdb"> 基于 Luban 本地数据库 API </a>
+- <a href="#audio"> 简单的音频系统 </a>
+- <a href="#net"> 客户端网络 </a>
 
 ###### 不可用
-- 客户端网络
-- 平台*TapTap\Steam*发布工具
+- *TapTap | Steam* 平台发布工具(整合中)
 - P2P 网络游戏开发框架(做梦中)
 
 ### **使用前**
@@ -45,9 +42,9 @@
 4. 在 Assets/Resources/ 下创建 VomitConfig 根据工程配置全局数据
 
 ### **项目验证** <font style="background: red">开发中...</font>
-- [史莱姆咖啡厅]()  
+- [史莱姆咖啡厅](https://store.steampowered.com/app/2367890/Slime_Cafe)  
 个人独立开发项目 #模拟经营 #Roguelike #放置
-- [剑蛊骰]()      
+- [骰子剑](https://github.com/HmzMoonZy/DiceSwordDemo)      
  个人独立开发项目 #回合制 #Roguelike
 
 # 上手指南
@@ -68,10 +65,11 @@ public class Launcher : MonoController, ICanSendEvent
         // 初始化框架
         Vomit.Init(V.Interface);
     }
-
+}
 ```
 
 ## 流程层 Procedure
+<span id="procedure"></span>
 ### Procedure 是什么?
 - Procedure 是管理程序全局状态的有限状态机 灵感来自 GF 的 Procedure
 - Procedure 提供了**超级控制器**的职能,能够调用`SendEvent` 和 `SendCommand`
@@ -246,15 +244,67 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
 
 ```
 
-## UI框架 - View
+### 坐标系工具 - CoordinateKit 
+- 游戏开发中经常会使用到坐标系的相互转换.
+- 通常来说,会涉及 屏幕坐标系 | UI坐标系 | 场景(World)坐标系 | TileMap坐标系(如果你用了)
+- CoordinateKit 提供了它们相互转换的方便API.
+
+
+## View - UI框架
+<span id="view"></span>
+
 ### 为什么还要自己实现一个UI框架? 
-- UI框架的实现并不难, 但是大多是UI框架的学习成本却很高.花费时间学习不同的概念去实现同一件事让我感觉非常奇怪.
+- UI框架的实现并不难, 大多数UI框架实现的功能可以说是大同小异, 但是提供了各种新名词和概念使得学习成本却很高.
 - 大多数UI框架会联动一套资源框架.
+- 许多UI框架提供了各种组件绑定的代码生成,但实际上,一个UI在开发和设计阶段,往往需要频繁的操作自动生成的配置.
+- 这导致了许多在 UnityEditor 中的隐含规则, 比如组件名称不能带下划线, 不能重名, 不能命名为关键字等等...
+- 大多数时候使用 `[SerializeField]` 其实也可以相当优雅和方便.
 
 ### 提供了什么?
 - 整个UI开发体验上遵循原生的开发体验,仅仅提供几个增强选项.
 - 自动遮罩 \ 自动切换字体 \ 层级配置 \ 本地化 \ 自动绑定按钮事件
-- 没有代码生成, 使用 [SerializeField] 其实也可以相当优雅.
+- UI开发中常用的API
+- 同于解耦View 面板的 ViewComponent
+```csharp
+// 当作普通的 MonoBehaviour 去开发
+public class VCSwordIcon : ViewComponent
+{
+    public void Start()
+    {
+        this.RegisterViewEvent<>    // 监听事件, 组件销毁时自动取消监听.
+    }
+}
+
+// UI 面板
+public class ViewSwordDetail : ViewLogic
+{
+    public override UniTask OnOpened()
+    {
+        // 自动加载 ViewComponent 并实例化
+        var icon = View.InstantiateVC<VCSwordIcon>(transform);
+    }
+ 
+    // 运行时自动绑定 UnityEditor 中的 BtnLogin,无需额外步骤
+    private void __OnClick_BtnLogin()
+    {
+        LogKit.I("Click BtnLogin");
+    }
+}
+
+public class Launch
+{
+    void Start()
+    {
+        // 同步打开一个 View
+        View.OpenView<ViewSwordDetail>();
+        // 异步打开一个 View, 可以在 View 的 OnOpen 中实现动画效果.
+        await View.OpenViewAsync<ViewSwordDetail>();
+        // 在打开时通过 QFramework 的事件系统 View 链式传递参数.
+        await View.OpenViewAsync<ViewSwordDetail>().WithEvent(new ViewTestEvent {Params = "NewTest!"})
+    }
+}
+
+```
 
 ### 配置参数
 ![ViewConfig](https://github.com/HmzMoonZy/VomitLib/tree/master/Documentation/images/ViewConfig.png)
@@ -265,11 +315,11 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
 - Script Generate Path : UI代码自动生成路径
 - View Resolution : View 视图的开发分辨率
 
-### 制作UI 
+### 制作UI - 一个UI是一个Canvas
 1. 在 Unity 的 Hierarchy 中选择 `Create-UI-VomitCanvas` 或 `Create-UI-VomitCanvas(No Raycast)` 后者无法做射线检测,性能更优.
 2. 将制作好的 UI 做成预制体, 在Project面板中选择`Create-Vomit-View-ViewScript` 自动生成和预制体同名的View代码.
 
-### ViewConfig
+### ViewConfig - 单独控制每个UI
 - 每个VomitCanvas都会携带一个通用的 ViewConfig 组件.
 - Layer : 层级配置
 - EnableAutoMask : 是否自动开启遮罩
@@ -282,39 +332,33 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
 ### ViewLogic & ViewLogic<T>
 - 自动生成的 View 代码继承自 ViewLogic.
 
+## 客户端网络
+<span id="net"></span>
+
+- 提供客户端 Socket 封装
+- 通过事件传递网络消息
+- 简单的参数配置
+
+## 音频系统
+<span id="audio"></span>
+
+- 区分 BGM | SFX
+- 常用API封装
 ```csharp
-    // 同步打开一个 View
-    View.OpenView<ViewTest>();
-    // 异步打开一个 View, 可以在 View 的 OnOpen 中实现动画效果.
-    await View.OpenViewAsync<ViewTest>();
-    // 在打开时通过 QFramework 的事件系统 View 链式传递参数.
-    await View.OpenViewAsync<ViewTest>().WithEvent(new ViewTestEvent {Params = "NewTest!"})
-        
-        
-    // 登陆界面   
-    public partial class ViewLogin : ViewLogic  // partial 关键字, 另一部分用于绑定UI组件
-    {
-         public override UniTask OnOpened()
-         {
-             // Do something...
-         }
-     
-         // 自动绑定 UnityEditor 中的 BtnLogin
-         private void __OnClick_BtnLogin()
-         {
-             LogKit.I("Click BtnLogin");
-         }
-        
-    }
+public static void Init(Func<string, AudioClip> onSearchAudioClip = null, float bgmFactors = 0.8f, float bgmVolume = 1f, float seFactors = 1f, float seVolume = 1f)
+   
 ```
 
+
 ## 资源框架-Addr
+<span id="addr"></span>
 #### 为什么是 Addressables ?
-- Unity 官方库,并且已经更新多年
+- Unity 官方库,并且已经更新多年.
+- 目前开发的是纯单机的游戏,目标平台是Steam,所以对于资源管理的需求非常简单.
 - 可视化的性能分析
 - 通常以文件夹划分Bundle,开发中操作更简单和直观.尤其是规模不大的项目.
 - 面向接口, 要封装和替换成其它资源框架都非常简单.
-- UniTask 原生支持
+- UniTask 原生支持.
 ### 怎么使用
 - 按照正常的方式使用Addressable
 - AA 在原先的 AB 基础上做了增强,本质上提供了 [通过资源的唯一名称(寻址地址)找到这个资源], 而无需关心资源具体位置.
@@ -353,7 +397,8 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
     
 ```
 
-## 本地数据库-CilentDB
+## 本地数据库-ClientDB
+<span id="clientdb"></span>
 ####
 - 基于luban的客户端数据库扩展
 #### 配置ClientDB Config
@@ -411,178 +456,3 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
     ExecuteSkill(ClientDB.T.TbSkill[1001].Logic);
     
 ```
-
-[//]: # (```sh)
-
-[//]: # (git clone https://github.com/shaojintian/Best_README_template.git)
-
-[//]: # (```)
-
-[//]: # ()
-[//]: # (### 文件目录说明)
-
-[//]: # (eg:)
-
-[//]: # ()
-[//]: # (```)
-
-[//]: # (filetree )
-
-[//]: # (├── ARCHITECTURE.md)
-
-[//]: # (├── LICENSE.txt)
-
-[//]: # (├── README.md)
-
-[//]: # (├── /account/)
-
-[//]: # (├── /bbs/)
-
-[//]: # (├── /docs/)
-
-[//]: # (│  ├── /rules/)
-
-[//]: # (│  │  ├── backend.txt)
-
-[//]: # (│  │  └── frontend.txt)
-
-[//]: # (├── manage.py)
-
-[//]: # (├── /oa/)
-
-[//]: # (├── /static/)
-
-[//]: # (├── /templates/)
-
-[//]: # (├── useless.md)
-
-[//]: # (└── /util/)
-
-[//]: # ()
-[//]: # (```)
-
-[//]: # ()
-[//]: # ()
-[//]: # ()
-[//]: # ()
-[//]: # ()
-[//]: # (### 开发的架构)
-
-[//]: # ()
-[//]: # (请阅读[ARCHITECTURE.md]&#40;https://github.com/shaojintian/Best_README_template/blob/master/ARCHITECTURE.md&#41; 查阅为该项目的架构。)
-
-[//]: # ()
-[//]: # (### 部署)
-
-[//]: # ()
-[//]: # (暂无)
-
-[//]: # ()
-[//]: # (### 使用到的框架)
-
-[//]: # ()
-[//]: # (- [xxxxxxx]&#40;https://getbootstrap.com&#41;)
-
-[//]: # (- [xxxxxxx]&#40;https://jquery.com&#41;)
-
-[//]: # (- [xxxxxxx]&#40;https://laravel.com&#41;)
-
-[//]: # ()
-[//]: # (### 贡献者)
-
-[//]: # ()
-[//]: # (请阅读**CONTRIBUTING.md** 查阅为该项目做出贡献的开发者。)
-
-[//]: # ()
-[//]: # (#### 如何参与开源项目)
-
-[//]: # ()
-[//]: # (贡献使开源社区成为一个学习、激励和创造的绝佳场所。你所作的任何贡献都是**非常感谢**的。)
-
-[//]: # ()
-[//]: # ()
-[//]: # (1. Fork the Project)
-
-[//]: # (2. Create your Feature Branch &#40;`git checkout -b feature/AmazingFeature`&#41;)
-
-[//]: # (3. Commit your Changes &#40;`git commit -m 'Add some AmazingFeature'`&#41;)
-
-[//]: # (4. Push to the Branch &#40;`git push origin feature/AmazingFeature`&#41;)
-
-[//]: # (5. Open a Pull Request)
-
-[//]: # ()
-[//]: # ()
-[//]: # ()
-[//]: # (### 版本控制)
-
-[//]: # ()
-[//]: # (该项目使用Git进行版本管理。您可以在repository参看当前可用版本。)
-
-[//]: # ()
-[//]: # (### 作者)
-
-[//]: # ()
-[//]: # (xxx@xxxx)
-
-[//]: # ()
-[//]: # (知乎:xxxx  &ensp; qq:xxxxxx)
-
-[//]: # ()
-[//]: # (*您也可以在贡献者名单中参看所有参与该项目的开发者。*)
-
-[//]: # ()
-[//]: # (### 版权说明)
-
-[//]: # ()
-[//]: # (该项目签署了MIT 授权许可，详情请参阅 [LICENSE.txt]&#40;https://github.com/shaojintian/Best_README_template/blob/master/LICENSE.txt&#41;)
-
-[//]: # ()
-[//]: # (### 鸣谢)
-
-[//]: # ()
-[//]: # ()
-[//]: # (- [GitHub Emoji Cheat Sheet]&#40;https://www.webpagefx.com/tools/emoji-cheat-sheet&#41;)
-
-[//]: # (- [Img Shields]&#40;https://shields.io&#41;)
-
-[//]: # (- [Choose an Open Source License]&#40;https://choosealicense.com&#41;)
-
-[//]: # (- [GitHub Pages]&#40;https://pages.github.com&#41;)
-
-[//]: # (- [Animate.css]&#40;https://daneden.github.io/animate.css&#41;)
-
-[//]: # (- [xxxxxxxxxxxxxx]&#40;https://connoratherton.com/loaders&#41;)
-
-[//]: # ()
-[//]: # (<!-- links -->)
-
-[//]: # ([your-project-path]:shaojintian/Best_README_template)
-
-[//]: # ([contributors-shield]: https://img.shields.io/github/contributors/shaojintian/Best_README_template.svg?style=flat-square)
-
-[//]: # ([contributors-url]: https://github.com/shaojintian/Best_README_template/graphs/contributors)
-
-[//]: # ([forks-shield]: https://img.shields.io/github/forks/shaojintian/Best_README_template.svg?style=flat-square)
-
-[//]: # ([forks-url]: https://github.com/shaojintian/Best_README_template/network/members)
-
-[//]: # ([stars-shield]: https://img.shields.io/github/stars/shaojintian/Best_README_template.svg?style=flat-square)
-
-[//]: # ([stars-url]: https://github.com/shaojintian/Best_README_template/stargazers)
-
-[//]: # ([issues-shield]: https://img.shields.io/github/issues/shaojintian/Best_README_template.svg?style=flat-square)
-
-[//]: # ([issues-url]: https://img.shields.io/github/issues/shaojintian/Best_README_template.svg)
-
-[//]: # ([license-shield]: https://img.shields.io/github/license/shaojintian/Best_README_template.svg?style=flat-square)
-
-[//]: # ([license-url]: https://github.com/shaojintian/Best_README_template/blob/master/LICENSE.txt)
-
-[//]: # ([linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555)
-
-[//]: # ([linkedin-url]: https://linkedin.com/in/shaojintian)
-
-[//]: # ()
-
-
