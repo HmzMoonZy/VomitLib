@@ -37,7 +37,7 @@ namespace Twenty2.VomitLib.Editor
 
             //https://luban.doc.code-philosophy.com/docs/manual/commandtools#unity--c--json
             string cmd =
-@$"dotnet {config.ClientServerDllPath} -t all --conf {config.ConfigPath} -c cs-simple-json -d json -x outputCodeDir={config.GenCodePath} -x outputDataDir={config.JsonOutputPath} -x l10n.textProviderFile=""{config.LocalizationPath}"" -d text-list -x l10n.textListFile=textList.txt
+@$"dotnet {config.ClientServerDllPath} -t all --conf {config.ConfigPath} -c cs-simple-json -d json -x outputCodeDir={config.GenCodePath} -x outputDataDir={config.JsonOutputPath}
 
 pause";
             Debug.Log(cmd);
@@ -65,5 +65,14 @@ pause";
             AssetDatabase.Refresh();
             AssetDatabase.SaveAssets();
         }
+        
+        [MenuItem("VomitLib/ClientDB/生成本地化翻译")]
+        public static void GenerateL10N()
+        {
+            // -x l10n.textProviderFile=""{config.LocalizationPath}"" -d text-list -x l10n.textListFile=textList.txt
+        }
     }
+
+
+
 }
