@@ -8,6 +8,11 @@ namespace Twenty2.VomitLib.Procedure
     public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState where T : struct
     {
         /// <summary>
+        /// 全局的数据栈,用于在切换状态时,传递小数据.
+        /// </summary>
+        public static Stack<object> ArgsStack = new();
+        
+        /// <summary>
         /// 事件注册列表
         /// </summary>
         private List<IUnRegister> _registers = new();
