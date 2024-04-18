@@ -71,6 +71,22 @@ namespace Twenty2.VomitLib.View
 
             ViewCamera = Root.ViewCamera;
             HiddenCanvas = Root.HiddenCanvas;
+            
+            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (var type in assembly.GetTypes())
+                {
+                    if (!type.HasAttribute<PreloadAttribute>()) continue;
+
+                    var attr = type.GetAttribute<PreloadAttribute>();
+                    var viewLogic = OpenView(type);
+                    if (attr.IsHide)
+                    {
+                        if(!viewLogic.Config.IsCache) LogKit.E($"预加载了ui : {type.Name} 但是不是缓存的ui,请检查!");
+                        CloseView(viewLogic);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -87,21 +103,18 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         /// <param name="action"></param>
         public static void SetBeforeClickBtnAction(Action action) => _beforeClickButton = action;
-        
-        /// <summary>
-        /// 打开一个和 T 同名的 View.
-        /// </summary>
-        public static T OpenView<T>() where T : ViewLogic, new()
+
+        private static ViewLogic OpenView(Type type)
         {
-            var viewName = typeof(T).Name;
+            var viewName = type.Name;
 
             if (_visibleViewMap.TryGetValue(viewName, out var logic))
             {
                 LogKit.I($"Try to open an already showed the View : {viewName}");
-                return (T)logic;
+                return logic;
             }
 
-            logic = LoadOrGenerateViewLogic<T>();
+            logic = LoadOrGenerateViewLogic(type);
 
             if (logic.Config.EnableAutoMask)
             {
@@ -123,7 +136,15 @@ namespace Twenty2.VomitLib.View
             
             logic.OnOpened().Forget();
             
-            return (T) logic;
+            return logic;
+        }
+        
+        /// <summary>
+        /// 打开一个和 T 同名的 View.
+        /// </summary>
+        public static T OpenView<T>() where T : ViewLogic, new()
+        {
+            return (T)OpenView(typeof(T));
         }
         
         /// <summary>
@@ -144,7 +165,7 @@ namespace Twenty2.VomitLib.View
                 return (T)logic;
             }
 
-            logic = LoadOrGenerateViewLogic<T>();
+            logic = LoadOrGenerateViewLogic(typeof(T));
 
             if (logic.Config.EnableAutoMask)
             {
@@ -328,16 +349,16 @@ namespace Twenty2.VomitLib.View
         /// <summary>
         /// 从缓存或硬盘中加载 T 类型的 ViewLogic.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private static T LoadOrGenerateViewLogic<T>() where T : ViewLogic
+        private static ViewLogic LoadOrGenerateViewLogic(Type logicType)
         {
-            var viewName = typeof(T).Name;
+
+            var viewName = logicType.Name;
 
             // 如果在缓存中则直接返回
             if (_viewMap.TryGetValue(viewName, out var viewLogic))
             {
-                return (T) viewLogic;
+                return viewLogic;
             }
 
             var address = $"{Vomit.RuntimeConfig.ViewFrameworkConfig.ViewAddressablePrefix}/{viewName}.prefab";
@@ -365,7 +386,7 @@ namespace Twenty2.VomitLib.View
 
             _viewMap.Add(viewName, viewLogic);
             
-            return (T) viewLogic;
+            return viewLogic;
         }
 
         /// <summary>
