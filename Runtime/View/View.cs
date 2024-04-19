@@ -146,26 +146,18 @@ namespace Twenty2.VomitLib.View
         {
             return (T)OpenView(typeof(T));
         }
-        
-        /// <summary>
-        /// 异步打开一个View.
-        /// </summary>
-        /// <code>
-        /// 直到加载完成,这个方法是同步的.
-        /// 但是自己实现的OnOpen,如一些动画效果是异步的.
-        /// 可以等待.
-        /// </code>
-        public static async UniTask<T> OpenViewAsync<T>() where T : ViewLogic, new ()
+
+        private static async UniTask<ViewLogic> OpenViewAsync(Type logicType)
         {
-            var viewName = typeof(T).Name;
+            var viewName = logicType.Name;
 
             if (_visibleViewMap.TryGetValue(viewName, out var logic))
             {
                 LogKit.I($"Try to open an already showed the View : {viewName}");
-                return (T)logic;
+                return logic;
             }
 
-            logic = LoadOrGenerateViewLogic(typeof(T));
+            logic = LoadOrGenerateViewLogic(logicType);
 
             if (logic.Config.EnableAutoMask)
             {
@@ -187,9 +179,22 @@ namespace Twenty2.VomitLib.View
 
             await logic.OnOpened();
             
-            return (T) logic;
+            return logic;
         }
-
+        
+        /// <summary>
+        /// 异步打开一个View.
+        /// </summary>
+        /// <code>
+        /// 直到加载完成,这个方法是同步的.
+        /// 但是自己实现的OnOpen,如一些动画效果是异步的.
+        /// 可以等待.
+        /// </code>
+        public static async UniTask<T> OpenViewAsync<T>() where T : ViewLogic, new ()
+        {
+            return (T) await OpenViewAsync(typeof(T));
+        }
+        
         public static void CloseView<T>() where T : ViewLogic
         {
             var viewName = typeof(T).Name;
@@ -205,7 +210,12 @@ namespace Twenty2.VomitLib.View
         public static void CloseView(ViewLogic logic)
         {
             // 清除可见字典
-            _visibleViewMap.Remove(logic.Name);
+            if (!_visibleViewMap.Remove(logic.Name))
+            {
+                LogKit.W($"Try to close a view with name {logic.Name} that does not exist!");
+                return;
+            }
+            
             // 回调生命周期事件
             logic.UnRegisterAllViewEvents();
             logic.OnClose().Forget();
@@ -228,6 +238,51 @@ namespace Twenty2.VomitLib.View
                 Addressables.ReleaseInstance(logic.gameObject);
             }
             
+        }
+
+        public static void CloseViewAsync<T>() where T : ViewLogic
+        {
+            var viewName = typeof(T).Name;
+            if (!_visibleViewMap.TryGetValue(viewName, out var logic))
+            {
+                LogKit.W($"Try to close a view with name {viewName} that does not exist!");
+                return;
+            }
+
+            CloseView(logic);
+        }
+        
+        
+        public static async void CloseViewAsync(ViewLogic logic)
+        {
+            // 清除可见字典
+            if (!_visibleViewMap.Remove(logic.Name))
+            {
+                LogKit.W($"Try to close a view with name {logic.Name} that does not exist!");
+                return;
+            }
+            
+            // 回调生命周期事件
+            logic.UnRegisterAllViewEvents();
+            await logic.OnClose();
+            logic.Dispose();
+
+            // 不可见
+            if (logic.Config.IsCache)
+            {
+                logic.OnHidden();
+                logic.Parent(HiddenCanvas);
+                
+                if (logic.Config.EnableAutoMask && logic.transform.GetChild(0).name == "__AutoMask")
+                {
+                    Object.Destroy(logic.transform.GetChild(0).gameObject);
+                }
+            }
+            else
+            {
+                _viewMap.Remove(logic.Name);
+                Addressables.ReleaseInstance(logic.gameObject);
+            }
         }
 
         public static void CloseAll()
