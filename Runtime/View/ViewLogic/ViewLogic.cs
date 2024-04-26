@@ -66,11 +66,6 @@ namespace Twenty2.VomitLib.View
             set => ViewCanvas.sortingOrder = value;
         }
 
-        /// <summary>
-        /// UI 是否是可见的.
-        /// </summary>
-        public bool IsVisible => transform.parent.name == "ViewRoot";
-
         #region 生命周期
 
         /// <summary>
