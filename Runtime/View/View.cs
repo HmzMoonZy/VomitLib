@@ -8,6 +8,7 @@ using Cysharp.Threading.Tasks.Triggers;
 using QFramework;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
@@ -323,7 +324,6 @@ namespace Twenty2.VomitLib.View
             return (T) info;
         }
         
-        
         public static ViewLogic GetView(string name)
         {
             if (!_viewMap.TryGetValue(name, out var info))
@@ -381,6 +381,29 @@ namespace Twenty2.VomitLib.View
             var prefab = LoadViewComponent<T>();
             
             return Object.Instantiate(prefab, parent).GetComponent<T>();
+        }
+
+        public static bool IsHitView(Vector3 position)
+        {
+            PointerEventData ed = new(Root.GetComponent<EventSystem>())
+            {
+                pressPosition = position,
+                position = position
+            };
+
+            var list = new List<RaycastResult>();
+            
+            foreach (var (_, view) in _visibleViewMap)
+            {
+                var rr = view.transform.GetComponent<GraphicRaycaster>();
+                if (rr == null) continue;
+                
+                rr.Raycast(ed, list);
+
+                if (list.Count > 0) return true;
+            }
+
+            return false;
         }
         
         private static GameObject LoadViewComponent<T>() where T : Component
