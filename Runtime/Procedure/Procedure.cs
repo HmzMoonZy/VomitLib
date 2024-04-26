@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Cysharp.Threading.Tasks;
 using QFramework;
 
@@ -7,6 +8,13 @@ namespace Twenty2.VomitLib.Procedure
 {
     public static class Procedure<T> where T : struct
     {
+        public struct ProcedureChanged
+        {
+            public T Prev;
+
+            public T Curr;
+        }
+        
         public static FSM<T> Fsm;
 
         private static T s_entryID;
@@ -85,6 +93,11 @@ namespace Twenty2.VomitLib.Procedure
             return Fsm.PreviousStateId;
         }
 
+        public static IUnRegister RegisterEvent(Action<ProcedureChanged> onChanged)
+        {
+            return Vomit.Interface.RegisterEvent(onChanged);
+        }
+
         /// <summary>
         /// 切换流程
         /// </summary>
@@ -93,7 +106,15 @@ namespace Twenty2.VomitLib.Procedure
         {
             Fsm.ChangeState(id);
             
+            Vomit.Interface.SendEvent(new ProcedureChanged
+            {
+                Prev = GetPrevState(),
+                Curr = GetCurrState(),
+            });
+            
             LogKit.I($"切换状态! {Fsm.PreviousStateId} => {id}");
         }
     }
+
+
 }
