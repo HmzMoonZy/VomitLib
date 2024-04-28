@@ -128,7 +128,7 @@ namespace Twenty2.VomitLib.View
             _closeCts = null;
         }
         
-        protected CancellationToken GetViewCloseCancellationToken()
+        public CancellationToken GetViewCloseCancellationToken()
         {
             _closeCts ??= new CancellationTokenSource();
             
