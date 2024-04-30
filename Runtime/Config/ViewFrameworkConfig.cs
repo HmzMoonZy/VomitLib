@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Twenty2.VomitLib.Config
 {
@@ -23,6 +24,9 @@ namespace Twenty2.VomitLib.Config
 
         [SerializeField, Tooltip("Canvas 开发分辨率")]
         private Vector2 _viewResolution = new Vector2(1440, 2560);
+        
+        [SerializeField, Tooltip("View Root Position")]
+        private Vector2 _viewRootPosition = Vector3.zero;
         
         public Font DefaultFont
         {
@@ -60,5 +64,6 @@ namespace Twenty2.VomitLib.Config
 
         public Vector2 ViewResolution => _viewResolution;
 
+        public Vector2 ViewRootPosition => _viewRootPosition;
     }
 }

@@ -34,10 +34,29 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         public static Transform HiddenCanvas { get; private set; }
 
+        private static ViewRoot _root;
         /// <summary>
         /// View 根节点.
         /// </summary>
-        public static ViewRoot Root { get; private set; }
+        public static ViewRoot Root
+        {
+            get
+            {
+                _root ??= Object.FindObjectOfType<ViewRoot>();
+
+                if (_root is null)
+                {
+                    var prefab = Resources.Load<GameObject>("ViewRoot");
+                    _root = Object.Instantiate(prefab, Vomit.RuntimeConfig.ViewFrameworkConfig.ViewRootPosition, Quaternion.identity).GetComponent<ViewRoot>();
+                    if (_root is null)
+                    {
+                        throw new NotImplementedException("No \"ViewRoot\" component was added in the scene!");
+                    }
+                }
+                
+                return _root;
+            }
+        }
 
         /// <summary>
         /// 所有面板缓存
@@ -50,9 +69,16 @@ namespace Twenty2.VomitLib.View
         private static Dictionary<string, ViewLogic> _visibleViewMap = new Dictionary<string, ViewLogic>();
 
         /// <summary>
-        /// 所有View组件.
+        /// ViewLogic - ViewComponent
+        /// key : ViewLogic.Name
+        /// value : List,ViewComponent
         /// </summary>
-        private static Dictionary<string, GameObject> _viewComponents = new Dictionary<string, GameObject>();
+        private static Dictionary<string, List<Type>> _viewComponents = new Dictionary<string,  List<Type>>();
+
+        /// <summary>
+        /// 加载再内存中的ViewComponent预制体
+        /// </summary>
+        private static Dictionary<string, GameObject> _viewComponentPrefabs = new Dictionary<string, GameObject>(); 
 
         /// <summary>
         /// 本地化回调
@@ -66,10 +92,6 @@ namespace Twenty2.VomitLib.View
         
         static View()
         {
-            Root = Object.FindObjectOfType<ViewRoot>();
-            
-            if (Root == null) throw new NotImplementedException("No \"ViewRoot\" component was added in the scene!");
-
             ViewCamera = Root.ViewCamera;
             HiddenCanvas = Root.HiddenCanvas;
             
@@ -77,15 +99,52 @@ namespace Twenty2.VomitLib.View
             {
                 foreach (var type in assembly.GetTypes())
                 {
-                    if (!type.HasAttribute<PreloadAttribute>()) continue;
-
-                    var attr = type.GetAttribute<PreloadAttribute>();
-                    var viewLogic = OpenView(type);
-                    if (attr.IsHide)
+                    if (type.HasAttribute<PreloadAttribute>())
                     {
-                        if(!viewLogic.Config.IsCache) LogKit.E($"预加载了ui : {type.Name} 但是不是缓存的ui,请检查!");
-                        CloseView(viewLogic);
+                        ProcessPreload(type);
                     }
+
+                    if (type.IsSubclassOf(typeof(ViewComponent)))
+                    {
+                        if (type.HasAttribute<ViewComponentAttribute>())
+                        {
+                            ProcessViewComponent(type);
+                        }
+                        else
+                        {
+                            LogKit.W($"{type.Name} 没有 ViewComponentAttribute, 运行时将永远不会被自动释放.");
+                        }
+                    }
+                }
+            }
+
+            
+            static void ProcessPreload(Type logic)
+            {
+                var attr = logic.GetAttribute<PreloadAttribute>();
+                var viewLogic = OpenView(logic);
+                if (attr.IsHide)
+                {
+                    if(!viewLogic.Config.IsCache) LogKit.E($"预加载了ui : {logic.Name} 但是不是缓存的ui,请检查!");
+                    CloseView(viewLogic);
+                }
+            }
+
+            static void ProcessViewComponent(Type vc)
+            {
+                var att = vc.GetAttribute<ViewComponentAttribute>();
+                foreach (var parentType in att.ParentTypes)
+                {
+                    if (_viewComponents.ContainsKey(parentType.Name))
+                    {
+                        _viewComponents[parentType.Name].Add(vc);
+                    }
+                    else
+                    {
+                        _viewComponents.Add(parentType.Name, new List<Type> { vc });
+                    }
+
+                    LogKit.I($"Record ViewComponents {parentType.Name} - {vc.Name}");
                 }
             }
         }
@@ -116,6 +175,14 @@ namespace Twenty2.VomitLib.View
             }
 
             logic = LoadOrGenerateViewLogic(type);
+
+            if (_viewComponents.TryGetValue(viewName, out var components))
+            {
+                foreach (var component in components)
+                {
+                    LoadViewComponent(component.Name);
+                }
+            }
 
             if (logic.Config.EnableAutoMask)
             {
@@ -159,6 +226,14 @@ namespace Twenty2.VomitLib.View
             }
 
             logic = LoadOrGenerateViewLogic(logicType);
+            
+            if (_viewComponents.TryGetValue(viewName, out var components))
+            {
+                foreach (var component in components)
+                {
+                    LoadViewComponent(component.Name);
+                }
+            }
 
             if (logic.Config.EnableAutoMask)
             {
@@ -236,9 +311,21 @@ namespace Twenty2.VomitLib.View
             else
             {
                 _viewMap.Remove(logic.Name);
+                // 清理ViewComponent
+                if (_viewComponents.TryGetValue(logic.Name, out var component))
+                {
+                    foreach (var vc in component)
+                    {
+                        if (_viewMap.Values.Any(l => _viewComponents.TryGetValue(l.Name, out var components) && components.Contains(vc))) continue;
+
+                        Addressables.Release(_viewComponentPrefabs[vc.Name]);
+                        _viewComponentPrefabs.Remove(vc.Name);
+                        LogKit.I($"Release {vc.Name}");
+                    }
+                }
+                    
                 Addressables.ReleaseInstance(logic.gameObject);
             }
-            
         }
 
         public static async void CloseViewAsync<T>() where T : ViewLogic
@@ -408,15 +495,23 @@ namespace Twenty2.VomitLib.View
         private static GameObject LoadViewComponent<T>() where T : Component
         {
             string vcName = typeof(T).Name;
-            if (!_viewComponents.TryGetValue(vcName, out GameObject prefab))
+
+            return LoadViewComponent(vcName);
+            
+            
+        }
+
+        private static GameObject LoadViewComponent(string component)
+        {
+            if (!_viewComponentPrefabs.TryGetValue(component, out GameObject prefab))
             {
-                prefab = Addressables.LoadAssetAsync<GameObject>($"{Vomit.RuntimeConfig.ViewFrameworkConfig.ViewComponentAddressablePrefix}/{vcName}.prefab").WaitForCompletion();
-                _viewComponents.TryAdd(vcName, prefab);
+                prefab = Addressables.LoadAssetAsync<GameObject>($"{Vomit.RuntimeConfig.ViewFrameworkConfig.ViewComponentAddressablePrefix}/{component}.prefab").WaitForCompletion();
+                _viewComponentPrefabs.TryAdd(component, prefab);
             }
 
-            if (prefab.GetComponent<T>() == null)
+            if (prefab.GetComponent(component) == null)
             {
-                LogKit.I($"加载的 ViewComponent 不包含预期的组件.{vcName}");
+                LogKit.I($"加载的 ViewComponent 不包含预期的组件.{component}");
             }
 
             return prefab;
