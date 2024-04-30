@@ -94,6 +94,8 @@ namespace Twenty2.VomitLib.View
         {
             ViewCamera = Root.ViewCamera;
             HiddenCanvas = Root.HiddenCanvas;
+
+            List<Type> _preloads = new();
             
             foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
             {
@@ -101,7 +103,7 @@ namespace Twenty2.VomitLib.View
                 {
                     if (type.HasAttribute<PreloadAttribute>())
                     {
-                        ProcessPreload(type);
+                        _preloads.Add(type);
                     }
 
                     if (type.IsSubclassOf(typeof(ViewComponent)))
@@ -116,6 +118,11 @@ namespace Twenty2.VomitLib.View
                         }
                     }
                 }
+            }
+            
+            foreach (var preload in _preloads)
+            {
+                ProcessPreload(preload);
             }
 
             
