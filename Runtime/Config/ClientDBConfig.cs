@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Twenty2.VomitLib.Config
 {
@@ -14,7 +15,7 @@ namespace Twenty2.VomitLib.Config
         public string JsonOutputPath;
 
         public string GenCodePath;
-        
-        // TODO 多语言
+
+        public List<(QFramework.Language key, string locationKey)> LocationMap;
     }
 }

@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using Cysharp.Threading.Tasks.Triggers;
 using QFramework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.EventSystems;
@@ -80,9 +81,9 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         private static Dictionary<string, GameObject> _viewComponentPrefabs = new Dictionary<string, GameObject>(); 
 
-        /// <summary>
-        /// 本地化回调
-        /// </summary>
+        // /// <summary>
+        // /// 本地化回调
+        // /// </summary>
         private static Func<string, string> _localization = null;
 
         /// <summary>
@@ -157,7 +158,7 @@ namespace Twenty2.VomitLib.View
         }
 
         /// <summary>
-        /// 本地化会回调.
+        /// 本地化回调.
         /// </summary>
         /// <param name="localization"></param>
         public static void SetLocalization(Func<string, string> localization)
@@ -201,7 +202,7 @@ namespace Twenty2.VomitLib.View
                 logic.gameObject.SetActive(true);
             }
 
-            logic.Parent(Root);
+            logic.transform.parent = Root.transform;
             logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
             logic.ViewCanvas.worldCamera = ViewCamera;
             logic.ViewCanvas.sortingLayerID = (int) logic.Config.Layer;
@@ -258,7 +259,7 @@ namespace Twenty2.VomitLib.View
                 logic.gameObject.SetActive(true);
             }
 
-            logic.Parent(Root);
+            logic.transform.parent = Root.transform;
             logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
             logic.ViewCanvas.worldCamera = ViewCamera;
             logic.ViewCanvas.sortingLayerID = (int) logic.Config.Layer;
@@ -316,7 +317,7 @@ namespace Twenty2.VomitLib.View
             if (logic.Config.IsCache)
             {
                 logic.OnHidden();
-                logic.Parent(HiddenCanvas);
+                logic.transform.parent = HiddenCanvas;
                 
                 if (logic.Config.EnableAutoMask && logic.transform.GetChild(0).name == "__AutoMask")
                 {
@@ -379,7 +380,7 @@ namespace Twenty2.VomitLib.View
             if (logic.Config.IsCache)
             {
                 logic.OnHidden();
-                logic.Parent(HiddenCanvas);
+                logic.transform.parent = HiddenCanvas;
                 
                 if (logic.Config.EnableAutoMask && logic.transform.GetChild(0).name == "__AutoMask")
                 {
@@ -635,10 +636,21 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         private static void Localization(ViewLogic logic)
         {
-            foreach (var cText in logic.transform.GetComponentsInChildren<Text>())
+            foreach (var cText in logic.transform.GetComponentsInChildren<MaskableGraphic>())
             {
-                string ret = _localization(cText.text);
-                cText.text = ret ?? cText.text;
+                if (cText is Text text)
+                {
+                
+                    string ret = _localization(text.text);
+                    text.text = ret ?? text.text;    
+                }
+                
+                if (cText is TextMeshProUGUI textmeshpro)
+                {
+                
+                    string ret = _localization(textmeshpro.text);
+                    textmeshpro.text = ret ?? textmeshpro.text;    
+                }
             }
         }
 
@@ -649,11 +661,10 @@ namespace Twenty2.VomitLib.View
 
             var rectTrans = mask.GetComponent<RectTransform>();
             rectTrans.sizeDelta = new Vector2(50000, 50000);
-            rectTrans
-                .Parent(logic.transform)
-                .LocalPosition(Vector3.zero)
-                .LocalScale(Vector3.one)
-                .SetAsFirstSibling();
+            rectTrans.SetParent(logic.transform);
+            rectTrans.localPosition = Vector3.zero;
+            rectTrans.localScale = Vector3.one;
+            rectTrans.SetAsFirstSibling();
             
 
             if (logic.Config.ClickMaskTriggerClose)

@@ -6,7 +6,7 @@ namespace Twenty2.VomitLib.View
 {
     public class ViewComponent : MonoController
     {
-        public RectTransform RectTransform => transform.As<RectTransform>();
+        public RectTransform RectTransform => (RectTransform) transform;
 
         // private ViewLogic _parentView;
         //
