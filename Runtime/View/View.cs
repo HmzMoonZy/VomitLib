@@ -81,9 +81,9 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         private static Dictionary<string, GameObject> _viewComponentPrefabs = new Dictionary<string, GameObject>(); 
 
-        // /// <summary>
-        // /// 本地化回调
-        // /// </summary>
+        /// <summary>
+        /// 本地化回调
+        /// </summary>
         private static Func<string, string> _localization = null;
 
         /// <summary>

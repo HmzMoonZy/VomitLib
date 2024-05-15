@@ -1,7 +1,7 @@
 {
   "name": "com.twenty2.vomitlib",
   "displayName": "VomitLib",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "unity": "2021.3",
   "author": {
     "name": "TwenTy2"
@@ -10,6 +10,7 @@
   "dependencies": {
     "com.unity.addressables": "1.21.18",
     "com.cysharp.unitask": "2.4.0",
-    "com.code-philosophy.luban": "1.0.0"
+    "com.code-philosophy.luban": "1.0.0",
+    "com.unity.textmeshpro": "3.0.8"
   }
 }
