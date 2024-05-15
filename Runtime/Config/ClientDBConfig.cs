@@ -6,6 +6,14 @@ namespace Twenty2.VomitLib.Config
     [Serializable]
     public class ClientDBConfig
     {
+        [Serializable]
+        public struct Language2Key
+        {
+            public QFramework.Language Key;
+            
+            public string LocalizationKey;
+        }
+        
         public string ClientServerDllPath;
 
         public string ConfigPath;
@@ -15,7 +23,7 @@ namespace Twenty2.VomitLib.Config
         public string JsonOutputPath;
 
         public string GenCodePath;
-
-        public List<(QFramework.Language key, string locationKey)> LocationMap;
+        
+        public List<Language2Key> LocationMap;
     }
 }
