@@ -90,14 +90,14 @@ public static class CoordinateKit
         return W2M(S2WSceneCamera(screenPosition));
     }
 
-    public static Vector3 U2W(Vector2 uiPosition)
+    public static Vector3 U2W(Vector3 uiPosition)
     {
-        throw new System.NotImplementedException();
+        return S2WSceneCamera(U2S(uiPosition));
     }
 
-    public static Vector2 U2S(Vector2 uiPosition)
+    public static Vector2 U2S(Vector3 uiPosition)
     {
-        throw new System.NotImplementedException();
+        return RectTransformUtility.WorldToScreenPoint(s_viewCamera, uiPosition);
     }
 
     public static Vector3 M2W(Vector3Int mapPosition)
