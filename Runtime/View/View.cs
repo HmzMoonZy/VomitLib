@@ -172,6 +172,10 @@ namespace Twenty2.VomitLib.View
         /// <param name="action"></param>
         public static void SetBeforeClickBtnAction(Action action) => _beforeClickButton = action;
 
+
+        #region OpenView
+
+        [Obsolete("考虑删除中, 请使用 OpenViewAsync()")]
         private static ViewLogic OpenView(Type type)
         {
             var viewName = type.Name;
@@ -229,6 +233,20 @@ namespace Twenty2.VomitLib.View
             return (T)OpenView(typeof(T));
         }
 
+        #endregion
+        
+        #region OpenViewAsync
+
+        /// <summary>
+        /// 异步打开一个View.
+        /// 直到加载完成,这个方法是同步的.
+        /// 直到表现完成, 无法对UI进行交互(关闭射线检测)
+        /// </summary>
+        public static async UniTask<T> OpenViewAsync<T>() where T : ViewLogic, new ()
+        {
+            return (T) await OpenViewAsync(typeof(T));
+        }
+        
         private static async UniTask<ViewLogic> OpenViewAsync(Type logicType)
         {
             var viewName = logicType.Name;
@@ -240,6 +258,7 @@ namespace Twenty2.VomitLib.View
             }
 
             logic = LoadOrGenerateViewLogic(logicType);
+            logic.Freeze();
             
             if (_viewComponents.TryGetValue(viewName, out var components))
             {
@@ -268,23 +287,14 @@ namespace Twenty2.VomitLib.View
             _visibleViewMap.Add(viewName, logic);
 
             await logic.OnOpened();
-            
+            logic.UnFreeze();
             return logic;
         }
-        
-        /// <summary>
-        /// 异步打开一个View.
-        /// </summary>
-        /// <code>
-        /// 直到加载完成,这个方法是同步的.
-        /// 但是自己实现的OnOpen,如一些动画效果是异步的.
-        /// 可以等待.
-        /// </code>
-        private static async UniTask<T> OpenViewAsync<T>() where T : ViewLogic, new ()
-        {
-            return (T) await OpenViewAsync(typeof(T));
-        }
-        
+
+        #endregion
+
+        #region CloseView
+
         public static void CloseView<T>() where T : ViewLogic
         {
             var viewName = typeof(T).Name;
@@ -311,7 +321,7 @@ namespace Twenty2.VomitLib.View
             // 回调生命周期事件
             logic.UnRegisterAllViewEvents();
             logic.OnClose().Forget();
-            logic.Dispose();
+            logic.Cancel();
 
             // 不可见
             if (logic.Config.IsCache)
@@ -348,20 +358,21 @@ namespace Twenty2.VomitLib.View
                 LogicType = type,
             });
         }
-
-        private static async void CloseViewAsync<T>() where T : ViewLogic
+        
+        #endregion
+        
+        public static async UniTask CloseViewAsync<T>() where T : ViewLogic
         {
-            var viewName = typeof(T).Name;
-            if (!_visibleViewMap.TryGetValue(viewName, out var logic))
-            {
-                LogKit.W($"Try to close a view with name {viewName} that does not exist!");
-                return;
-            }
-
+            _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
             await CloseViewAsync(logic);
         }
-        
-        
+
+        #region CloseViewAsync
+
+        /// <summary>
+        /// 关闭一个UI,会立刻关闭这个UI的射线检测
+        /// </summary>
+        /// <param name="logic"></param>
         private static async UniTask CloseViewAsync(ViewLogic logic)
         {
             // 清除可见字典
@@ -370,12 +381,19 @@ namespace Twenty2.VomitLib.View
                 LogKit.W($"Try to close a view with name {logic.Name} that does not exist!");
                 return;
             }
-            
-            // 回调生命周期事件
+            // 清楚缓存字典
+            if (!logic.Config.IsCache)
+            {
+                _viewMap.Remove(logic.Name);
+            }
+            // 关闭射线检测   
+            logic.Freeze();
+            // 移除所有的 View 事件
             logic.UnRegisterAllViewEvents();
+            // 回调生命周期事件
             await logic.OnClose();
-            logic.Dispose();
-
+            // 取消监听器
+            logic.Cancel();
             // 不可见
             if (logic.Config.IsCache)
             {
@@ -386,13 +404,15 @@ namespace Twenty2.VomitLib.View
                 {
                     Object.Destroy(logic.transform.GetChild(0).gameObject);
                 }
+                logic.UnFreeze();
             }
             else
             {
-                _viewMap.Remove(logic.Name);
                 Addressables.ReleaseInstance(logic.gameObject);
             }
         }
+
+        #endregion
 
         public static void CloseAll()
         {
@@ -537,15 +557,13 @@ namespace Twenty2.VomitLib.View
 
             return prefab;
         }
-
-
+        
         /// <summary>
         /// 从缓存或硬盘中加载 T 类型的 ViewLogic.
         /// </summary>
         /// <returns></returns>
         private static ViewLogic LoadOrGenerateViewLogic(Type logicType)
         {
-
             var viewName = logicType.Name;
 
             // 如果在缓存中则直接返回
@@ -609,7 +627,6 @@ namespace Twenty2.VomitLib.View
                 btn.onClick.AddListener(() =>
                 {
                     _beforeClickButton?.Invoke();
-                    // PlayButtonClickSe?.Invoke();
                     methodInfo.Invoke(logic, null);
                 });
                 

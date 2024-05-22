@@ -36,8 +36,19 @@ namespace Twenty2.VomitLib.View
 
         private ViewConfig _config;
 
-        private CancellationTokenSource _closeCts;
-
+        private RectTransform _rectView;
+        /// <summary>
+        /// 面板下命名为'View'的子节点
+        /// </summary>
+        protected RectTransform RectView
+        {
+            get => _rectView ??= transform.Find("View").GetComponent<RectTransform>();
+        }
+        
+        /// <summary>
+        /// UI 面板通用属性
+        /// </summary>
+        /// <exception cref="NullReferenceException"></exception>
         public ViewConfig Config
         {
             get
@@ -54,9 +65,7 @@ namespace Twenty2.VomitLib.View
                 return _config;
             }
         }
-
-        private List<IUnRegister> _viewEvents = new();
-
+        
         /// <summary>
         /// View 在该 Layer 下的层级.
         /// </summary>
@@ -101,6 +110,7 @@ namespace Twenty2.VomitLib.View
 
         #region Events
         
+        private List<IUnRegister> _viewEvents = new();
         protected void RegisterViewEvent<T>(Action<T> onEvent) where T : struct
         {
             _viewEvents.Add(Vomit.Interface.RegisterEvent(onEvent));
@@ -115,18 +125,11 @@ namespace Twenty2.VomitLib.View
             _viewEvents.Clear();
         }
         
-        
-
         #endregion
 
         #region API
-
-        public void Dispose()
-        {
-            _closeCts?.Cancel();
-            _closeCts?.Dispose();
-            _closeCts = null;
-        }
+        
+        private CancellationTokenSource _closeCts;
         
         public CancellationToken GetViewCloseCancellationToken()
         {
@@ -134,28 +137,34 @@ namespace Twenty2.VomitLib.View
             
             return _closeCts.Token;
         }
-
+        
+        public void Cancel()
+        {
+            _closeCts?.CancelAndDispose();
+            _closeCts = null;
+        }
+        
         protected void CloseSelf()
         {
             View.CloseView(this);
         }
 
-        protected async void CloseNextFrame()
+        public void Freeze()
         {
-            await UniTask.NextFrame();
-            CloseSelf();
+            var raycaster = transform.GetComponent<GraphicRaycaster>();
+            if (raycaster != null)
+            {
+                raycaster.enabled = false;
+            }
         }
 
-        protected async void CloseWhen(UniTask task)
+        public void UnFreeze()
         {
-            await task;
-            CloseSelf();
-        }
-
-        protected async void CloseWhen(Func<UniTask> task)
-        {
-            await task.Invoke();
-            CloseSelf();
+            var raycaster = transform.GetComponent<GraphicRaycaster>();
+            if (raycaster != null)
+            {
+                raycaster.enabled = true;
+            }
         }
 
         /// <summary>
