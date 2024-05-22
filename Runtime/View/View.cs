@@ -90,12 +90,12 @@ namespace Twenty2.VomitLib.View
         /// 用于测试绑定按钮的方法.
         /// </summary>
         private static Action _beforeClickButton;
-        
-        static View()
+
+        public static void Init()
         {
             ViewCamera = Root.ViewCamera;
             HiddenCanvas = Root.HiddenCanvas;
-
+            
             List<Type> _preloads = new();
             
             foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
