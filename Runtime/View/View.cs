@@ -171,8 +171,7 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         /// <param name="action"></param>
         public static void SetBeforeClickBtnAction(Action action) => _beforeClickButton = action;
-
-
+        
         #region OpenView
 
         [Obsolete("考虑删除中, 请使用 OpenViewAsync()")]
@@ -187,6 +186,12 @@ namespace Twenty2.VomitLib.View
             }
 
             logic = LoadOrGenerateViewLogic(type);
+            
+            if (logic.isAsyncActioning)
+            {
+                LogKit.I($"Try to open an actioning view : {viewName}");
+                return logic;
+            }
 
             if (_viewComponents.TryGetValue(viewName, out var components))
             {
@@ -258,7 +263,15 @@ namespace Twenty2.VomitLib.View
             }
 
             logic = LoadOrGenerateViewLogic(logicType);
+            
+            if (logic.isAsyncActioning)
+            {
+                LogKit.I($"Try to open an actioning view : {viewName}");
+                return logic;
+            }
+            
             logic.Freeze();
+            logic.isAsyncActioning = true;
             
             if (_viewComponents.TryGetValue(viewName, out var components))
             {
@@ -287,6 +300,7 @@ namespace Twenty2.VomitLib.View
             _visibleViewMap.Add(viewName, logic);
 
             await logic.OnOpened();
+            logic.isAsyncActioning = false;
             logic.UnFreeze();
             return logic;
         }
@@ -317,6 +331,12 @@ namespace Twenty2.VomitLib.View
         /// <param name="logic"></param>
         private static async UniTask CloseViewAsync(ViewLogic logic, bool immediately)
         {
+            if (logic.isAsyncActioning)
+            {
+                LogKit.W($"Try to close an actioning view with name {logic.Name} !");
+                return;
+            }
+            
             // 清除可见字典
             if (!_visibleViewMap.Remove(logic.Name))
             {
@@ -328,6 +348,8 @@ namespace Twenty2.VomitLib.View
             {
                 _viewMap.Remove(logic.Name);
             }
+
+            logic.isAsyncActioning = true;
             // 关闭射线检测   
             logic.Freeze();
             // 取消监听器
@@ -344,7 +366,7 @@ namespace Twenty2.VomitLib.View
             {
                 await logic.OnClose();    
             }
-            
+            logic.isAsyncActioning = false;
             // 不可见
             if (logic.Config.IsCache)
             {
