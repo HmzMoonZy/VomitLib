@@ -294,86 +294,28 @@ namespace Twenty2.VomitLib.View
         #endregion
 
         #region CloseView
-
-        public static void CloseView<T>() where T : ViewLogic
+        
+        public static UniTask CloseView(ViewLogic logic)
         {
-            var viewName = typeof(T).Name;
-            if (!_visibleViewMap.TryGetValue(viewName, out var logic))
-            {
-                LogKit.W($"Try to close a view with name {viewName} that does not exist!");
-                return;
-            }
-
-            CloseView(logic);
-        }
-
-        public static void CloseView(ViewLogic logic)
-        {
-            Type type = logic.GetType();
-            
-            // 清除可见字典
-            if (!_visibleViewMap.Remove(logic.Name))
-            {
-                LogKit.W($"Try to close a view with name {logic.Name} that does not exist!");
-                return;
-            }
-            
-            // 回调生命周期事件
-            logic.UnRegisterAllViewEvents();
-            logic.OnClose().Forget();
-            logic.Cancel();
-
-            // 不可见
-            if (logic.Config.IsCache)
-            {
-                logic.OnHidden();
-                logic.transform.parent = HiddenCanvas;
-                
-                if (logic.Config.EnableAutoMask && logic.transform.GetChild(0).name == "__AutoMask")
-                {
-                    Object.Destroy(logic.transform.GetChild(0).gameObject);
-                }
-            }
-            else
-            {
-                _viewMap.Remove(logic.Name);
-                // 清理ViewComponent
-                if (_viewComponents.TryGetValue(logic.Name, out var component))
-                {
-                    foreach (var vc in component)
-                    {
-                        if (_viewMap.Values.Any(l => _viewComponents.TryGetValue(l.Name, out var components) && components.Contains(vc))) continue;
-
-                        Addressables.Release(_viewComponentPrefabs[vc.Name]);
-                        _viewComponentPrefabs.Remove(vc.Name);
-                        LogKit.I($"Release {vc.Name}");
-                    }
-                }
-                    
-                Addressables.ReleaseInstance(logic.gameObject);
-            }
-            
-            Vomit.Interface.SendEvent(new EView.Close()
-            {
-                LogicType = type,
-            });
+            return CloseViewAsync(logic, false);
         }
         
-        #endregion
-        
-        public static async UniTask CloseViewAsync<T>() where T : ViewLogic
+        public static async UniTask CloseView<T>() where T : ViewLogic
         {
             _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
-            await CloseViewAsync(logic);
+            await CloseViewAsync(logic, false);
         }
 
-        #region CloseViewAsync
-
+        public static void CloseViewImmediately(ViewLogic logic)
+        {
+            CloseViewAsync(logic, true).Forget();
+        }
+        
         /// <summary>
         /// 关闭一个UI,会立刻关闭这个UI的射线检测
         /// </summary>
         /// <param name="logic"></param>
-        private static async UniTask CloseViewAsync(ViewLogic logic)
+        private static async UniTask CloseViewAsync(ViewLogic logic, bool immediately)
         {
             // 清除可见字典
             if (!_visibleViewMap.Remove(logic.Name))
@@ -388,12 +330,21 @@ namespace Twenty2.VomitLib.View
             }
             // 关闭射线检测   
             logic.Freeze();
-            // 移除所有的 View 事件
-            logic.UnRegisterAllViewEvents();
-            // 回调生命周期事件
-            await logic.OnClose();
             // 取消监听器
             logic.Cancel();
+            // 移除所有的 View 事件
+            logic.UnRegisterAllViewEvents();
+
+            // 回调生命周期事件
+            if (immediately)
+            {
+                logic.OnClose().Forget();
+            }
+            else
+            {
+                await logic.OnClose();    
+            }
+            
             // 不可见
             if (logic.Config.IsCache)
             {
@@ -411,33 +362,17 @@ namespace Twenty2.VomitLib.View
                 Addressables.ReleaseInstance(logic.gameObject);
             }
         }
-
+        
         #endregion
 
         public static void CloseAll()
         {
             foreach (var l in _visibleViewMap.Values.ToList())
             {
-                CloseView(l);
+                CloseViewImmediately(l);
             }
         }
         
-        public static string[] CloseAll(string[] ignores)
-        {
-            string[] result = new string[_visibleViewMap.Count - ignores.Length];
-            int index = 0;
-            foreach (var l in _visibleViewMap.Values.ToList())
-            {
-                string key = l.Name;
-                if (ignores.Contains(key)) continue;
-                result[index] = key;
-                index++;
-                CloseView(l);
-            }
-
-            return result;
-        }
-
         /// <summary>
         /// 获取 T 类型的 ViewLogic.
         /// 只要它在缓存中,就能被获取到.
