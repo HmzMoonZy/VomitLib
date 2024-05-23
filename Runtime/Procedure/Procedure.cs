@@ -8,13 +8,6 @@ namespace Twenty2.VomitLib.Procedure
 {
     public static class Procedure<T> where T : struct
     {
-        public struct ProcedureChanged
-        {
-            public T Prev;
-
-            public T Curr;
-        }
-        
         public static FSM<T> Fsm;
 
         private static T s_entryID;
@@ -40,8 +33,7 @@ namespace Twenty2.VomitLib.Procedure
                 Fsm.FixedUpdate();
                 return true;
             }, PlayerLoopTiming.FixedUpdate).Forget();
-
-
+            
             if (isStart) Start();
             return;
 
@@ -92,12 +84,7 @@ namespace Twenty2.VomitLib.Procedure
         {
             return Fsm.PreviousStateId;
         }
-
-        public static IUnRegister RegisterEvent(Action<ProcedureChanged> onChanged)
-        {
-            return Vomit.Interface.RegisterEvent(onChanged);
-        }
-
+        
         /// <summary>
         /// 切换流程
         /// </summary>
@@ -106,7 +93,7 @@ namespace Twenty2.VomitLib.Procedure
         {
             Fsm.ChangeState(id);
             
-            Vomit.Interface.SendEvent(new ProcedureChanged
+            Vomit.Interface.SendEvent(new EProcedure.Changed<T>()
             {
                 Prev = GetPrevState(),
                 Curr = GetCurrState(),

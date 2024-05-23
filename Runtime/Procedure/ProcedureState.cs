@@ -46,7 +46,13 @@ namespace Twenty2.VomitLib.Procedure
         {
             OnEnter();
         }
-        
+
+        [Obsolete]
+        public void OnGUI()
+        {
+            throw new NotImplementedException();
+        }
+
         public void Exit()
         {
             foreach (var unRegister in _registers)
@@ -71,13 +77,6 @@ namespace Twenty2.VomitLib.Procedure
         {
         }
         
-        [Obsolete("暂时不支持 OnGUI")]
-        public virtual void OnGUI()
-        {
-        }
-
-
-
         /// <summary>
         /// 切换状态
         /// </summary>
