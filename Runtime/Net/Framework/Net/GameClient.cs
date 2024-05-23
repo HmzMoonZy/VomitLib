@@ -11,16 +11,43 @@ namespace Base.Net
     public class GameClient
     {
         private const float DISPATCH_MAX_TIME = 0.06f;  //每一帧最大的派发事件时间，超过这个时间则停止派发，等到下一帧再派发 
-        
+
+
+        private static GameClient _instance;
+        public static GameClient Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new GameClient();
+                }
+
+                return _instance;
+            }
+        }
+
         private NetChannel channel { get; set; }
         
         private ConcurrentQueue<Message> msgQueue = new ConcurrentQueue<Message>();
 
         private Func<Message> onDisconnected;
         
+        
         public int Port { private set; get; }
         public string Host { private set; get; }
 
+        public GameClient Init(Func<Message> onDisconnected)
+        {
+            this.onDisconnected = onDisconnected;
+            return this;
+        }
+        
+        private GameClient()
+        {
+            
+        }
+        
         public void Send(Message msg)
         {
             channel?.Write(msg);
@@ -63,16 +90,6 @@ namespace Base.Net
                 Debug.LogError(e.ToString());
                 return false;
             }
-        }
-
-        private GameClient()
-        {
-            
-        }
-        
-        public GameClient(Func<Message> onDisconnected)
-        {
-            this.onDisconnected = onDisconnected;
         }
 
         private void OnConnected()
