@@ -278,7 +278,7 @@ public class VCSwordIcon : ViewComponent
 // UI 面板
 public class ViewSwordDetail : ViewLogic
 {
-    public override UniTask OnOpened()
+    public override UniTask OnOpened(ViewParameterBase param)
     {
         // 自动加载 ViewComponent 并实例化
         var icon = View.InstantiateVC<VCSwordIcon>(transform);

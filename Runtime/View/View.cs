@@ -175,7 +175,7 @@ namespace Twenty2.VomitLib.View
         #region OpenView
 
         [Obsolete("考虑删除中, 请使用 OpenViewAsync()")]
-        private static ViewLogic OpenView(Type type)
+        private static ViewLogic OpenView(Type type, ViewParameterBase param = null)
         {
             var viewName = type.Name;
 
@@ -219,7 +219,7 @@ namespace Twenty2.VomitLib.View
             
             _visibleViewMap.Add(viewName, logic);
             
-            logic.OnOpened().Forget();
+            logic.OnOpened(param).Forget();
             
             Vomit.Interface.SendEvent(new EView.Open()
             {
@@ -233,9 +233,9 @@ namespace Twenty2.VomitLib.View
         /// <summary>
         /// 打开一个和 T 同名的 View.
         /// </summary>
-        public static T OpenView<T>() where T : ViewLogic, new()
+        public static T OpenView<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
-            return (T)OpenView(typeof(T));
+            return (T)OpenView(typeof(T), param);
         }
 
         #endregion
@@ -247,12 +247,12 @@ namespace Twenty2.VomitLib.View
         /// 直到加载完成,这个方法是同步的.
         /// 直到表现完成, 无法对UI进行交互(关闭射线检测)
         /// </summary>
-        public static async UniTask<T> OpenViewAsync<T>() where T : ViewLogic, new ()
+        public static async UniTask<T> OpenViewAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
         {
-            return (T) await OpenViewAsync(typeof(T));
+            return (T) await OpenViewAsync(typeof(T), param);
         }
         
-        private static async UniTask<ViewLogic> OpenViewAsync(Type logicType)
+        private static async UniTask<ViewLogic> OpenViewAsync(Type logicType, ViewParameterBase param = null)
         {
             var viewName = logicType.Name;
 
@@ -299,7 +299,7 @@ namespace Twenty2.VomitLib.View
             
             _visibleViewMap.Add(viewName, logic);
 
-            await logic.OnOpened();
+            await logic.OnOpened(param);
             logic.isAsyncActioning = false;
             logic.UnFreeze();
             return logic;

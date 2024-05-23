@@ -34,7 +34,7 @@ namespace Twenty2.VomitLib.View
         protected abstract void Show(CallType e, float targetAnchorX);
         protected abstract void Hide(CloseType e,  float targetAnchorX);
         
-        public override UniTask OnOpened()
+        public override UniTask OnOpened(ViewParameterBase param)
         {
             this.RegisterEvent<CallType>(__OnCallType);
             this.RegisterEvent<CloseType>(__OnCloseType);

@@ -92,7 +92,7 @@ using Twenty2.VomitLib.View;
 
 public partial class {selectName} : ViewLogic
 {{
-    public override UniTask OnOpened()
+    public override UniTask OnOpened(ViewParameterBase param)
     {{
         return UniTask.CompletedTask;
     }}

@@ -94,7 +94,7 @@ namespace Twenty2.VomitLib.View
         /// <summary>
         /// 当 ViewInfo 被展示后调用.
         /// </summary>
-        public abstract UniTask OnOpened();
+        public abstract UniTask OnOpened(ViewParameterBase param = null);
 
         /// <summary>
         /// 当 ViewInfo 被关闭时调用,不论它是 Hidden 还是 Destroy.
