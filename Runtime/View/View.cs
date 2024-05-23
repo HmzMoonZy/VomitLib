@@ -130,7 +130,7 @@ namespace Twenty2.VomitLib.View
             static void ProcessPreload(Type logic)
             {
                 var attr = logic.GetAttribute<PreloadAttribute>();
-                var viewLogic = OpenView(logic);
+                var viewLogic = OpenView(logic);    // TODO 写一个加载方法而不是调用开启面板
                 if (attr.IsHide)
                 {
                     if(!viewLogic.Config.IsCache) LogKit.E($"预加载了ui : {logic.Name} 但是不是缓存的ui,请检查!");

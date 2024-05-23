@@ -80,7 +80,7 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         [NonSerialized]
         public bool isAsyncActioning = false;
-
+        
         #region 生命周期
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Twenty2.VomitLib.View
         /// <summary>
         /// 当 ViewInfo 被展示后调用.
         /// </summary>
-        public abstract UniTask OnOpened(ViewParameterBase param = null);
+        public abstract UniTask OnOpened(ViewParameterBase param);
 
         /// <summary>
         /// 当 ViewInfo 被关闭时调用,不论它是 Hidden 还是 Destroy.
@@ -200,6 +200,19 @@ namespace Twenty2.VomitLib.View
         }
 
         #endregion
+    }
+
+    public abstract class ViewLogic<TParam> : ViewLogic where TParam : ViewParameterBase
+    {
+        protected TParam Param;
+        
+        protected abstract UniTask OnOpened(TParam param);
+        
+        public override UniTask OnOpened(ViewParameterBase param = null)
+        {
+            Param = (TParam)param;
+            return OnOpened((TParam)param);
+        }
     }
     
 }
