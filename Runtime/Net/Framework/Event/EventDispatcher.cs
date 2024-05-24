@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Geek.Client
+namespace Twenty2.VomitLib.Net
 {
     public struct Event
     {
@@ -32,7 +32,7 @@ namespace Geek.Client
             mEventHandlers = new Dictionary<Int32, EvtHandInfo>();
         }
 
-        public void addListener(Int32 evtType, Action handler)
+        public void AddListener(Int32 evtType, Action handler)
         {
             if (!mEventHandlers.ContainsKey(evtType))
                 mEventHandlers[evtType] = new EvtHandInfo();
@@ -45,7 +45,7 @@ namespace Geek.Client
         /// </summary>
         /// <param name="evtType">监听的事件类型</param>
         /// <param name="handler">回调处理</param>
-        public void addListener(Int32 evtType, Action<Event> handler)
+        public void AddListener(Int32 evtType, Action<Event> handler)
         {
             if (!mEventHandlers.ContainsKey(evtType))
                 mEventHandlers[evtType] = new EvtHandInfo();
@@ -58,7 +58,7 @@ namespace Geek.Client
         /// </summary>
         /// <param name="evtType"></param>
         /// <param name="handler"></param>
-        public void removeListener(Int32 evtType, Action handler)
+        public void RemoveListener(Int32 evtType, Action handler)
         {
             if (!mEventHandlers.ContainsKey(evtType))
                 return;
@@ -71,7 +71,7 @@ namespace Geek.Client
         /// </summary>
         /// <param name="evtType"></param>
         /// <param name="handler"></param>
-        public void removeListener(Int32 evtType, Action<Event> handler)
+        public void RemoveListener(Int32 evtType, Action<Event> handler)
         {
             if (!mEventHandlers.ContainsKey(evtType))
                 return;
@@ -90,31 +90,31 @@ namespace Geek.Client
         /// </summary>
         /// <param name="evtType">Evt type.</param>
         /// <param name="parameter">Parameter.</param> 
-        public void dispatchEvent(int evtType, object parameter = null)
+        public void DispatchEvent(int evtType, object parameter = null)
         {
             Event evt = new Event();
             evt.EventId = evtType;
             evt.Data = parameter;
-            dispatchEvent(evt);
+            DispatchEvent(evt);
         }
 
-        public void dispatchEvent(BaseEventID evtType, object param = null)
+        public void DispatchEvent(BaseEventID evtType, object param = null)
         {
             Event evt = new Event();
             evt.EventId = (int)evtType;
             evt.Data = param;
-            dispatchEvent(evt);
+            DispatchEvent(evt);
         }
 
         /// <summary>
         /// 分派事件
         /// </summary>
         /// <param name="evt"></param>
-        public void dispatchEvent(Event evt)
+        public void DispatchEvent(Event evt)
         {
             try
             {
-                handleEvent(evt);
+                HandleEvent(evt);
             }
             catch (System.Exception e)
             {
@@ -126,7 +126,7 @@ namespace Geek.Client
         /// 处理事件
         /// </summary>
         /// <param name="evt"></param>  
-        private void handleEvent(Event evt)
+        private void HandleEvent(Event evt)
         {
             var evtId = evt.EventId;
             if (!mEventHandlers.ContainsKey(evt.EventId))
@@ -141,7 +141,7 @@ namespace Geek.Client
         /// <summary>
         /// 清除所有未分发的事件
         /// </summary>
-        public void clear()
+        public void Clear()
         {
             mEventHandlers.Clear();
         }

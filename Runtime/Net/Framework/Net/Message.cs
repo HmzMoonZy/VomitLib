@@ -1,6 +1,5 @@
 ﻿using MessagePack;
 
-
 [MessagePackObject(true)]
 public class Message
 {
@@ -8,7 +7,6 @@ public class Message
     /// 消息唯一id
     /// </summary>
     public int UniId { get; set; }
-    [IgnoreMember]
-    public virtual int MsgId { get; }
 
+    [IgnoreMember] public virtual int MsgId { get; }
 }

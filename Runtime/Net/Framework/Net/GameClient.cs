@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 
-namespace Base.Net
+namespace Twenty2.VomitLib.Net
 {
     public class GameClient
     {
@@ -36,23 +36,18 @@ namespace Base.Net
         
         public int Port { private set; get; }
         public string Host { private set; get; }
-
-        public GameClient Init(Func<Message> onDisconnected)
-        {
-            this.onDisconnected = onDisconnected;
-            return this;
-        }
         
         private GameClient()
         {
             
         }
         
-        public void Send(Message msg)
+        public GameClient Init(Func<Message> onDisconnected)
         {
-            channel?.Write(msg);
+            this.onDisconnected = onDisconnected;
+            return this;
         }
-
+        
         public async Task<bool> Connect(string host, int port, int timeOut = 5000)
         {
             Host = host;
@@ -91,9 +86,15 @@ namespace Base.Net
                 return false;
             }
         }
+        
+        public void Send(Message msg)
+        {
+            channel?.Write(msg);
+        }
 
         private void OnConnected()
         {
+            
         }
 
         public void OnDisConnected()
@@ -144,7 +145,7 @@ namespace Base.Net
 
                 try
                 {
-                    evt.dispatchEvent(msg.MsgId, msg);
+                    evt.DispatchEvent(msg.MsgId, msg);
                 }
                 catch (Exception e)
                 {

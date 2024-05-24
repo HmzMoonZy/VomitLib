@@ -1,6 +1,6 @@
 using System.Net.Sockets;
 
-namespace Base.Net
+namespace Twenty2.VomitLib.Net
 {
     public class NetUtils
     {
