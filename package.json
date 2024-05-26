@@ -6,7 +6,7 @@
   "author": {
     "name": "TwenTy2"
   },
-  "description": "\u96c6\u6210 QFrame \\ UniTask \\ Addressable\n\n\u5e76\u5229\u7528\u5176\u5b9e\u73b0\u4e86\u5404\u79cd\u65b9\u4fbf\u7684\u6846\u67b6\u548c\u5de5\u5177",
+  "description": "\u96c6\u6210 QFrame \\ UniTask \\ Addressable\n\n\u5e76\u5229\u7528\u5176\u5b9e\u73b0\u4e86\u5404\u79cd\u65b9\u4fbf\u7684\u6846\u67b6\u548c\u5de5\u5177\n\n\u8fd9\u662f\u7b80\u5316\u4e86Qframework\u7684\u7248\u672c, \u4ec5\u4fdd\u7559\u80fd\u591f\u638c\u63a7\u7684\u6a21\u5757",
   "dependencies": {
     "com.unity.addressables": "1.21.18",
     "com.cysharp.unitask": "2.4.0",
