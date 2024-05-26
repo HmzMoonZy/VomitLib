@@ -21,15 +21,15 @@ var transform = gameObject.transform;
 var selfScript = gameObject.AddComponent<MonoBehaviour>();
 var boxCollider = gameObject.AddComponent<BoxCollider>();
 //
-gameObject.Show(); // gameObject.SetActive(true)
-selfScript.Show(); // this.gameObject.SetActive(true)
-boxCollider.Show(); // boxCollider.gameObject.SetActive(true)
-gameObject.transform.Show(); // transform.gameObject.SetActive(true)
+gameObject.Active(); // gameObject.SetActive(true)
+selfScript.Active(); // this.gameObject.SetActive(true)
+boxCollider.Active(); // boxCollider.gameObject.SetActive(true)
+gameObject.transform.Active(); // transform.gameObject.SetActive(true)
 //
-gameObject.Hide(); // gameObject.SetActive(false)
-selfScript.Hide(); // this.gameObject.SetActive(false)
-boxCollider.Hide(); // boxCollider.gameObject.SetActive(false)
-transform.Hide(); // transform.gameObject.SetActive(false)
+gameObject.Inactive(); // gameObject.SetActive(false)
+selfScript.Inactive(); // this.gameObject.SetActive(false)
+boxCollider.Inactive(); // boxCollider.gameObject.SetActive(false)
+transform.Inactive(); // transform.gameObject.SetActive(false)
 //
 selfScript.DestroyGameObj();
 boxCollider.DestroyGameObj();
@@ -66,10 +66,10 @@ transform.Layer(""Default"");
         [APIDescriptionCN("gameObject.SetActive(true)")]
         [APIDescriptionEN("gameObject.SetActive(true)")]
         [APIExampleCode(@"
-new GameObject().Show();
+new GameObject().Active();
 ")]
 #endif
-        public static GameObject Show(this GameObject selfObj)
+        public static GameObject Active(this GameObject selfObj)
         {
             selfObj.SetActive(true);
             return selfObj;
@@ -80,12 +80,12 @@ new GameObject().Show();
         [APIDescriptionCN("script.gameObject.SetActive(true)")]
         [APIDescriptionEN("script.gameObject.SetActive(true)")]
         [APIExampleCode(@"
-GetComponent<MyScript>().Show();
+GetComponent<MyScript>().Active();
 ")]
 #endif
-        public static T Show<T>(this T selfComponent) where T : Component
+        public static T Active<T>(this T selfComponent) where T : Component
         {
-            selfComponent.gameObject.Show();
+            selfComponent.gameObject.Active();
             return selfComponent;
         }
 
@@ -96,10 +96,10 @@ GetComponent<MyScript>().Show();
         [APIDescriptionCN("gameObject.SetActive(false)")]
         [APIDescriptionEN("gameObject.SetActive(false)")]
         [APIExampleCode(@"
-gameObject.Hide();
+gameObject.Inactive();
 ")]
 #endif
-        public static GameObject Hide(this GameObject selfObj)
+        public static GameObject Inactive(this GameObject selfObj)
         {
             selfObj.SetActive(false);
             return selfObj;
@@ -111,12 +111,12 @@ gameObject.Hide();
         [APIDescriptionCN("myScript.gameObject.SetActive(false)")]
         [APIDescriptionEN("myScript.gameObject.SetActive(false)")]
         [APIExampleCode(@"
-GetComponent<MyScript>().Hide();
+GetComponent<MyScript>().Inactive();
 ")]
 #endif
-        public static T Hide<T>(this T selfComponent) where T : Component
+        public static T Inactive<T>(this T selfComponent) where T : Component
         {
-            selfComponent.gameObject.Hide();
+            selfComponent.gameObject.Inactive();
             return selfComponent;
         }
 
