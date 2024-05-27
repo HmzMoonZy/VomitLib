@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine;
+using Cysharp.Threading.Tasks;
+using QFramework;
+
 
 namespace Twenty2.VomitLib.Net
 {
@@ -11,39 +14,41 @@ namespace Twenty2.VomitLib.Net
 
         private static readonly Dictionary<int, MsgWaiter> WaiterMap = new Dictionary<int, MsgWaiter>();
         
-        public static async Task<bool> StartWait(int uniId)
+        public static async UniTask<bool> StartWait(int uniId, int timeout = 10000)
         {
             if (WaiterMap.ContainsKey(uniId))
             {
-                Debug.LogError("发现重复消息id：" + uniId);
+                LogKit.E("发现重复消息id：" + uniId);
                 return true;
             }
 
             var waiter = new MsgWaiter();
             WaiterMap.Add(uniId, waiter);
-            return await waiter.Start().Task;
+            waiter.Start(timeout);
+
+            return await waiter.Tcs.Task;
         }
 
         public static void EndWait(int uniId, bool result)
         {
-            Debug.Log("结束等待消息:" + uniId);
+            LogKit.I("结束等待消息:" + uniId);
             if (!result)
             {
-                Debug.LogError("await失败：" + uniId);
+                LogKit.E("await失败：" + uniId);
             }
             
             if (!WaiterMap.ContainsKey(uniId))
             {
                 if (uniId > 0)
                 {
-                    Debug.LogError("找不到EndWait：" + uniId + ">size：" + WaiterMap.Count);
+                    LogKit.E("找不到EndWait：" + uniId + ">size：" + WaiterMap.Count);
                 }
 
                 return;
             }
 
             var waiter = WaiterMap[uniId];
-            waiter.End(result);
+            waiter.Done(result);
             WaiterMap.Remove(uniId);
             if (WaiterMap.Count <= 0) //所有等待的消息都回来了再解屏
             {
@@ -58,7 +63,9 @@ namespace Twenty2.VomitLib.Net
         public static void Clear()
         {
             foreach (var kv in WaiterMap)
-                kv.Value.End(false);
+            { 
+                kv.Value.Done(false);
+            }
             WaiterMap.Clear();
         }
         
@@ -101,31 +108,25 @@ namespace Twenty2.VomitLib.Net
 
         #endregion
         
-        private TaskCompletionSource<bool> Tcs { set; get; }
+        private UniTaskCompletionSource<bool> Tcs { get; set; }
+
+        private Timer Timer { get; set; }
         
-        private Timer Timer { set; get; }
-        
-        private TaskCompletionSource<bool> Start()
+        private void Start(int timeout)
         {
-            Tcs = new TaskCompletionSource<bool>();
-            Timer = new Timer(TimeOut, null, 10000, -1);
-            return Tcs;
+            Tcs = new UniTaskCompletionSource<bool>();
+            Timer = new Timer(_ =>
+            {
+                Done(false);
+                UnityEngine.Debug.LogError("等待消息超时");
+            }, null, timeout, -1);
         }
 
-        public void End(bool result)
+        private void Done(bool result)
         {
             Timer.Dispose();
-            if (Tcs != null)
-            {
-                Tcs.TrySetResult(result);
-            }
+            Tcs?.TrySetResult(result);
             Tcs = null;
-        }
-
-        private void TimeOut(object state)
-        {
-            End(false);
-            UnityEngine.Debug.LogError("等待消息超时");
         }
     }
 }

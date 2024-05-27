@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using QFramework;
 
 namespace Twenty2.VomitLib.Net
@@ -8,16 +8,15 @@ namespace Twenty2.VomitLib.Net
     /// <summary>
     /// 网络事件监听（不允许有多个监听，多个后来者顶替前一个）
     /// </summary>
-    /// TODO 兼容UniTask
     public abstract class AbstractNetSystem : AbstractSystem
     {
         protected abstract override void OnInit();
 
         #region Message
         
-        protected static int UniId = 200;
+        private static int UniId = 200;
         
-        protected virtual Task SendMsg(Message msg)
+        protected UniTask SendMsg(Message msg)
         {
             msg.UniId = UniId++;
             GameClient.Instance.Send(msg);
@@ -29,17 +28,17 @@ namespace Twenty2.VomitLib.Net
         {
             return msg as T;
         }
-        
 
         #endregion
 
         #region Evnets
 
         private readonly Dictionary<int, Action<Event>> _evtMap = new();
-
-        protected void AddNetListener(int id, Action<Event> handler)
+        
+        protected void RegisterEvent(int msgId, Action<Event> handler)
         {
-            int evtId = id;
+            LogKit.I($"Register {msgId}");
+            int evtId = msgId;
             if (!_evtMap.TryAdd(evtId, handler))
             {
                 //去重，一个网络消息只要一个监听
@@ -48,31 +47,37 @@ namespace Twenty2.VomitLib.Net
                 _evtMap[evtId] = handler;
             }
 
-            Net.ED.AddListener(id, handler);
+            Net.ED.AddListener(msgId, handler);
         }
 
-        protected void RemoveListener(int id, Action<Event> handler)
+        protected void UnRegisterEvent(int msgId, Action<Event> handler)
         {
-            int evtId = id;
+            int evtId = msgId;
             if (!_evtMap.ContainsKey(evtId))
+            {
                 return;
+            }
             _evtMap[evtId] -= handler;
-            Net.ED.RemoveListener(id, handler);
+            Net.ED.RemoveListener(msgId, handler);
         }
 
-        protected void RemoveListeners(int id)
+        protected void UnRegisterEvent(int msgId)
         {
-            int evtId = id;
+            int evtId = msgId;
             if (!_evtMap.ContainsKey(evtId))
+            {
                 return;
-            Net.ED.RemoveListener(id, _evtMap[evtId]);
+            }
+            Net.ED.RemoveListener(msgId, _evtMap[evtId]);
             _evtMap.Remove(evtId);
         }
 
         protected void ClearListeners()
         {
             foreach (var kv in _evtMap)
+            {
                 Net.ED.RemoveListener(kv.Key, kv.Value);
+            }
             _evtMap.Clear();
         }
 
