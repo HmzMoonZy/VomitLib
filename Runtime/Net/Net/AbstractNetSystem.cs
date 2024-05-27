@@ -15,7 +15,7 @@ namespace Twenty2.VomitLib.Net
 
         #region Message
         
-        protected int UniId = 200;
+        protected static int UniId = 200;
         
         protected virtual Task SendMsg(Message msg)
         {
@@ -44,11 +44,11 @@ namespace Twenty2.VomitLib.Net
             {
                 //去重，一个网络消息只要一个监听
                 LogKit.E("重复注册网络事件>" + evtId);
-                Net.Ned.RemoveListener(evtId, _evtMap[evtId]);
+                Net.ED.RemoveListener(evtId, _evtMap[evtId]);
                 _evtMap[evtId] = handler;
             }
 
-            Net.Ned.AddListener(id, handler);
+            Net.ED.AddListener(id, handler);
         }
 
         protected void RemoveListener(int id, Action<Event> handler)
@@ -57,7 +57,7 @@ namespace Twenty2.VomitLib.Net
             if (!_evtMap.ContainsKey(evtId))
                 return;
             _evtMap[evtId] -= handler;
-            Net.Ned.RemoveListener(id, handler);
+            Net.ED.RemoveListener(id, handler);
         }
 
         protected void RemoveListeners(int id)
@@ -65,14 +65,14 @@ namespace Twenty2.VomitLib.Net
             int evtId = id;
             if (!_evtMap.ContainsKey(evtId))
                 return;
-            Net.Ned.RemoveListener(id, _evtMap[evtId]);
+            Net.ED.RemoveListener(id, _evtMap[evtId]);
             _evtMap.Remove(evtId);
         }
 
         protected void ClearListeners()
         {
             foreach (var kv in _evtMap)
-                Net.Ned.RemoveListener(kv.Key, kv.Value);
+                Net.ED.RemoveListener(kv.Key, kv.Value);
             _evtMap.Clear();
         }
 

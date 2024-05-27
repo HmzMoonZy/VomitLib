@@ -10,7 +10,7 @@ namespace Twenty2.VomitLib.Net
 { 
     public static class Net
     {
-        public static EventDispatcher Ned;
+        public static EventDispatcher ED;
         
         private static CancellationTokenSource _netCancellationToken;
 
@@ -21,13 +21,13 @@ namespace Twenty2.VomitLib.Net
             PolymorphicTypeMapper.Register<Message>();
             PolymorphicResolver.Instance.Init();
             
-            Ned = new EventDispatcher();
+            ED = new EventDispatcher();
             
             GameClient.Instance.Init(onDisconnected);
             
             UniTask.WaitWhile(() =>
             {
-                GameClient.Instance.Update(Ned);
+                GameClient.Instance.Update(ED);
                 return true;
             }, PlayerLoopTiming.Update, cancellationToken: _netCancellationToken.Token).Forget();
         }
