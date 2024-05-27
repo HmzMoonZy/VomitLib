@@ -133,7 +133,7 @@ namespace Twenty2.VomitLib.View
                 if (attr.IsHide)
                 {
                     if(!viewLogic.Config.IsCache) LogKit.E($"预加载了ui : {logic.Name} 但是不是缓存的ui,请检查!");
-                    CloseView(viewLogic);
+                    CloseViewImmediately(viewLogic);
                 }
             }
 
@@ -290,29 +290,21 @@ namespace Twenty2.VomitLib.View
         public static void CloseView<T>()
         {
             _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
-            CloseView(logic);
+            CloseViewAsync(logic, false).Forget();
         }
         
-        public static void CloseView(ViewLogic logic)
+        public static UniTask CloseViewAsync<T>()
+        {
+            _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
+            return CloseViewAsync(logic, false);
+        }
+        
+        public static void CloseViewImmediately(ViewLogic logic)
         {
             CloseViewAsync(logic, true).Forget();
         }
         
-        public static async UniTask CloseViewAsync<T>() where T : ViewLogic
-        {
-            _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
-            await CloseViewAsync(logic, false);
-        }
-        
-        public static void CloseAll()
-        {
-            foreach (var l in _visibleViewMap.Values.ToList())
-            {
-                CloseView(l);
-            }
-        }
-        
-        private static async UniTask CloseViewAsync(ViewLogic logic, bool immediately)
+        public static async UniTask CloseViewAsync(ViewLogic logic, bool immediately)
         {
             if (logic is null) return;
             
@@ -370,7 +362,13 @@ namespace Twenty2.VomitLib.View
             }
         }
         
-
+        public static void CloseAll()
+        {
+            foreach (var l in _visibleViewMap.Values.ToList())
+            {
+                CloseViewImmediately(l);
+            }
+        }
         
         #endregion
         
@@ -625,7 +623,7 @@ namespace Twenty2.VomitLib.View
                 mask.GetAsyncPointerClickTrigger().ForEachAwaitAsync(async _ =>
                 {
                     await UniTask.NextFrame();
-                    CloseView(logic);
+                    CloseViewAsync(logic, false).Forget();
                 }, mask.gameObject.GetCancellationTokenOnDestroy());
             }
         }

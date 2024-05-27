@@ -152,7 +152,7 @@ namespace Twenty2.VomitLib.View
         
         protected void CloseSelf()
         {
-            View.CloseView(this);
+            View.CloseViewAsync(this, false).Forget();
         }
 
         public void Freeze()
