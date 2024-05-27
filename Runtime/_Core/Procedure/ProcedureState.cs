@@ -47,12 +47,6 @@ namespace Twenty2.VomitLib.Procedure
             OnEnter();
         }
 
-        [Obsolete]
-        public void OnGUI()
-        {
-            throw new NotImplementedException();
-        }
-
         public void Exit()
         {
             foreach (var unRegister in _registers)

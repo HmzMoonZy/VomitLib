@@ -18,7 +18,6 @@ namespace QFramework
         void Enter();
         void Update();
         void FixedUpdate();
-        void OnGUI();
         void Exit();
     }
     
@@ -189,11 +188,6 @@ namespace QFramework
             SecondsOfCurrentState += Time.deltaTime;
         }
 
-        public void OnGUI()
-        {
-            mCurrentState?.OnGUI();
-        }
-
         public void Clear()
         {
             mCurrentState = null;
@@ -233,11 +227,7 @@ namespace QFramework
         {
             OnFixedUpdate();
         }
-
-        public virtual void OnGUI()
-        {
-        }
-
+        
         void IState.Exit()
         {
             OnExit();
