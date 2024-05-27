@@ -125,12 +125,11 @@ namespace Twenty2.VomitLib.View
             {
                 ProcessPreload(preload);
             }
-
             
             static void ProcessPreload(Type logic)
             {
                 var attr = logic.GetAttribute<PreloadAttribute>();
-                var viewLogic = OpenView(logic);    // TODO 写一个加载方法而不是调用开启面板
+                var viewLogic = OpenViewImmediately(logic);    // TODO 写一个加载方法而不是调用开启面板
                 if (attr.IsHide)
                 {
                     if(!viewLogic.Config.IsCache) LogKit.E($"预加载了ui : {logic.Name} 但是不是缓存的ui,请检查!");
@@ -173,9 +172,29 @@ namespace Twenty2.VomitLib.View
         public static void SetBeforeClickBtnAction(Action action) => _beforeClickButton = action;
         
         #region OpenView
-
-        [Obsolete("考虑删除中, 请使用 OpenViewAsync()")]
-        private static ViewLogic OpenView(Type type, ViewParameterBase param = null)
+        
+        /// <summary>
+        /// 打开一个和 T 同名的 View.
+        /// </summary>
+        public static void OpenView<T>(ViewParameterBase param = null) where T : ViewLogic, new()
+        {
+             OpenViewAsync(typeof(T), param).Forget();
+        }
+        
+        /// <summary>
+        /// 打开一个和 T 同名的 View.
+        /// </summary>
+        public static T OpenViewImmediately<T>(ViewParameterBase param = null) where T : ViewLogic, new()
+        {
+            return (T)OpenViewImmediately(typeof(T), param);
+        }
+        
+        /// <summary>
+        /// 立刻打开一个和 T 同名的 View.
+        /// 这个方法不等待动画结束.
+        /// 也不会阻止你和UI交互
+        /// </summary>
+        private static ViewLogic OpenViewImmediately(Type type, ViewParameterBase param = null)
         {
             var viewName = type.Name;
 
@@ -184,66 +203,18 @@ namespace Twenty2.VomitLib.View
                 LogKit.I($"Try to open an already showed the View : {viewName}");
                 return logic;
             }
-
+            
             logic = LoadOrGenerateViewLogic(type);
             
-            if (logic.isAsyncActioning)
-            {
-                LogKit.I($"Try to open an actioning view : {viewName}");
-                return logic;
-            }
+            OnLoadLogic(logic);
 
-            if (_viewComponents.TryGetValue(viewName, out var components))
-            {
-                foreach (var component in components)
-                {
-                    LoadViewComponent(component.Name);
-                }
-            }
-
-            if (logic.Config.EnableAutoMask)
-            {
-                AutoGenerateViewMask(logic);
-            }
-            
-            if (!logic.gameObject.activeSelf)
-            {
-                logic.gameObject.SetActive(true);
-            }
-
-            logic.transform.parent = Root.transform;
-            logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
-            logic.ViewCanvas.worldCamera = ViewCamera;
-            logic.ViewCanvas.sortingLayerID = (int) logic.Config.Layer;
-            logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
-            
-            _visibleViewMap.Add(viewName, logic);
-            
             logic.OnOpened(param).Forget();
-            
-            Vomit.Interface.SendEvent(new EView.Open()
-            {
-                LogicType = type,
-                ViewLogic = logic,
-            });
             
             return logic;
         }
         
         /// <summary>
-        /// 打开一个和 T 同名的 View.
-        /// </summary>
-        public static T OpenView<T>(ViewParameterBase param = null) where T : ViewLogic, new()
-        {
-            return (T)OpenView(typeof(T), param);
-        }
-
-        #endregion
-        
-        #region OpenViewAsync
-
-        /// <summary>
-        /// 异步打开一个View.
+        /// 异步打开一个View, 直到预期的动画结束.
         /// 直到加载完成,这个方法是同步的.
         /// 直到表现完成, 无法对UI进行交互(关闭射线检测)
         /// </summary>
@@ -264,16 +235,28 @@ namespace Twenty2.VomitLib.View
 
             logic = LoadOrGenerateViewLogic(logicType);
             
-            if (logic.isAsyncActioning)
-            {
-                LogKit.I($"Try to open an actioning view : {viewName}");
-                return logic;
-            }
+            OnLoadLogic(logic);
             
             logic.Freeze();
             logic.isAsyncActioning = true;
+
+            await logic.OnOpened(param);
             
-            if (_viewComponents.TryGetValue(viewName, out var components))
+            logic.isAsyncActioning = false;
+            logic.UnFreeze();
+            
+            return logic;
+        }
+        
+        private static void OnLoadLogic(ViewLogic logic)
+        {
+            if (logic.isAsyncActioning)
+            {
+                LogKit.I($"Try to open an actioning view : {logic.Name}");
+                return;
+            }
+            
+            if (_viewComponents.TryGetValue(logic.Name, out var components))
             {
                 foreach (var component in components)
                 {
@@ -290,47 +273,49 @@ namespace Twenty2.VomitLib.View
             {
                 logic.gameObject.SetActive(true);
             }
-
+            
             logic.transform.parent = Root.transform;
             logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
             logic.ViewCanvas.worldCamera = ViewCamera;
             logic.ViewCanvas.sortingLayerID = (int) logic.Config.Layer;
             logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
             
-            _visibleViewMap.Add(viewName, logic);
-
-            await logic.OnOpened(param);
-            logic.isAsyncActioning = false;
-            logic.UnFreeze();
-            return logic;
+            _visibleViewMap.Add(logic.Name, logic);
         }
-
+        
         #endregion
-
+        
         #region CloseView
         
-        public static UniTask CloseView(ViewLogic logic)
-        {
-            return CloseViewAsync(logic, false);
-        }
-        
-        public static async UniTask CloseView<T>() where T : ViewLogic
+        public static void CloseView<T>()
         {
             _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
-            await CloseViewAsync(logic, false);
+            CloseView(logic);
         }
-
-        public static void CloseViewImmediately(ViewLogic logic)
+        
+        public static void CloseView(ViewLogic logic)
         {
             CloseViewAsync(logic, true).Forget();
         }
         
-        /// <summary>
-        /// 关闭一个UI,会立刻关闭这个UI的射线检测
-        /// </summary>
-        /// <param name="logic"></param>
+        public static async UniTask CloseViewAsync<T>() where T : ViewLogic
+        {
+            _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
+            await CloseViewAsync(logic, false);
+        }
+        
+        public static void CloseAll()
+        {
+            foreach (var l in _visibleViewMap.Values.ToList())
+            {
+                CloseView(l);
+            }
+        }
+        
         private static async UniTask CloseViewAsync(ViewLogic logic, bool immediately)
         {
+            if (logic is null) return;
+            
             if (logic.isAsyncActioning)
             {
                 LogKit.W($"Try to close an actioning view with name {logic.Name} !");
@@ -385,15 +370,9 @@ namespace Twenty2.VomitLib.View
             }
         }
         
-        #endregion
 
-        public static void CloseAll()
-        {
-            foreach (var l in _visibleViewMap.Values.ToList())
-            {
-                CloseViewImmediately(l);
-            }
-        }
+        
+        #endregion
         
         /// <summary>
         /// 获取 T 类型的 ViewLogic.
