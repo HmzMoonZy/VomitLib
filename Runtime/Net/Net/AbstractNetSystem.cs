@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using QFramework;
+using UnityEngine.Networking;
 
 namespace Twenty2.VomitLib.Net
 {
@@ -22,6 +23,11 @@ namespace Twenty2.VomitLib.Net
             GameClient.Instance.Send(msg);
             LogKit.I("开始等待消息:" + msg.UniId);
             return MsgWaiter.StartWait(msg.UniId);
+        }
+
+        protected async UniTask<UnityWebRequest> SendMsg(string httpUrl)
+        {
+            return await UnityWebRequest.Get(httpUrl).SendWebRequest();
         }
 
         protected T GetCurMsg<T>(object msg) where T : Message, new()

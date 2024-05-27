@@ -24,9 +24,7 @@ namespace Twenty2.VomitLib.Net
 
             var waiter = new MsgWaiter();
             WaiterMap.Add(uniId, waiter);
-            waiter.Start(timeout);
-
-            return await waiter.Tcs.Task;
+            return await waiter.Start(timeout).Task;
         }
 
         public static void EndWait(int uniId, bool result)
@@ -112,7 +110,7 @@ namespace Twenty2.VomitLib.Net
 
         private Timer Timer { get; set; }
         
-        private void Start(int timeout)
+        private UniTaskCompletionSource<bool> Start(int timeout)
         {
             Tcs = new UniTaskCompletionSource<bool>();
             Timer = new Timer(_ =>
@@ -120,6 +118,8 @@ namespace Twenty2.VomitLib.Net
                 Done(false);
                 UnityEngine.Debug.LogError("等待消息超时");
             }, null, timeout, -1);
+
+            return Tcs;
         }
 
         private void Done(bool result)
