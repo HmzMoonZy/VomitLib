@@ -10,5 +10,8 @@ namespace Twenty2.VomitLib.Config
 
         [Header("ClientDB 配置")] 
         public ClientDBConfig ClientDBConfig;
+
+        [Header("Audio 配置")]
+        public AudioConfig AudioConfig;
     }
 }
