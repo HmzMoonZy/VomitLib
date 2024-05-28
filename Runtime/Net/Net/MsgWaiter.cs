@@ -73,7 +73,7 @@ namespace Twenty2.VomitLib.Net
             
             foreach (var item in WaiterMap)
             {
-                item.Value.Timer?.Dispose();
+                item.Value._timeoutCancellation?.CancelAndDispose();
             }
         }
 
@@ -106,27 +106,39 @@ namespace Twenty2.VomitLib.Net
 
         #endregion
         
-        private UniTaskCompletionSource<bool> Tcs { get; set; }
+        private UniTaskCompletionSource<bool> _tcs { get; set; }
 
-        private Timer Timer { get; set; }
+        private CancellationTokenSource  _timeoutCancellation { get; set; }
         
-        private UniTaskCompletionSource<bool> Start(int timeout)
+        private UniTaskCompletionSource<bool> Start(int millisecondsDelay)
         {
-            Tcs = new UniTaskCompletionSource<bool>();
-            Timer = new Timer(_ =>
+            _tcs = new UniTaskCompletionSource<bool>();
+
+            _timeoutCancellation = new CancellationTokenSource();
+            UniTask.Create(async () =>
             {
+                var isCancel = await UniTask.Delay(
+                        millisecondsDelay, 
+                        false, 
+                        PlayerLoopTiming.Update, 
+                        _timeoutCancellation.Token).SuppressCancellationThrow();
+                if (isCancel)
+                {
+                    return;
+                }
                 Done(false);
                 UnityEngine.Debug.LogError("等待消息超时");
-            }, null, timeout, -1);
+            });
 
-            return Tcs;
+            return _tcs;
         }
 
         private void Done(bool result)
         {
-            Timer.Dispose();
-            Tcs?.TrySetResult(result);
-            Tcs = null;
+            _timeoutCancellation?.CancelAndDispose();
+            _timeoutCancellation = null;
+            _tcs?.TrySetResult(result);
+            _tcs = null;
         }
     }
 }

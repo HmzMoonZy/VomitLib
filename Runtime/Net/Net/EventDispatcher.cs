@@ -117,14 +117,14 @@ namespace Twenty2.VomitLib.Net
         /// <param name="evt"></param>
         public void DispatchEvent(Event evt)
         {
-            // try
+            try
             {
                 HandleEvent(evt);
             }
-            // catch (System.Exception e)
-            // {
-            //     UnityEngine.Debug.LogError($"evtId={evt.EventId} {e.ToString()}");
-            // }
+            catch (System.Exception e)
+            {
+                UnityEngine.Debug.LogError($"evtId={evt.EventId} {e.ToString()}");
+            }
         }
 
         /// <summary>
