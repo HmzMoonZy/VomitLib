@@ -10,26 +10,38 @@ namespace Twenty2.VomitLib.Net
 { 
     public static class Net
     {
-        public static EventDispatcher ED;
+        public static EventDispatcher Dispatcher;
         
         private static CancellationTokenSource _netCancellationToken;
 
-        public static void Init(IFormatterResolver generatedResolver, Func<Message> onDisconnected)
+        private static Func<Event, ValueTuple<int, bool>> _errCodeHandler;
+
+        public static void Init(IFormatterResolver generatedResolver, Func<Message> onDisconnected, int errCodeMsgId, Func<Event, ValueTuple<int, bool>> errCodeHandler)
         {
             _netCancellationToken = new();
+            _errCodeHandler = errCodeHandler;
+            
+            Dispatcher = new EventDispatcher();
+            Dispatcher.AddListener(errCodeMsgId, e =>
+            {
+                (int uniId, bool suc) result = _errCodeHandler.Invoke(e);
+                MsgWaiter.EndWait(result.uniId, result.suc);
+            });
+            
             PolymorphicResolver.AddInnerResolver(generatedResolver);
             PolymorphicTypeMapper.Register<Message>();
             PolymorphicResolver.Instance.Init();
-            
-            ED = new EventDispatcher();
             
             GameClient.Instance.Init(onDisconnected);
             
             UniTask.WaitWhile(() =>
             {
-                GameClient.Instance.Update(ED);
+                GameClient.Instance.Update(Dispatcher);
                 return true;
             }, PlayerLoopTiming.Update, cancellationToken: _netCancellationToken.Token).Forget();
+
+
+
         }
 
         public static void Shutdown()

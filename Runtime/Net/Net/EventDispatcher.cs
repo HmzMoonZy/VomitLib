@@ -8,6 +8,11 @@ namespace Twenty2.VomitLib.Net
         public static Event NULL = new Event();
         public int EventId;
         public object Data;
+
+        public T GetMessage<T>() where T : Message
+        {
+            return (T)Data;
+        }
     }
     
     public class EventDispatcher
@@ -112,14 +117,14 @@ namespace Twenty2.VomitLib.Net
         /// <param name="evt"></param>
         public void DispatchEvent(Event evt)
         {
-            try
+            // try
             {
                 HandleEvent(evt);
             }
-            catch (System.Exception e)
-            {
-                UnityEngine.Debug.LogError($"evtId={evt.EventId} {e.ToString()}");
-            }
+            // catch (System.Exception e)
+            // {
+            //     UnityEngine.Debug.LogError($"evtId={evt.EventId} {e.ToString()}");
+            // }
         }
 
         /// <summary>
