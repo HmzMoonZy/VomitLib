@@ -57,7 +57,22 @@ namespace Twenty2.VomitLib.Audio
                 #endif
             }
         }
-
+        
+        public static void PlayBgm(string bgm, bool isLoop)
+        {
+            PlayBgm(SearchAudio(bgm, false), 0, isLoop, null);
+        }
+        
+        public static void PlayBgm(string bgm, float mix, Action onPlayFinished)
+        {
+            PlayBgm(SearchAudio(bgm, false), mix, false, onPlayFinished);
+        }
+        
+        public static void PlaySE(string se)
+        {
+            PlaySE(SearchAudio(se, true));
+        }
+        
         public static void SetSEVolume(float v)
         {
             _seVolume = v;
@@ -68,54 +83,52 @@ namespace Twenty2.VomitLib.Audio
             _bgmVolume = v;
         }
         
-        public static void PlayBgm(string bgm, bool isLoop = true)
+        private static void PlaySE(AudioClip se)
         {
-            PlayBgm(SearchAudio(bgm), isLoop);
-        }
-
-        public static void PlayBgm(AudioClip bgm, bool isLoop = true)
-        {
-            _as.clip = bgm;
-            _as.loop = isLoop;
-            _as.Play();
+            _as.PlayOneShot(se, _seVolume);
         }
         
-        public static void PlayBgm(string bgm, Action onPlayFinished)
+        // 混合
+        private static void PlayBgm(AudioClip bgm, float mix, bool isLoop, Action onPlayFinished)
         {
-            PlayBgm(SearchAudio(bgm), onPlayFinished);
-        }
+            if (bgm != _as.clip)
+            {
+                Addressables.Release(_as.clip);
+            }
 
-        public static void PlayBgm(AudioClip bgm, Action onPlayFinished)
-        {
-            PlayBgm(bgm, false);
-
+            if (mix > 0)
+            {
+                // TODO 混合音频
+            }
+            
+            _as.clip = bgm;
+            _as.loop = isLoop;
+            _as.volume = _bgmVolume;
+            _as.Play();
+            
             UniTask.Create(async () =>
             {
                 await UniTask.Delay((int)bgm.length * 1000 + 200);
                 onPlayFinished?.Invoke();
             });
         }
-        
-        public static void PlaySE(AudioClip se)
-        {
-            _as.PlayOneShot(se, _seVolume);
-        }
 
-        public static void PlaySE(string se)
-        {
-            PlaySE(SearchAudio(se));
-        }
 
-        private static AudioClip SearchAudio(string key)
+        private static AudioClip SearchAudio(string key, bool isCache)
         {
             if (_audioClipsCache.TryGetValue(key, out var ret))
             {
                 return ret;
             }
 
-            _audioClipsCache.Add(key, Addressables.LoadAssetAsync<AudioClip>(key).WaitForCompletion());
+            ret = Addressables.LoadAssetAsync<AudioClip>(key).WaitForCompletion();
 
-            return _audioClipsCache[key];
+            if (isCache)
+            {
+                _audioClipsCache.Add(key, ret);
+            }
+            
+            return ret;
         }
     }
 }
