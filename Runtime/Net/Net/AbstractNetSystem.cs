@@ -30,6 +30,12 @@ namespace Twenty2.VomitLib.Net
         {
             return await UnityWebRequest.Get(httpUrl).SendWebRequest();
         }
+        
+        // TODO 自动拼接 url
+        // protected async UniTask<UnityWebRequest> SendMsg(IDictionary<string, string> parameter)
+        // {
+        //     
+        // }
 
         #endregion
 
