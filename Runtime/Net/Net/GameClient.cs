@@ -10,7 +10,7 @@ namespace Twenty2.VomitLib.Net
 {
     public class GameClient
     {
-        private const float DISPATCH_MAX_TIME = 0.06f;  //每一帧最大的派发事件时间，超过这个时间则停止派发，等到下一帧再派发 
+        private const float DISPATCH_TICK_TIME = 0.06f;  //每一帧最大的派发事件时间，超过这个时间则停止派发，等到下一帧再派发 
 
 
         private static GameClient _instance;
@@ -123,7 +123,7 @@ namespace Twenty2.VomitLib.Net
             msgQueue = new ConcurrentQueue<Message>();
         }
 
-        public void Update(EventDispatcher evt, float maxTime = DISPATCH_MAX_TIME)
+        public void Update(EventDispatcher evt, float maxTime = DISPATCH_TICK_TIME)
         {
             float curTime = UnityEngine.Time.realtimeSinceStartup;
             float endTime = curTime + maxTime;

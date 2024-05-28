@@ -25,6 +25,7 @@ namespace Twenty2.VomitLib.Net
             return MsgWaiter.StartWait(msg.UniId);
         }
 
+        // TODO 自动拼接 url, 和服务端同步
         protected async UniTask<UnityWebRequest> SendMsg(string httpUrl)
         {
             return await UnityWebRequest.Get(httpUrl).SendWebRequest();
@@ -34,15 +35,20 @@ namespace Twenty2.VomitLib.Net
 
         #region Evnets
 
+        // 每个 NetSystem 维护自己的事件表
         private readonly Dictionary<int, Action<Event>> _eventMap = new();
         
+        /// <summary>
+        /// 往 Net 事件分发器注册服务. 一个 NetSystem 只能注册一个 msgId 任务.
+        /// 新注册的事件会顶替掉之前的事件
+        /// </summary>
+        /// <param name="msgId"></param>
+        /// <param name="handler"></param>
         protected void RegisterEvent(int msgId, Action<Event> handler)
         {
-            LogKit.I($"Register {msgId}");
             if (!_eventMap.TryAdd(msgId, handler))
             {
-                //去重，一个网络消息只要一个监听
-                LogKit.E("重复注册网络事件>" + msgId);
+                LogKit.E($"重复注册网络事件 > {msgId}");
                 Net.Dispatcher.RemoveListener(msgId, _eventMap[msgId]);
                 _eventMap[msgId] = handler;
             }
@@ -52,12 +58,12 @@ namespace Twenty2.VomitLib.Net
 
         protected void UnRegisterEvent(int msgId, Action<Event> handler)
         {
-            int evtId = msgId;
-            if (!_eventMap.ContainsKey(evtId))
+            if (!_eventMap.ContainsKey(msgId))
             {
                 return;
             }
-            _eventMap[evtId] -= handler;
+            
+            _eventMap[msgId] -= handler;
             Net.Dispatcher.RemoveListener(msgId, handler);
         }
 
