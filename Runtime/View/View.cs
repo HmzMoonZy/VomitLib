@@ -236,14 +236,21 @@ namespace Twenty2.VomitLib.View
             logic = LoadOrGenerateViewLogic(logicType);
             
             OnLoadLogic(logic);
+
+            _visibleViewMap.Values.ForEach(logic =>
+            {
+                logic.Freeze();
+            });
             
-            logic.Freeze();
             logic.isAsyncActioning = true;
 
             await logic.OnOpened(param);
             
             logic.isAsyncActioning = false;
-            logic.UnFreeze();
+            _visibleViewMap.Values.ForEach(logic =>
+            {
+                logic.UnFreeze();
+            });
             
             return logic;
         }
