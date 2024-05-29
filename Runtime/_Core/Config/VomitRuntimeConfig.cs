@@ -13,5 +13,8 @@ namespace Twenty2.VomitLib.Config
 
         [Header("Audio 配置")]
         public AudioConfig AudioConfig;
+
+        [Header("网络 配置")]
+        public NetConfig NetConfig;
     }
 }
