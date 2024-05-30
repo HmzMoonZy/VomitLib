@@ -440,7 +440,7 @@ namespace Twenty2.VomitLib.View
             return go.GetComponent<T>();
         }
         
-        public static T InstantiateVC<T>(Transform parent) where T : Component
+        public static T InstantiateVC<T>(Transform parent) where T : UnityEngine.Component
         {
             var prefab = LoadViewComponent<T>();
             
@@ -486,7 +486,7 @@ namespace Twenty2.VomitLib.View
             });
         }
 
-        private static GameObject LoadViewComponent<T>() where T : Component
+        private static GameObject LoadViewComponent<T>() where T : UnityEngine.Component
         {
             string vcName = typeof(T).Name;
 
