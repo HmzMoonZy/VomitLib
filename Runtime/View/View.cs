@@ -237,20 +237,16 @@ namespace Twenty2.VomitLib.View
             
             OnLoadLogic(logic);
 
-            _visibleViewMap.Values.ForEach(logic =>
-            {
-                logic.Freeze();
-            });
+            Freeze();
             
             logic.isAsyncActioning = true;
 
             await logic.OnOpened(param);
             
             logic.isAsyncActioning = false;
-            _visibleViewMap.Values.ForEach(logic =>
-            {
-                logic.UnFreeze();
-            });
+
+            UnFreeze();
+
             
             return logic;
         }
@@ -473,7 +469,23 @@ namespace Twenty2.VomitLib.View
 
             return false;
         }
-        
+
+        public static void Freeze()
+        {
+            _visibleViewMap.Values.ForEach(logic =>
+            {
+                logic.Freeze();
+            });
+        }
+
+        public static void UnFreeze()
+        {
+            _visibleViewMap.Values.ForEach(logic =>
+            {
+                logic.UnFreeze();
+            });
+        }
+
         private static GameObject LoadViewComponent<T>() where T : Component
         {
             string vcName = typeof(T).Name;
