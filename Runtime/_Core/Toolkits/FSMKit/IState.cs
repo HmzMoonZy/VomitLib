@@ -15,17 +15,16 @@ namespace QFramework
     public interface IState
     {
         bool Condition();
-        void Enter();
+        void Enter(IState context);
         void Update();
         void FixedUpdate();
         void Exit();
     }
     
-    
     public class CustomState : IState
     {
         private Func<bool> mOnCondition;
-        private Action mOnEnter;
+        private Action<IState> mOnEnter;
         private Action mOnUpdate;
         private Action mOnFixedUpdate;
         private Action mOnGUI;
@@ -37,7 +36,7 @@ namespace QFramework
             return this;
         }
         
-        public CustomState OnEnter(Action onEnter)
+        public CustomState OnEnter(Action<IState> onEnter)
         {
             mOnEnter = onEnter;
             return this;
@@ -75,9 +74,9 @@ namespace QFramework
             return result == null || result.Value;
         }
 
-        public void Enter()
+        public void Enter(IState context)
         {
-            mOnEnter?.Invoke();
+            mOnEnter?.Invoke(context);
         }
         
 
@@ -136,23 +135,22 @@ namespace QFramework
         public long FrameCountOfCurrentState = 1;
         public float SecondsOfCurrentState = 0.0f;
         
-        public void ChangeState(T t)
+        public void ChangeState(T t, IState context)
         {
             if (t.Equals(CurrentStateId)) return;
+
+            if (!mStates.TryGetValue(t, out var state)) return;
             
-            if (mStates.TryGetValue(t, out var state))
+            if (mCurrentState != null && state.Condition())
             {
-                if (mCurrentState != null && state.Condition())
-                {
-                    mCurrentState.Exit();
-                    PreviousStateId = mCurrentStateId;
-                    mCurrentState = state;
-                    mCurrentStateId = t;
-                    mOnStateChanged?.Invoke(PreviousStateId, CurrentStateId);
-                    FrameCountOfCurrentState = 1;
-                    SecondsOfCurrentState = 0.0f;
-                    mCurrentState.Enter();
-                }
+                mCurrentState.Exit();
+                PreviousStateId = mCurrentStateId;
+                mCurrentState = state;
+                mCurrentStateId = t;
+                mOnStateChanged?.Invoke(PreviousStateId, CurrentStateId);
+                FrameCountOfCurrentState = 1;
+                SecondsOfCurrentState = 0.0f;
+                mCurrentState.Enter(context);
             }
         }
 
@@ -172,7 +170,7 @@ namespace QFramework
                 mCurrentStateId = t;
                 FrameCountOfCurrentState = 0;
                 SecondsOfCurrentState = 0.0f;
-                state.Enter();
+                state.Enter(null);
             }
         }
 
@@ -213,9 +211,9 @@ namespace QFramework
             return  OnCondition();;
         }
 
-        void IState.Enter()
+        void IState.Enter(IState context)
         {
-            OnEnter();
+            OnEnter(context);
         }
 
         void IState.Update()
@@ -235,7 +233,7 @@ namespace QFramework
 
         protected virtual bool OnCondition() => true;
 
-        protected virtual void OnEnter()
+        protected virtual void OnEnter(IState context)
         {
         }
 

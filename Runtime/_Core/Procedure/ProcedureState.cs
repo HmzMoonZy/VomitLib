@@ -5,13 +5,10 @@ using QFramework;
 
 namespace Twenty2.VomitLib.Procedure
 {
-    public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState where T : struct
+    public abstract class ProcedureState<T> :
+        ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState 
+        where T : struct 
     {
-        /// <summary>
-        /// 全局的数据栈,用于在切换状态时,传递小数据.
-        /// </summary>
-        public static Stack<object> ArgsStack = new();
-        
         /// <summary>
         /// 事件注册列表
         /// </summary>
@@ -30,7 +27,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 进入状态回调
         /// </summary>
-        protected abstract void OnEnter();
+        protected abstract void OnEnter(IState context);
 
         /// <summary>
         /// 退出状态回调
@@ -42,9 +39,9 @@ namespace Twenty2.VomitLib.Procedure
         /// </summary>
         public abstract bool Condition();
         
-        public void Enter()
+        public void Enter(IState context)
         {
-            OnEnter();
+            OnEnter(context);
         }
 
         public void Exit()
@@ -76,7 +73,7 @@ namespace Twenty2.VomitLib.Procedure
         /// </summary>
         protected void ChangeState(T id)
         {
-            Procedure<T>.Change(id);
+            Procedure<T>.Change(id, this);
         }
 
 

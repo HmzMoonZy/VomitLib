@@ -33,8 +33,11 @@ namespace Twenty2.VomitLib.Procedure
                 Fsm.FixedUpdate();
                 return true;
             }, PlayerLoopTiming.FixedUpdate).Forget();
-            
-            if (isStart) Start();
+
+            if (isStart)
+            {
+                Start();
+            }
             return;
 
             static void AutoRegisterProcedureState()
@@ -88,10 +91,9 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 切换流程
         /// </summary>
-        /// <param name="id"></param>
-        public static void Change(T id)
+        public static void Change(T id, IState context)
         {
-            Fsm.ChangeState(id);
+            Fsm.ChangeState(id, context);
             
             Vomit.Interface.SendEvent(new EProcedure.Changed<T>()
             {
