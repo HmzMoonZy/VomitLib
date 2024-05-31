@@ -4,6 +4,7 @@
     /// 基于 Luban 的本地数据库.
     /// </summary>
     /// <typeparam name="TTable">Luban 生成的 Tables 类型.</typeparam>
+    /// TODO 支持懒加载, 支持卸载
     public static class ClientDB<TTable>
     {
         /// <summary>
