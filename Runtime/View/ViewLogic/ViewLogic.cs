@@ -143,6 +143,11 @@ namespace Twenty2.VomitLib.View
             
             return _closeCts.Token;
         }
+
+        public UniTask WaitClose()
+        {
+            return UniTask.WaitUntilCanceled(GetViewCloseCancellationToken());
+        }
         
         public void Cancel()
         {
