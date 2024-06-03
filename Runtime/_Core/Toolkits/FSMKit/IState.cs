@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace QFramework
@@ -15,20 +16,20 @@ namespace QFramework
     public interface IState
     {
         bool Condition();
-        void Enter(IState context);
+        UniTask Enter(IState context);
         void Update();
         void FixedUpdate();
-        void Exit();
+        UniTask Exit();
     }
     
     public class CustomState : IState
     {
         private Func<bool> mOnCondition;
-        private Action<IState> mOnEnter;
+        private Func<IState, UniTask> mOnEnter;
         private Action mOnUpdate;
         private Action mOnFixedUpdate;
         private Action mOnGUI;
-        private Action mOnExit;
+        private Func<UniTask> mOnExit;
 
         public CustomState OnCondition(Func<bool> onCondition)
         {
@@ -36,7 +37,7 @@ namespace QFramework
             return this;
         }
         
-        public CustomState OnEnter(Action<IState> onEnter)
+        public CustomState OnEnter(Func<IState, UniTask> onEnter)
         {
             mOnEnter = onEnter;
             return this;
@@ -61,7 +62,7 @@ namespace QFramework
             return this;
         }
         
-        public CustomState OnExit(Action onExit)
+        public CustomState OnExit(Func<UniTask> onExit)
         {
             mOnExit = onExit;
             return this;
@@ -74,9 +75,9 @@ namespace QFramework
             return result == null || result.Value;
         }
 
-        public void Enter(IState context)
+        public UniTask Enter(IState context)
         {
-            mOnEnter?.Invoke(context);
+            return mOnEnter?.Invoke(context) ?? UniTask.CompletedTask;
         }
         
 
@@ -97,9 +98,9 @@ namespace QFramework
             mOnGUI?.Invoke();
         }
 
-        public void Exit()
+        public UniTask Exit()
         {
-            mOnExit?.Invoke();
+            return mOnExit?.Invoke() ?? UniTask.CompletedTask;
         }
     }
 
@@ -135,7 +136,7 @@ namespace QFramework
         public long FrameCountOfCurrentState = 1;
         public float SecondsOfCurrentState = 0.0f;
         
-        public void ChangeState(T t, IState context)
+        public async UniTask ChangeState(T t, IState context)
         {
             if (t.Equals(CurrentStateId)) return;
 
@@ -143,14 +144,14 @@ namespace QFramework
             
             if (mCurrentState != null && state.Condition())
             {
-                mCurrentState.Exit();
+                await mCurrentState.Exit();
                 PreviousStateId = mCurrentStateId;
                 mCurrentState = state;
                 mCurrentStateId = t;
                 mOnStateChanged?.Invoke(PreviousStateId, CurrentStateId);
                 FrameCountOfCurrentState = 1;
                 SecondsOfCurrentState = 0.0f;
-                mCurrentState.Enter(context);
+                await mCurrentState.Enter(context);
             }
         }
 
@@ -211,9 +212,9 @@ namespace QFramework
             return  OnCondition();;
         }
 
-        void IState.Enter(IState context)
+        UniTask IState.Enter(IState context)
         {
-            OnEnter(context);
+            return OnEnter(context);
         }
 
         void IState.Update()
@@ -226,15 +227,16 @@ namespace QFramework
             OnFixedUpdate();
         }
         
-        void IState.Exit()
+        UniTask IState.Exit()
         {
-            OnExit();
+            return OnExit();
         }
 
         protected virtual bool OnCondition() => true;
 
-        protected virtual void OnEnter(IState context)
+        protected virtual UniTask OnEnter(IState context)
         {
+            return UniTask.CompletedTask;
         }
 
         protected virtual void OnUpdate()
@@ -247,9 +249,9 @@ namespace QFramework
             
         }
 
-        protected virtual void OnExit()
+        protected virtual UniTask OnExit()
         {
-            
+            return UniTask.CompletedTask;
         }
     }
 }

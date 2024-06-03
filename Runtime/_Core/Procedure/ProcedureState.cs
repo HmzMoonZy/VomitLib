@@ -27,7 +27,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 进入状态回调
         /// </summary>
-        protected abstract void OnEnter(IState context);
+        protected abstract UniTask OnEnter(IState context);
 
         /// <summary>
         /// 退出状态回调
@@ -39,12 +39,12 @@ namespace Twenty2.VomitLib.Procedure
         /// </summary>
         public abstract bool Condition();
         
-        public void Enter(IState context)
+        public UniTask Enter(IState context)
         {
-            OnEnter(context);
+            return OnEnter(context);
         }
 
-        public void Exit()
+        public UniTask Exit()
         {
             foreach (var unRegister in _registers)
             {
@@ -52,6 +52,7 @@ namespace Twenty2.VomitLib.Procedure
             }
             _registers.Clear();
             OnExit();
+            return UniTask.CompletedTask;
         }
 
         /// <summary>
