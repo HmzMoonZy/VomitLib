@@ -129,11 +129,11 @@ namespace Twenty2.VomitLib.View
             static void ProcessPreload(Type logic)
             {
                 var attr = logic.GetAttribute<PreloadAttribute>();
-                var viewLogic = OpenViewImmediately(logic);    // TODO 写一个加载方法而不是调用开启面板
+                var viewLogic = OpenImmediately(logic);    // TODO 写一个加载方法而不是调用开启面板
                 if (attr.IsHide)
                 {
                     if(!viewLogic.Config.IsCache) LogKit.E($"预加载了ui : {logic.Name} 但是不是缓存的ui,请检查!");
-                    CloseViewImmediately(viewLogic);
+                    CloseImmediately(viewLogic);
                 }
             }
 
@@ -176,17 +176,17 @@ namespace Twenty2.VomitLib.View
         /// <summary>
         /// 打开一个和 T 同名的 View.
         /// </summary>
-        public static void OpenView<T>(ViewParameterBase param = null) where T : ViewLogic, new()
+        public static void Open<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
-             OpenViewAsync(typeof(T), param).Forget();
+             OpenAsync(typeof(T), param).Forget();
         }
         
         /// <summary>
         /// 打开一个和 T 同名的 View.
         /// </summary>
-        public static T OpenViewImmediately<T>(ViewParameterBase param = null) where T : ViewLogic, new()
+        public static T OpenImmediately<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
-            return (T)OpenViewImmediately(typeof(T), param);
+            return (T)OpenImmediately(typeof(T), param);
         }
         
         /// <summary>
@@ -194,7 +194,7 @@ namespace Twenty2.VomitLib.View
         /// 这个方法不等待动画结束.
         /// 也不会阻止你和UI交互
         /// </summary>
-        private static ViewLogic OpenViewImmediately(Type type, ViewParameterBase param = null)
+        private static ViewLogic OpenImmediately(Type type, ViewParameterBase param = null)
         {
             var viewName = type.Name;
 
@@ -218,12 +218,12 @@ namespace Twenty2.VomitLib.View
         /// 直到加载完成,这个方法是同步的.
         /// 直到表现完成, 无法对UI进行交互(关闭射线检测)
         /// </summary>
-        public static async UniTask<T> OpenViewAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
+        public static async UniTask<T> OpenAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
         {
-            return (T) await OpenViewAsync(typeof(T), param);
+            return (T) await OpenAsync(typeof(T), param);
         }
         
-        private static async UniTask<ViewLogic> OpenViewAsync(Type logicType, ViewParameterBase param = null)
+        private static async UniTask<ViewLogic> OpenAsync(Type logicType, ViewParameterBase param = null)
         {
             var viewName = logicType.Name;
 
@@ -290,24 +290,24 @@ namespace Twenty2.VomitLib.View
         
         #region CloseView
         
-        public static void CloseView<T>()
+        public static void Close<T>()
         {
             _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
-            CloseViewAsync(logic, false).Forget();
+            CloseAsync(logic, false).Forget();
         }
         
-        public static UniTask CloseViewAsync<T>()
+        public static UniTask CloseAsync<T>()
         {
             _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
-            return CloseViewAsync(logic, false);
+            return CloseAsync(logic, false);
         }
         
-        public static void CloseViewImmediately(ViewLogic logic)
+        public static void CloseImmediately(ViewLogic logic)
         {
-            CloseViewAsync(logic, true).Forget();
+            CloseAsync(logic, true).Forget();
         }
         
-        public static async UniTask CloseViewAsync(ViewLogic logic, bool immediately)
+        public static async UniTask CloseAsync(ViewLogic logic, bool immediately)
         {
             if (logic is null) return;
             
@@ -369,7 +369,7 @@ namespace Twenty2.VomitLib.View
         {
             foreach (var l in _visibleViewMap.Values.ToList())
             {
-                CloseViewImmediately(l);
+                CloseImmediately(l);
             }
         }
         
@@ -642,7 +642,7 @@ namespace Twenty2.VomitLib.View
                 mask.GetAsyncPointerClickTrigger().ForEachAwaitAsync(async _ =>
                 {
                     await UniTask.NextFrame();
-                    CloseViewAsync(logic, false).Forget();
+                    CloseAsync(logic, false).Forget();
                 }, mask.gameObject.GetCancellationTokenOnDestroy());
             }
         }
