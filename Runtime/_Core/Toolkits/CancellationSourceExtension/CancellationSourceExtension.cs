@@ -9,5 +9,13 @@ namespace Twenty2.VomitLib
             cts.Cancel();
             cts.Dispose();
         }
+
+
+        public static bool IsFailure(this CancellationTokenSource cts)
+        {
+            return cts == null || cts.IsCancellationRequested;
+        }
     }
+    
+    
 }
