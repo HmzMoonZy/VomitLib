@@ -72,9 +72,9 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 切换状态
         /// </summary>
-        protected void ChangeState(T id)
+        protected UniTask ChangeState(T id)
         {
-            Procedure<T>.Change(id, this);
+            return Procedure<T>.Change(id, this);
         }
 
 

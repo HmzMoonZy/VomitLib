@@ -91,9 +91,9 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 切换流程
         /// </summary>
-        public static void Change(T id, IState context)
+        public static async UniTask Change(T id, IState context)
         {
-            Fsm.ChangeState(id, context);
+            await Fsm.ChangeState(id, context);
             
             Vomit.Interface.SendEvent(new EProcedure.Changed<T>()
             {
