@@ -25,6 +25,11 @@ namespace Twenty2.VomitLib.Procedure
         protected T PreviousStateID =>  Procedure<T>.GetPrevState();
 
         /// <summary>
+        /// 状态机切换条件, 满足条件才能够执行ChangeState
+        /// </summary>
+        public abstract bool Condition();
+        
+        /// <summary>
         /// 进入状态回调
         /// </summary>
         protected abstract UniTask OnEnter(IState context);
@@ -33,11 +38,6 @@ namespace Twenty2.VomitLib.Procedure
         /// 退出状态回调
         /// </summary>
         protected  abstract void OnExit();
-
-        /// <summary>
-        /// 状态机切换条件
-        /// </summary>
-        public abstract bool Condition();
         
         public UniTask Enter(IState context)
         {

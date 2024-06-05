@@ -141,8 +141,10 @@ namespace QFramework
             if (t.Equals(CurrentStateId)) return;
 
             if (!mStates.TryGetValue(t, out var state)) return;
+
+            if (mCurrentState == null) return;
             
-            if (mCurrentState != null && state.Condition())
+            if (state.Condition())
             {
                 await mCurrentState.Exit();
                 PreviousStateId = mCurrentStateId;
@@ -152,6 +154,10 @@ namespace QFramework
                 FrameCountOfCurrentState = 1;
                 SecondsOfCurrentState = 0.0f;
                 await mCurrentState.Enter(context);
+            }
+            else
+            {
+                LogKit.E($"无效的状态转换! {state}=>{t}, 请检查对应的条件.");
             }
         }
 
