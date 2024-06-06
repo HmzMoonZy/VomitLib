@@ -210,6 +210,12 @@ namespace Twenty2.VomitLib.View
 
             logic.OnOpened(param).Forget();
             
+            Vomit.Interface.SendEvent(new EView.Open
+            {
+                LogicType = type,
+                ViewLogic = logic
+            });
+            
             return logic;
         }
         
@@ -246,6 +252,13 @@ namespace Twenty2.VomitLib.View
             logic.isAsyncActioning = false;
 
             UnFreeze();
+            
+            Vomit.Interface.SendEvent(new EView.Open
+            {
+                LogicType = logicType,
+                ViewLogic = logic
+            });
+
 
             
             return logic;
