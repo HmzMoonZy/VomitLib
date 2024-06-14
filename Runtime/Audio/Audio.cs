@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using QFramework;
 using System;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Twenty2.VomitLib.Config;
 using UnityEngine;
@@ -11,28 +12,22 @@ namespace Twenty2.VomitLib.Audio
 {
     public static class Audio
     {
-        /// <summary>
-        /// 当前播放的背景音乐
-        /// </summary>
-        public static AudioClip CurrentBgm => _as.clip;
-
-        private static AudioSource _as;
-        private static float _bgmVolume;
-        private static float _seVolume;
-
+        private static Dictionary<int, AudioSource> _audioSources;
+        
         private static Dictionary<string, AudioClip> _audioClipsCache = new();
 
         private static AudioConfig _config;
+        
+        private static float _seVolume = 1f;
 
         #region Init
 
         public static void Init(bool preload, float bgmVolume = 1f, float seVolume = 1f)
         {
             _config = Vomit.RuntimeConfig.AudioConfig;
-
-            _as = new GameObject("__AudioSource__").AddComponent<AudioSource>();
-            Object.DontDestroyOnLoad(_as.gameObject);
-
+            
+            GenerateAudioSource(0);
+            
             SetSEVolume(seVolume);
             SetBgmVolume(bgmVolume);
 
@@ -61,7 +56,6 @@ namespace Twenty2.VomitLib.Audio
 
         #endregion
 
-
         #region SE
 
         public static void PlaySE(string se)
@@ -69,23 +63,28 @@ namespace Twenty2.VomitLib.Audio
             PlaySE(SearchAudio(se, true));
         }
 
-        public static void SetSEVolume(float v)
+        public static void SetSEVolume(float v, int index = 0)
         {
             _seVolume = v;
         }
         
         private static void PlaySE(AudioClip se)
         {
-            _as.PlayOneShot(se, _seVolume);
+            _audioSources[0].PlayOneShot(se, _seVolume);
         }
 
         #endregion
 
         #region BGM
-        
-        public static void SetBgmVolume(float v)
+
+        public static void Mute(int index)
         {
-            _bgmVolume = v;
+            _audioSources[index].volume = 0;
+        }
+        
+        public static void SetBgmVolume(float v, int index = 0)
+        {
+            _audioSources[index].volume = v;
         }
 
         public static UniTask PlayBgm(string bgm, bool isLoop)
@@ -94,28 +93,51 @@ namespace Twenty2.VomitLib.Audio
         }
         
         // 混合
-        private static UniTask PlayBgm(AudioClip bgm, float mix, bool isLoop)
+        private static UniTask PlayBgm(AudioClip bgm, float mix, bool isLoop, int index = 0)
         {
-            if (bgm != _as.clip)
-            {
-                Addressables.Release(_as.clip);
-            }
-
+            var originClip = _audioSources[index].clip;
+            
             if (mix > 0)
             {
                 // TODO 混合音频
             }
 
-            _as.clip = bgm;
-            _as.loop = isLoop;
-            _as.volume = _bgmVolume;
-            _as.Play();
+            _audioSources[index].clip = bgm;
+            _audioSources[index].loop = isLoop;
+            _audioSources[index].Play();
+
+            if (_audioSources.Values.All(audioSource => audioSource.clip != originClip))
+            {
+                Addressables.Release(originClip);
+            }
 
             return UniTask.WaitForSeconds(bgm.length, true);
         }
 
         #endregion
 
+
+        public static void GenerateAudioSource(int index)
+        {
+            if (_audioSources.ContainsKey(index))
+            {
+                Debug.LogError("重复创建音频播放器!");
+                return;
+            }
+            
+            _audioSources.Add(index, new GameObject($"__AudioSource__[{index}]").AddComponent<AudioSource>());
+            Object.DontDestroyOnLoad(_audioSources[index].gameObject);
+        }
+
+        public static void DeleteAudioSource(int index)
+        {
+            if (_audioSources.ContainsKey(index))
+            {
+                Addressables.Release(_audioSources[index].clip);
+                Object.Destroy(_audioSources[index].gameObject);
+                _audioSources.Remove(index);
+            }
+        }
 
         private static AudioClip SearchAudio(string key, bool isCache)
         {
