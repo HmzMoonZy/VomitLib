@@ -77,9 +77,16 @@ namespace Twenty2.VomitLib.Audio
 
         #region BGM
 
-        public static void Mute(int index)
+        /// <summary>
+        /// 将 index 的音频播放器静音
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns>原来的音量</returns>
+        public static float Mute(int index)
         {
+            float origin = _audioSources[index].volume;
             _audioSources[index].volume = 0;
+            return origin;
         }
         
         public static void SetBgmVolume(float v, int index = 0)
