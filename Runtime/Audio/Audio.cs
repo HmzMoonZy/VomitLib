@@ -2,6 +2,7 @@
 using QFramework;
 using System;
 using System.Linq;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Twenty2.VomitLib.Config;
 using UnityEngine;
@@ -94,13 +95,18 @@ namespace Twenty2.VomitLib.Audio
             _audioSources[index].volume = v;
         }
 
-        public static UniTask PlayBgm(string bgm, bool isLoop)
+        /// <summary>
+        /// 播放BGM, 任务被取消后并不会停止BGM的播放
+        /// </summary>
+        public static UniTask PlayBgm(string bgm, float mix, bool isLoop, int index = 0, CancellationToken cancellationToken = default)
         {
-            return PlayBgm(SearchAudio(bgm, false), 0, isLoop);
+            return PlayBgm(SearchAudio(bgm, false), mix, isLoop, index, cancellationToken);
         }
         
-        // 混合
-        private static UniTask PlayBgm(AudioClip bgm, float mix, bool isLoop, int index = 0)
+        /// <summary>
+        /// 播放BGM, 任务被取消后并不会停止BGM的播放
+        /// </summary>
+        private static UniTask PlayBgm(AudioClip bgm, float mix, bool isLoop, int index = 0, CancellationToken cancellationToken = default)
         {
             var originClip = _audioSources[index].clip;
             
@@ -118,7 +124,7 @@ namespace Twenty2.VomitLib.Audio
                 Addressables.Release(originClip);
             }
 
-            return UniTask.WaitForSeconds(bgm.length, true);
+            return UniTask.WaitForSeconds(bgm.length, true, cancellationToken: cancellationToken);
         }
 
         #endregion
