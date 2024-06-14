@@ -12,7 +12,7 @@ namespace Twenty2.VomitLib.Audio
 {
     public static class Audio
     {
-        private static Dictionary<int, AudioSource> _audioSources;
+        private static Dictionary<int, AudioSource> _audioSources = new();
         
         private static Dictionary<string, AudioClip> _audioClipsCache = new();
 
