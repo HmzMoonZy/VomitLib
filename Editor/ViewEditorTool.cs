@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
+using QFramework;
 using Twenty2.VomitLib.Config;
 using Twenty2.VomitLib.View;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace Twenty2.VomitLib.Editor
 {
@@ -115,13 +118,55 @@ public partial class {selectName}
 }}
 ";
             File.WriteAllText(designerFilePath, content, Encoding.UTF8);
-            
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-        }
 
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+        }
+        
+        
+        [UnityEditor.Callbacks.DidReloadScripts]
+        static void Bind()
+        {
+            if (Selection.activeObject is not GameObject)
+            {
+                return;
+            }
+            
+            // 绑定脚本
+            var instance = PrefabUtility.InstantiatePrefab(Selection.activeObject) as GameObject;
+            if (instance == null)
+            {
+                return;
+            }
+
+            if (instance.GetComponent<ViewConfig>() == null)
+            {
+                Object.DestroyImmediate(instance);
+                return;
+            }
+
+            var logic = instance.GetComponent<ViewLogic>();
+            if (logic != null && logic.GetType().Name != Selection.activeObject.name)
+            {
+                Object.DestroyImmediate(instance);
+                return;
+            }
+        
+            var type = Assembly.Load("Assembly-CSharp").GetType(Selection.activeObject.name);
+            var addComponent = instance.AddComponent(type);
+            if (addComponent == null)
+            {
+                LogKit.E("没有!");
+            }
+
+            PrefabUtility.ApplyPrefabInstance(instance, InteractionMode.AutomatedAction);
+        
+            Object.DestroyImmediate(instance);
+        }
+        
+        
+        
         [MenuItem("GameObject/UI/VomitCanvas")]
         public static void GenerateViewTemplate()
         {
