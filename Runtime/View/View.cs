@@ -209,12 +209,17 @@ namespace Twenty2.VomitLib.View
             OnLoadLogic(logic);
 
             logic.OnOpened(param).Forget();
+
+            var openTask = new UniTaskCompletionSource();
             
             Vomit.Interface.SendEvent(new EView.Open
             {
                 LogicType = type,
-                ViewLogic = logic
+                ViewLogic = logic,
+                OpenTask = openTask,
             });
+
+            openTask.TrySetResult();
             
             return logic;
         }
@@ -247,19 +252,22 @@ namespace Twenty2.VomitLib.View
             
             logic.isAsyncActioning = true;
 
+            var openEvent = new EView.Open
+            {
+                LogicType = logicType,
+                ViewLogic = logic,
+                OpenTask =  new UniTaskCompletionSource(),
+            };
+            
+            Vomit.Interface.SendEvent(openEvent);
+
             await logic.OnOpened(param);
+
+            openEvent.OpenTask.TrySetResult();
             
             logic.isAsyncActioning = false;
 
             UnFreeze();
-            
-            Vomit.Interface.SendEvent(new EView.Open
-            {
-                LogicType = logicType,
-                ViewLogic = logic
-            });
-
-
             
             return logic;
         }

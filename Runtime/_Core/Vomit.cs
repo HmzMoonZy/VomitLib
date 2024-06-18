@@ -17,17 +17,17 @@ namespace Twenty2.VomitLib
             Interface = architecture;
             
             // TODO 优化遍历范围
-            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
-            {
-                foreach (var type in assembly.GetTypes())
-                {
-                    // 遍历异步事件
-                    if (type.IsValueType && type.HasAttribute<AsyncEventAttribute>())
-                    {
-                        AsyncEventExtension.Register(type.Name);
-                    }
-                }
-            }
+            // foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+            // {
+            //     foreach (var type in assembly.GetTypes())
+            //     {
+            //         // 遍历异步事件
+            //         if (type.IsValueType && type.HasAttribute<AsyncEventAttribute>())
+            //         {
+            //             AsyncEventExtension.Register(type.Name);
+            //         }
+            //     }
+            // }
         }
 
         public static VomitRuntimeConfig RuntimeConfig
