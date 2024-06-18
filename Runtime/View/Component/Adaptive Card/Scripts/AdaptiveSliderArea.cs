@@ -1,11 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using DG.Tweening;
 using UnityEngine.UI;
 using System;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
 
 namespace Twenty2.VomitLib.View.Component
 {
@@ -45,7 +42,6 @@ public abstract class AdaptiveSliderArea : MonoBehaviour, IBeginDragHandler, IEn
     //展示界面回调
     public Action OnShowed;        
     
-
     private void Awake()
     {
         Node = transform.Find("node").GetComponent<RectTransform>();
@@ -54,11 +50,6 @@ public abstract class AdaptiveSliderArea : MonoBehaviour, IBeginDragHandler, IEn
             Debug.LogWarning("未设置Node(RectTransform), 所有元素应该放置在Node节点下");
             return;
         }
-    }
-
-    private void Start()
-    {
-        // Init(_initialIndex);
     }
     
     /// <summary>
@@ -147,8 +138,6 @@ public abstract class AdaptiveSliderArea : MonoBehaviour, IBeginDragHandler, IEn
     public abstract void OnEndDrag(PointerEventData eventData);
 
 #endregion
-
-
 
 #region 外部接口
 

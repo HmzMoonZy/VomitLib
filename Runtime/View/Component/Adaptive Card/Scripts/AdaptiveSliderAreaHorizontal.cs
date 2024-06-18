@@ -1,9 +1,7 @@
-using System.Collections.Generic;
-using Cysharp.Threading.Tasks.Triggers;
-using DG.Tweening;
+using System.Collections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
 
 namespace Twenty2.VomitLib.View.Component
 {
@@ -41,8 +39,8 @@ namespace Twenty2.VomitLib.View.Component
                     element.transform.localScale = new Vector3(_unscaleValue, _unscaleValue, _unscaleValue);
                 }
             }
-
-            Node.DOLocalMoveX(-i * (ElementSize.x + _spacing), _duration);
+            
+            StartCoroutine(MoveNodeHorizontallyCoroutine(i));
         }
 
         protected override void OnSetTrans(RectTransform child)
@@ -114,6 +112,25 @@ namespace Twenty2.VomitLib.View.Component
         public void SetScaleValue(float value)
         {
             this._unscaleValue = value;
+        }
+
+        private IEnumerator MoveNodeHorizontallyCoroutine(int index)
+        {
+            float startXPos = Node.localPosition.x;
+            float targetPosX = -index * (ElementSize.x + _spacing);
+
+            float elapsedTime = 0f;
+            while (elapsedTime < _duration)
+            {
+                elapsedTime += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsedTime / _duration); // 插值因子，范围0到1
+                Node.localPosition = new Vector3(Mathf.Lerp(startXPos, targetPosX, t), Node.localPosition.y,
+                    Node.localPosition.z);
+                yield return null; // 等待一帧
+            }
+
+            // 确保最终位置准确无误（防止浮点运算误差）
+            Node.localPosition = new Vector3(targetPosX, Node.localPosition.y, Node.localPosition.z);
         }
     }
 }

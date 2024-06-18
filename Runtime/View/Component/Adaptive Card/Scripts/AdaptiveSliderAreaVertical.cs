@@ -1,3 +1,4 @@
+using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -40,8 +41,8 @@ namespace Twenty2.VomitLib.View.Component
                     element.transform.localScale = new Vector3(_unscaleValue, _unscaleValue, _unscaleValue);
                 }
             }
-
-            Node.DOLocalMoveY(-i * (ElementSize.y + _spacing), _duration);
+            
+            StartCoroutine(MoveNodeCoroutine(i));
         }
 
         protected override void OnSetTrans(RectTransform child)
@@ -86,6 +87,24 @@ namespace Twenty2.VomitLib.View.Component
                     Slide(SlideDir.Prev);
                 }
             }
+        }
+        
+        private IEnumerator MoveNodeCoroutine(int index)
+        {
+            float startPosY = Node.localPosition.y;
+            float targetPosY = -index * (ElementSize.y + _spacing);
+
+            float elapsedTime = 0f;
+            while (elapsedTime < _duration)
+            {
+                elapsedTime += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsedTime / _duration); // 插值因子，范围0到1
+                Node.localPosition = new Vector3(Node.localPosition.x, Mathf.Lerp(startPosY, targetPosY, t), Node.localPosition.z);
+                yield return null; // 等待一帧
+            }
+
+            // 确保最终位置准确无误（防止浮点运算误差）
+            Node.localPosition = new Vector3(Node.localPosition.x, targetPosY, Node.localPosition.z);
         }
     }
 }
