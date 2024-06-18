@@ -81,13 +81,10 @@ namespace Twenty2.VomitLib.Audio
         /// <summary>
         /// 将 index 的音频播放器静音
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns>原来的音量</returns>
-        public static float Mute(int index)
+        public static void Mute(int index, out float originVolume)
         {
-            float origin = _audioSources[index].volume;
+            originVolume = _audioSources[index].volume;
             _audioSources[index].volume = 0;
-            return origin;
         }
         
         public static void SetBgmVolume(float v, int index = 0)
@@ -144,11 +141,17 @@ namespace Twenty2.VomitLib.Audio
 
         public static void DeleteAudioSource(int index)
         {
-            if (_audioSources.ContainsKey(index))
+            if (!_audioSources.ContainsKey(index))
             {
-                Addressables.Release(_audioSources[index].clip);
-                Object.Destroy(_audioSources[index].gameObject);
-                _audioSources.Remove(index);
+                return;
+            }
+
+            var originClip = _audioSources[index].clip;
+            Object.Destroy(_audioSources[index].gameObject);
+            _audioSources.Remove(index);
+            if (_audioSources.Values.All(audioSource => audioSource.clip != originClip))
+            {
+                Addressables.Release(originClip);
             }
         }
 
