@@ -50,10 +50,15 @@ namespace Twenty2.VomitLib
         {
             return Vomit.Interface;
         }
-        
-        protected void RegisterAliveEvent<T>(Action<T> onEvent) where T : struct
+
+        protected void RegisterEvent<T>(Action<T> onEvent) where T : struct
         {
-            this.RegisterEvent(onEvent).UnRegisterWhenGameObjectDestroyed(gameObject);
+            this.As<ICanRegisterEvent>().RegisterEvent(onEvent).UnRegisterWhenGameObjectDestroyed(gameObject);
+        }
+        
+        protected IUnRegister RegisterEventWithoutUnRegister<T>(Action<T> onEvent) where T : struct
+        {
+            return this.As<ICanRegisterEvent>().RegisterEvent(onEvent);
         }
     }
 
