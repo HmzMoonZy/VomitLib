@@ -355,8 +355,6 @@ namespace Twenty2.VomitLib.View
             logic.Freeze();
             // 取消监听器
             logic.Cancel();
-            // 移除所有的 View 事件
-            logic.UnRegisterAllViewEvents();
 
             // 回调生命周期事件
             if (immediately)

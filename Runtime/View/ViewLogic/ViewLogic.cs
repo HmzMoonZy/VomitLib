@@ -117,18 +117,9 @@ namespace Twenty2.VomitLib.View
         #region Events
         
         private List<IUnRegister> _viewEvents = new();
-        protected void RegisterViewEvent<T>(Action<T> onEvent) where T : struct
+        protected new void RegisterEvent<T>(Action<T> onEvent) where T : struct
         {
-            _viewEvents.Add(Vomit.Interface.RegisterEvent(onEvent));
-        }
-
-        public void UnRegisterAllViewEvents()
-        {
-            foreach (var unRegister in _viewEvents)
-            {
-                unRegister.UnRegister();
-            }
-            _viewEvents.Clear();
+            _viewEvents.Add(this.RegisterEventWithoutUnRegister(onEvent));
         }
         
         #endregion
@@ -153,6 +144,13 @@ namespace Twenty2.VomitLib.View
         {
             _closeCts?.CancelAndDispose();
             _closeCts = null;
+                
+            // 移除事件
+            foreach (var unRegister in _viewEvents)
+            {
+                unRegister.UnRegister();
+            }
+            _viewEvents.Clear();
         }
         
         protected void CloseSelf()
@@ -188,20 +186,11 @@ namespace Twenty2.VomitLib.View
         {
             if (!ignoreLayoutElement)
             {
-                foreach (Transform child in trans)
-                {
-                    Destroy(child.gameObject);
-                }
-
+                trans.DestroyChildren();
                 return;
             }
 
-            foreach (Transform child in trans)
-            {
-                if (child.TryGetComponent<LayoutElement>(out var component) && component.ignoreLayout)
-                    continue;
-                Destroy(child.gameObject);
-            }
+            trans.DestroyChildrenWithCondition(child => !child.TryGetComponent<LayoutElement>(out var element) || !element.ignoreLayout);
         }
 
         #endregion
