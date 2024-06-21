@@ -44,13 +44,8 @@ namespace Twenty2.VomitLib
         }
     }
 
-    public class MonoController : MonoBehaviour, IController
+    public class MonoController : MonoBehaviour, IAbstractController
     {
-        public IArchitecture GetArchitecture()
-        {
-            return Vomit.Interface;
-        }
-
         protected void RegisterEvent<T>(Action<T> onEvent) where T : struct
         {
             this.As<ICanRegisterEvent>().RegisterEvent(onEvent).UnRegisterWhenGameObjectDestroyed(gameObject);
