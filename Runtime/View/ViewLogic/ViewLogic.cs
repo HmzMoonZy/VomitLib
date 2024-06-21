@@ -121,6 +121,11 @@ namespace Twenty2.VomitLib.View
         {
             _viewEvents.Add(this.RegisterEventWithoutUnRegister(onEvent));
         }
+
+        protected void RegisterAliveEvent<T>(Action<T> onEvent) where T : struct
+        {
+            this.As<ICanRegisterEvent>().RegisterEvent(onEvent).UnRegisterWhenGameObjectDestroyed(gameObject);
+        }
         
         #endregion
 
