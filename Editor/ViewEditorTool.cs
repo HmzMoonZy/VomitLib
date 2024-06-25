@@ -147,7 +147,7 @@ public partial class {selectName}
             }
 
             var logic = instance.GetComponent<ViewLogic>();
-            if (logic != null && logic.GetType().Name != Selection.activeObject.name)
+            if (logic != null)
             {
                 Object.DestroyImmediate(instance);
                 return;
