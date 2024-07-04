@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 
 namespace Twenty2.VomitLib.Net
 {
