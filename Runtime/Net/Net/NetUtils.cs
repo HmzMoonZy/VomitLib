@@ -1,9 +1,12 @@
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 
 namespace Twenty2.VomitLib.Net
 {
     public class NetUtils
     {
+        private static extern string getIPv6(string mHost, string mPort);
+        
 #if UNITY_IPHONE && !UNITY_EDITOR
         [DllImport("__Internal")]
         private static extern string getIPv6(string mHost, string mPort);
