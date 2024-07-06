@@ -12,10 +12,16 @@ namespace Twenty2.VomitLib
 
         public static IArchitecture Interface;
         
-        public static void Init(IArchitecture architecture)
+        public static void Init(IArchitecture architecture, Func<VomitRuntimeConfig> onLoadConfig)
         {
             Interface = architecture;
-            
+
+            _vomitRuntimeConfig = onLoadConfig?.Invoke();
+
+            if (_vomitRuntimeConfig == null)
+            {
+                _vomitRuntimeConfig = Resources.Load<VomitRuntimeConfig>("VomitLibConfig");
+            }
             // TODO 优化遍历范围
             // foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
             // {
