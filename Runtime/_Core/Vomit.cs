@@ -8,20 +8,29 @@ namespace Twenty2.VomitLib
 {
     public static class Vomit
     {
-        private static VomitRuntimeConfig _vomitRuntimeConfig;
+        public static VomitRuntimeConfig RuntimeConfig { get; private set; }
+        
+        #if UNITY_EDITOR
+        public static VomitRuntimeConfig GetConfigInEditor()
+        {
+            var guid = UnityEditor.AssetDatabase.FindAssets("t:VomitRuntimeConfig")[0];
+            return UnityEditor.AssetDatabase.LoadAssetAtPath<VomitRuntimeConfig>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
+        }
+        #endif
 
-        public static IArchitecture Interface;
+        public static IArchitecture Interface { get; private set; }
         
         public static void Init(IArchitecture architecture, Func<VomitRuntimeConfig> onLoadConfig)
         {
             Interface = architecture;
 
-            _vomitRuntimeConfig = onLoadConfig?.Invoke();
-
-            if (_vomitRuntimeConfig == null)
+            if (onLoadConfig == null)
             {
-                _vomitRuntimeConfig = Resources.Load<VomitRuntimeConfig>("VomitLibConfig");
+                LogKit.E("无法正确获得 VomitRuntimeConfig");
+                return;
             }
+            RuntimeConfig = onLoadConfig.Invoke();
+            
             // TODO 优化遍历范围
             // foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
             // {
@@ -34,19 +43,6 @@ namespace Twenty2.VomitLib
             //         }
             //     }
             // }
-        }
-
-        public static VomitRuntimeConfig RuntimeConfig
-        {
-            get
-            {
-                if (_vomitRuntimeConfig == null)
-                {
-                    _vomitRuntimeConfig = Resources.Load<VomitRuntimeConfig>("VomitLibConfig");
-                }
-
-                return _vomitRuntimeConfig;
-            }
         }
     }
 

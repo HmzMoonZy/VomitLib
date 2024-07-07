@@ -12,7 +12,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/ClientDB/打开数据配置目录")]
         private static void OpenDataTableFolder()
         {
-            var directoryInfo = new FileInfo(Vomit.RuntimeConfig.ClientDBConfig.ConfigPath).Directory;
+            var directoryInfo = new FileInfo(Vomit.GetConfigInEditor().ClientDBConfig.ConfigPath).Directory;
             if (directoryInfo != null)
             {
                 Process.Start(directoryInfo.FullName);
@@ -23,7 +23,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/ClientDB/生成客户端数据")]
         private static void GenerateData()
         {
-            var config = Vomit.RuntimeConfig.ClientDBConfig;
+            var config = Vomit.GetConfigInEditor().ClientDBConfig;
             
             string cmd = GenerateCmd(config.GenCodePath, config.JsonOutputPath, true);
             RunCmd(cmd);
@@ -35,7 +35,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/ClientDB/生成客户端数据(Clean)")]
         private static void ClearAndGenerateData()
         {
-            var config = Vomit.RuntimeConfig.ClientDBConfig;
+            var config = Vomit.GetConfigInEditor().ClientDBConfig;
             
             DirectoryInfo dir = new DirectoryInfo(config.JsonOutputPath);
         
@@ -50,14 +50,14 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/ClientDB/生成服务器数据")]
         private static void ClearAndGenerateServerData()
         {
-            var config = Vomit.RuntimeConfig.NetConfig;
+            var config = Vomit.GetConfigInEditor().NetConfig;
             string cmd = GenerateCmd(config.ServerScriptPath, config.ServerDataPath, true);
             RunCmd(cmd);
         }
         
         private static string GenerateCmd(string outputCodeDir, string outputDataDir, bool enableL10N)
         {
-            var config = Vomit.RuntimeConfig.ClientDBConfig;
+            var config = Vomit.GetConfigInEditor().ClientDBConfig;
 
             //https://luban.doc.code-philosophy.com/docs/manual/commandtools#unity--c--json
             StringBuilder cmd = new();
