@@ -6,6 +6,12 @@ namespace Twenty2.VomitLib.Config
     [Serializable]
     public class ClientDBConfig
     {
+        public enum JsonFormat
+        {
+            SimpleJson,
+            
+            NewtonsoftJson,
+        }
         
         public string ClientServerDllPath;
 
@@ -16,5 +22,9 @@ namespace Twenty2.VomitLib.Config
         public string JsonOutputPath;
 
         public string GenCodePath;
+
+        public JsonFormat Format;
+
+
     }
 }

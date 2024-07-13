@@ -1,6 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
+using Twenty2.VomitLib.Config;
 using UnityEditor;
 using Debug = UnityEngine.Debug;
 
@@ -25,7 +27,7 @@ namespace Twenty2.VomitLib.Editor
         {
             var config = Vomit.GetConfigInEditor().ClientDBConfig;
             
-            string cmd = GenerateCmd(config.GenCodePath, config.JsonOutputPath, true);
+            string cmd = GenerateCmd(config.GenCodePath, config.JsonOutputPath, true, config.Format);
             RunCmd(cmd);
             
             AssetDatabase.Refresh();
@@ -47,22 +49,28 @@ namespace Twenty2.VomitLib.Editor
             GenerateData();
         }
         
-        [MenuItem("VomitLib/ClientDB/生成服务器数据")]
-        private static void ClearAndGenerateServerData()
-        {
-            var config = Vomit.GetConfigInEditor().NetConfig;
-            string cmd = GenerateCmd(config.ServerScriptPath, config.ServerDataPath, true);
-            RunCmd(cmd);
-        }
+        // [MenuItem("VomitLib/ClientDB/生成服务器数据")]
+        // private static void ClearAndGenerateServerData()
+        // {
+        //     var config = Vomit.GetConfigInEditor().NetConfig;
+        //     string cmd = GenerateCmd(config.ServerScriptPath, config.ServerDataPath, true, config.Format);
+        //     RunCmd(cmd);
+        // }
         
-        private static string GenerateCmd(string outputCodeDir, string outputDataDir, bool enableL10N)
+        private static string GenerateCmd(string outputCodeDir, string outputDataDir, bool enableL10N, ClientDBConfig.JsonFormat format)
         {
             var config = Vomit.GetConfigInEditor().ClientDBConfig;
+
+            string strFormat = format switch
+            {
+                ClientDBConfig.JsonFormat.SimpleJson => "cs-simple-json",
+                ClientDBConfig.JsonFormat.NewtonsoftJson => "cs-newtonsoft-json",
+            };
 
             //https://luban.doc.code-philosophy.com/docs/manual/commandtools#unity--c--json
             StringBuilder cmd = new();
             cmd.Append($"dotnet \"{config.ClientServerDllPath}\" -t all --conf \"{config.ConfigPath}\" ");
-            cmd.Append("-c cs-simple-json -d json ");
+            cmd.Append($"-c {strFormat} -d json ");
             cmd.Append($"-x \"outputCodeDir={outputCodeDir}\" ");
             cmd.Append($"-x \"outputDataDir={outputDataDir}\" ");
             if(enableL10N)
