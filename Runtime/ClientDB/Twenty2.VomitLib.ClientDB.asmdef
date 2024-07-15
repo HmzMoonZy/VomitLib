@@ -2,8 +2,7 @@
     "name": "Twenty2.VomitLib.ClientDB",
     "rootNamespace": "Twenty2.VomitLib.ClientDB",
     "references": [
-        "GUID:e57019d1e0c7f6943b33bef3b102e263",
-        "GUID:2a81c6962524d424a8ef5072bd3b0fa0"
+        "GUID:e57019d1e0c7f6943b33bef3b102e263"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
