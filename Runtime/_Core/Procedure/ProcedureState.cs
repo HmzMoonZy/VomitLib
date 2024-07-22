@@ -5,8 +5,7 @@ using QFramework;
 
 namespace Twenty2.VomitLib.Procedure
 {
-    public abstract class ProcedureState<T> :
-        ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState 
+    public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState 
         where T : struct 
     {
         /// <summary>
@@ -27,7 +26,10 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 状态机切换条件, 满足条件才能够执行ChangeState
         /// </summary>
-        public abstract bool Condition();
+        public virtual bool Condition()
+        {
+            return true;
+        }
         
         /// <summary>
         /// 进入状态回调
@@ -37,7 +39,10 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 退出状态回调
         /// </summary>
-        protected  abstract void OnExit();
+        protected virtual UniTask OnExit()
+        {
+            return UniTask.CompletedTask;
+        }
         
         public UniTask Enter(IState context)
         {
@@ -51,8 +56,7 @@ namespace Twenty2.VomitLib.Procedure
                 unRegister.UnRegister();
             }
             _registers.Clear();
-            OnExit();
-            return UniTask.CompletedTask;
+            return OnExit();
         }
 
         /// <summary>
