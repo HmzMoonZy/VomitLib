@@ -125,45 +125,45 @@ public partial class {selectName}
         }
         
         
-        [UnityEditor.Callbacks.DidReloadScripts]
-        static void Bind()
-        {
-            if (Selection.activeObject is not GameObject)
-            {
-                return;
-            }
-            
-            // 绑定脚本
-            var instance = PrefabUtility.InstantiatePrefab(Selection.activeObject) as GameObject;
-            if (instance == null)
-            {
-                return;
-            }
-
-            if (instance.GetComponent<ViewConfig>() == null)
-            {
-                Object.DestroyImmediate(instance);
-                return;
-            }
-
-            var logic = instance.GetComponent<ViewLogic>();
-            if (logic != null)
-            {
-                Object.DestroyImmediate(instance);
-                return;
-            }
-        
-            var type = Assembly.Load("Assembly-CSharp").GetType(Selection.activeObject.name);
-            var addComponent = instance.AddComponent(type);
-            if (addComponent == null)
-            {
-                LogKit.E("没有!");
-            }
-
-            PrefabUtility.ApplyPrefabInstance(instance, InteractionMode.AutomatedAction);
-        
-            Object.DestroyImmediate(instance);
-        }
+        // [UnityEditor.Callbacks.DidReloadScripts]
+        // static void Bind()
+        // {
+        //     if (Selection.activeObject is not GameObject)
+        //     {
+        //         return;
+        //     }
+        //     
+        //     // 绑定脚本
+        //     var instance = PrefabUtility.InstantiatePrefab(Selection.activeObject) as GameObject;
+        //     if (instance == null)
+        //     {
+        //         return;
+        //     }
+        //
+        //     if (instance.GetComponent<ViewConfig>() == null)
+        //     {
+        //         Object.DestroyImmediate(instance);
+        //         return;
+        //     }
+        //
+        //     var logic = instance.GetComponent<ViewLogic>();
+        //     if (logic != null)
+        //     {
+        //         Object.DestroyImmediate(instance);
+        //         return;
+        //     }
+        //
+        //     var type = Assembly.Load("Assembly-CSharp").GetType(Selection.activeObject.name);
+        //     var addComponent = instance.AddComponent(type);
+        //     if (addComponent == null)
+        //     {
+        //         LogKit.E("没有!");
+        //     }
+        //
+        //     PrefabUtility.ApplyPrefabInstance(instance, InteractionMode.AutomatedAction);
+        //
+        //     Object.DestroyImmediate(instance);
+        // }
         
         
         
