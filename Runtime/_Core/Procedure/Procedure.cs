@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Cysharp.Threading.Tasks;
@@ -9,38 +10,49 @@ namespace Twenty2.VomitLib.Procedure
     public static class Procedure<T> where T : struct
     {
         public static FSM<T> Fsm;
+        
+        public static void Init(IDictionary<T, ProcedureState<T>> stateDict, T startState)
+        {
+            if (Fsm != null)
+            {
+                return;
+            }
+            
+            Fsm = new();
+            
+            foreach (var state in stateDict)
+            {
+                LogKit.I($"创建 Procedure {state.Key}");
 
-        private static T s_entryID;
+                Fsm.AddState(state.Key, state.Value);
+            }
+            
+            Init();
+            
+            Start(startState);
+        }
         
         /// <summary>
-        /// 初始化流程系统
+        /// 自动扫描所有可能的流程, 初始化流程系统
         /// </summary>
         /// <param name="isStart">启动入口流程</param>
-        public static void Init(bool isStart = true)
+        public static void Init(bool isStart)
         {
             Fsm = new();
 
-            AutoRegisterProcedureState();
+            T start = default;
 
-            UniTask.WaitWhile(() =>
-            {
-                Fsm.Update();
-                return true;
-            }, PlayerLoopTiming.Update).Forget();
+            AutoRegisterProcedureState(ref start);
 
-            UniTask.WaitWhile(() =>
-            {
-                Fsm.FixedUpdate();
-                return true;
-            }, PlayerLoopTiming.FixedUpdate).Forget();
-
+            Init();
+            
             if (isStart)
             {
-                Start();
+                Start(start);
             }
             return;
 
-            static void AutoRegisterProcedureState()
+            static void AutoRegisterProcedureState(ref T s)
             {
                 foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
                 {
@@ -56,18 +68,34 @@ namespace Twenty2.VomitLib.Procedure
 
                         Fsm.AddState(id, obj);
 
-                        if (attr.IsEntry) s_entryID = id;
+                        if (attr.IsEntry) s = id;
                     }
                 }
             }
         }
 
+        private static void Init()
+        {
+            UniTask.WaitWhile(() =>
+            {
+                Fsm.Update();
+                return true;
+            }, PlayerLoopTiming.Update).Forget();
+
+            UniTask.WaitWhile(() =>
+            {
+                Fsm.FixedUpdate();
+                return true;
+            }, PlayerLoopTiming.FixedUpdate).Forget();
+        }
+        
+
         /// <summary>
         /// 启动入口流程
         /// </summary>
-        public static void Start()
+        public static void Start(T startState)
         {
-            Fsm.StartState(s_entryID);
+            Fsm.StartState(startState);
         }
 
         /// <summary>
