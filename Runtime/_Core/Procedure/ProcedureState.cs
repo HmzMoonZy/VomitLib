@@ -5,7 +5,7 @@ using QFramework;
 
 namespace Twenty2.VomitLib.Procedure
 {
-    public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState 
+    public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState , ICanSendQuery
         where T : struct 
     {
         /// <summary>
