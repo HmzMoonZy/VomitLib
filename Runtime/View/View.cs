@@ -425,6 +425,45 @@ namespace Twenty2.VomitLib.View
             return _visibleViewMap.Values.First(info => info.SortOrder == maxSort && info.Config.Layer == maxLayer);
         }
 
+        public static bool IsTop<T>(params Type[] ignoreTypes) where T : ViewLogic
+        {
+            var view = GetView<T>();
+
+            if (view == null)
+            {
+                return false;
+            }
+
+            if (!_visibleViewMap.ContainsValue(view))
+            {
+                return false;
+            }
+
+            int sortOrder = view.SortOrder;
+            var layer = view.Config.Layer;
+
+            return _visibleViewMap.Values.All(logic =>
+            {
+                if (logic == view || ignoreTypes.Contains(logic.GetType()))
+                {
+                    return true;
+                }
+
+                if (logic.Config.Layer < layer)
+                {
+                    return true;
+                }
+
+                if (logic.Config.Layer == layer)
+                {
+                    return logic.SortOrder <= sortOrder;
+                }
+
+                return false;
+            });
+            
+        }
+
         public static bool IsViewVisible<T>() where T : ViewLogic
         {
             return _visibleViewMap.ContainsKey(typeof(T).Name);
