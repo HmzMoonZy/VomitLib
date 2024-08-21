@@ -5,6 +5,8 @@ namespace Twenty2.VomitLib.View
         public struct Close
         {
             public System.Type LogicType;
+
+            public string ViewName;
         }
     }
 }

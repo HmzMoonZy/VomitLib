@@ -363,8 +363,13 @@ namespace Twenty2.VomitLib.View
             }
             else
             {
-                await logic.OnClose();    
+                await logic.OnClose();
             }
+            
+            Vomit.Interface.SendEvent(new EView.Close()
+            {
+                LogicType = logic.GetType(),
+            });
             logic.isAsyncActioning = false;
             // 不可见
             if (logic.Config.IsCache)
