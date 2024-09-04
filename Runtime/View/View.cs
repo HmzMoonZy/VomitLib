@@ -398,6 +398,11 @@ namespace Twenty2.VomitLib.View
         }
         
         #endregion
+
+        public static async UniTask OpenAndWaitClose<T>(ViewParameterBase param = null)  where T : ViewLogic, new ()
+        {
+            await (await OpenAsync<T>(param)).WaitClose();
+        }
         
         /// <summary>
         /// 获取 T 类型的 ViewLogic.
