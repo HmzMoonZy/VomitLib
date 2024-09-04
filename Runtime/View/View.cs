@@ -18,7 +18,7 @@ namespace Twenty2.VomitLib.View
     /// <summary>
     /// 基于 QFramework 的UI管理器.
     /// </summary>
-    public static class View
+    public static partial class View
     {
         /// <summary>
         /// 字体缓存
