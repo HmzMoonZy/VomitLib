@@ -35,6 +35,9 @@ namespace Twenty2.VomitLib.View
         
         [Tooltip("自动绑定按钮事件")] 
         [SerializeField] private bool  _autoBindButtons = true;
+        
+        [Tooltip("记录设备打开记录")] 
+        [SerializeField] private bool  _recordOpen = false;
 
 
         public ViewSortLayer Layer => _layer;
@@ -50,5 +53,7 @@ namespace Twenty2.VomitLib.View
         public bool IsCache => _isCache;
 
         public bool AutoBindButtons => _autoBindButtons;
+        
+        public bool RecordOpen => _recordOpen;
     }
 }

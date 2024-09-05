@@ -215,12 +215,12 @@ namespace Twenty2.VomitLib.View
         /// 是否是该设备第一次打开该界面
         /// </summary>
         /// <returns></returns>
-        protected bool IsFirstOpen()
+        public bool IsFirstOpen()
         {
             return !PlayerPrefs.HasKey($"__FIRST__{Name}");
         }
 
-        protected void RecordFirstOpen()
+        public void RecordFirstOpen()
         {
             PlayerPrefs.SetInt($"__FIRST__{Name}", 1);
         }

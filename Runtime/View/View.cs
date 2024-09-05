@@ -268,6 +268,11 @@ namespace Twenty2.VomitLib.View
             logic.isAsyncActioning = false;
 
             UnFreeze();
+
+            if (logic.Config.RecordOpen)
+            {
+                logic.RecordFirstOpen();
+            }
             
             return logic;
         }
