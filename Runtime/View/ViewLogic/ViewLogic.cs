@@ -8,6 +8,19 @@ using UnityEngine.UI;
 
 namespace Twenty2.VomitLib.View
 {
+    public abstract class ViewLogic<TParam> : ViewLogic where TParam : ViewParameterBase
+    {
+        protected TParam Param;
+        
+        protected abstract UniTask OnOpened(TParam param);
+        
+        public override UniTask OnOpened(ViewParameterBase param = null)
+        {
+            Param = (TParam)param;
+            return OnOpened((TParam)param);
+        }
+    }
+    
     public abstract class ViewLogic : MonoController
     {
         /// <summary>
@@ -198,20 +211,26 @@ namespace Twenty2.VomitLib.View
             trans.DestroyChildrenWithCondition(child => !child.TryGetComponent<LayoutElement>(out var element) || !element.ignoreLayout);
         }
 
+        /// <summary>
+        /// 是否是该设备第一次打开该界面
+        /// </summary>
+        /// <returns></returns>
+        protected bool IsFirstOpen()
+        {
+            return PlayerPrefs.HasKey($"__FIRST__{Name}");
+        }
+
+        /// <summary>
+        /// 移除首次打开的key
+        /// </summary>
+        protected void DeleteFirstOpenKey()
+        {
+            PlayerPrefs.DeleteKey($"__FIRST__{Name}");
+        }
+
         #endregion
     }
 
-    public abstract class ViewLogic<TParam> : ViewLogic where TParam : ViewParameterBase
-    {
-        protected TParam Param;
-        
-        protected abstract UniTask OnOpened(TParam param);
-        
-        public override UniTask OnOpened(ViewParameterBase param = null)
-        {
-            Param = (TParam)param;
-            return OnOpened((TParam)param);
-        }
-    }
+
     
 }
