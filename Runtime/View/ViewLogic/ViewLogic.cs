@@ -217,7 +217,12 @@ namespace Twenty2.VomitLib.View
         /// <returns></returns>
         protected bool IsFirstOpen()
         {
-            return PlayerPrefs.HasKey($"__FIRST__{Name}");
+            return !PlayerPrefs.HasKey($"__FIRST__{Name}");
+        }
+
+        protected void RecordFirstOpen()
+        {
+            PlayerPrefs.SetInt($"__FIRST__{Name}", 1);
         }
 
         /// <summary>
