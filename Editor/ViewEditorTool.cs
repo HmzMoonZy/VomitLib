@@ -68,6 +68,20 @@ namespace Twenty2.VomitLib.Editor
             tagManager.ApplyModifiedProperties();
             AssetDatabase.SaveAssets();
         }
+        
+        [MenuItem("VomitLib/View/删除初次打开Token")]
+        public static void DeleteAllKeys()
+        {
+            var folderPath = Path.Combine(Application.dataPath[..^7], Vomit.GetConfigInEditor().ViewFrameworkConfig.ScriptGeneratePath);
+            DirectoryInfo dir = new(folderPath);
+
+            foreach (var fileInfo in dir.GetFiles("*.cs"))
+            {
+                var viewName = Path.GetFileNameWithoutExtension(fileInfo.Name);
+                
+                PlayerPrefs.DeleteKey($"__FIRST__{viewName}");
+            }
+        }
 
         [MenuItem("Assets/Create/VomitLib/View/ViewScript")]
         public static void GenerateViewScript()
