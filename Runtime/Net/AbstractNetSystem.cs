@@ -22,21 +22,14 @@ namespace Twenty2.VomitLib.Net
             msg.UniId = UniId++;
             GameClient.Instance.Send(msg);
             LogKit.I("开始等待消息:" + msg.UniId);
-            return MsgWaiter.StartWait(msg.UniId);
+            return MsgWaiterMgr.StartWait(msg.UniId);
         }
-
-        // TODO 自动拼接 url, 和服务端同步
+        
         protected async UniTask<UnityWebRequest> SendMsg(string httpUrl)
         {
             return await UnityWebRequest.Get(httpUrl).SendWebRequest();
         }
         
-        // TODO 自动拼接 url
-        // protected async UniTask<UnityWebRequest> SendMsg(IDictionary<string, string> parameter)
-        // {
-        //     
-        // }
-
         #endregion
 
         #region Evnets
