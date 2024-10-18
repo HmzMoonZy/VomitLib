@@ -61,16 +61,24 @@ namespace Twenty2.VomitLib.Editor
         {
             var config = Vomit.GetConfigInEditor().ClientDBConfig;
 
-            string strFormat = format switch
+            string strFormatC = format switch
             {
                 ClientDBConfig.JsonFormat.SimpleJson => "cs-simple-json",
                 ClientDBConfig.JsonFormat.NewtonsoftJson => "cs-newtonsoft-json",
+                ClientDBConfig.JsonFormat.Bin => "cs-bin",
+            };
+            
+            string strFormatD = format switch
+            {
+                ClientDBConfig.JsonFormat.SimpleJson => "json",
+                ClientDBConfig.JsonFormat.NewtonsoftJson => "json",
+                ClientDBConfig.JsonFormat.Bin => "bin",
             };
 
             //https://luban.doc.code-philosophy.com/docs/manual/commandtools#unity--c--json
             StringBuilder cmd = new();
             cmd.Append($"dotnet \"{config.ClientServerDllPath}\" -t all --conf \"{config.ConfigPath}\" ");
-            cmd.Append($"-c {strFormat} -d json ");
+            cmd.Append($"-c {strFormatC} -d {strFormatD} ");
             cmd.Append($"-x \"outputCodeDir={outputCodeDir}\" ");
             cmd.Append($"-x \"outputDataDir={outputDataDir}\" ");
             if(enableL10N)

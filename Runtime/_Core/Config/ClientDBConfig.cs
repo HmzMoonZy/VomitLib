@@ -11,6 +11,8 @@ namespace Twenty2.VomitLib.Config
             SimpleJson,
             
             NewtonsoftJson,
+            
+            Bin,
         }
         
         public string ClientServerDllPath;
