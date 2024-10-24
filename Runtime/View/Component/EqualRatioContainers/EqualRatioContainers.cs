@@ -49,7 +49,7 @@ namespace Twenty2.VomitLib.View.Component
         {
             if (_canUpdate)
             {
-                Refresh(_size);
+                Refresh(_size, _useNativeSize);
             }
         }
     }
