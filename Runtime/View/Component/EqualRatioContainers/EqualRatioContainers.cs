@@ -24,9 +24,10 @@ namespace Twenty2.VomitLib.View.Component
             Refresh();
         }
 
-        public void Refresh(Vector2 size)
+        public void Refresh(Vector2 size, bool useNativeSize)
         {
             _size = size;
+            _useNativeSize = useNativeSize;
             Refresh();
         }
         
