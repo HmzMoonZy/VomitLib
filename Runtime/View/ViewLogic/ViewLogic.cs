@@ -87,12 +87,6 @@ namespace Twenty2.VomitLib.View
             get => ViewCanvas.sortingOrder;
             set => ViewCanvas.sortingOrder = value;
         }
-
-        /// <summary>
-        /// 是否正在调用异步生命周期API
-        /// </summary>
-        [NonSerialized]
-        public bool isAsyncActioning = false;
         
         #region 生命周期
 

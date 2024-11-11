@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.Linq;
-using Cysharp.Threading.Tasks.Triggers;
 using QFramework;
 using TMPro;
 using UnityEngine;
@@ -20,21 +17,6 @@ namespace Twenty2.VomitLib.View
     /// </summary>
     public static partial class View
     {
-        /// <summary>
-        /// 字体缓存
-        /// </summary>
-        private static Dictionary<string, Font> _fontCache;
-        
-        /// <summary>
-        /// ViewRoot下的Camera.
-        /// </summary>
-        public static Camera ViewCamera { get; private set; }
-
-        /// <summary>
-        /// 隐藏节点
-        /// </summary>
-        public static Transform HiddenCanvas { get; private set; }
-
         private static ViewRoot _root;
         /// <summary>
         /// View 根节点.
@@ -58,16 +40,21 @@ namespace Twenty2.VomitLib.View
                 return _root;
             }
         }
-
-        /// <summary>
-        /// 所有面板缓存
-        /// </summary>
-        private static Dictionary<string, ViewLogic> _viewMap = new Dictionary<string, ViewLogic>();
-
+        
         /// <summary>
         /// 所有被激活的面板
         /// </summary>
         private static Dictionary<string, ViewLogic> _visibleViewMap = new Dictionary<string, ViewLogic>();
+        
+        /// <summary>
+        /// 所有隐藏的面板
+        /// </summary>
+        private static Dictionary<string, ViewLogic> _hiddenViewMap = new Dictionary<string, ViewLogic>();
+        
+        /// <summary>
+        /// 正在播放动画的面板
+        /// </summary>
+        private static Dictionary<string, ViewLogic> _animatingViewMap = new Dictionary<string, ViewLogic>();
 
         /// <summary>
         /// ViewLogic - ViewComponent
@@ -85,75 +72,16 @@ namespace Twenty2.VomitLib.View
         /// 本地化回调
         /// </summary>
         private static Func<string, string> _localization = null;
-
-        /// <summary>
-        /// 用于测试绑定按钮的方法.
-        /// </summary>
-        private static Action _beforeClickButton;
-
-        public static void Init()
+        
+        private static IViewLoader _loader;
+        private static IViewBinder _binder;
+        private static IViewMasker _masker;
+        
+        public static void Init(IViewLoader loader, IViewBinder binder = null, IViewMasker masker = null)
         {
-            ViewCamera = Root.ViewCamera;
-            HiddenCanvas = Root.HiddenCanvas;
-            
-            List<Type> _preloads = new();
-            
-            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
-            {
-                foreach (var type in assembly.GetTypes())
-                {
-                    if (type.HasAttribute<PreloadAttribute>())
-                    {
-                        _preloads.Add(type);
-                    }
-
-                    if (type.IsSubclassOf(typeof(ViewComponent)))
-                    {
-                        if (type.HasAttribute<ViewComponentAttribute>())
-                        {
-                            ProcessViewComponent(type);
-                        }
-                        else
-                        {
-                            LogKit.W($"{type.Name} 没有 ViewComponentAttribute, 运行时将永远不会被自动释放.");
-                        }
-                    }
-                }
-            }
-            
-            foreach (var preload in _preloads)
-            {
-                ProcessPreload(preload);
-            }
-            
-            static void ProcessPreload(Type logic)
-            {
-                var attr = logic.GetAttribute<PreloadAttribute>();
-                var viewLogic = OpenImmediately(logic);    // TODO 写一个加载方法而不是调用开启面板
-                if (attr.IsHide)
-                {
-                    if(!viewLogic.Config.IsCache) LogKit.E($"预加载了ui : {logic.Name} 但是不是缓存的ui,请检查!");
-                    CloseImmediately(viewLogic);
-                }
-            }
-
-            static void ProcessViewComponent(Type vc)
-            {
-                var att = vc.GetAttribute<ViewComponentAttribute>();
-                foreach (var parentType in att.ParentTypes)
-                {
-                    if (_viewComponents.ContainsKey(parentType.Name))
-                    {
-                        _viewComponents[parentType.Name].Add(vc);
-                    }
-                    else
-                    {
-                        _viewComponents.Add(parentType.Name, new List<Type> { vc });
-                    }
-
-                    LogKit.I($"Record ViewComponents {parentType.Name} - {vc.Name}");
-                }
-            }
+            _loader = loader;
+            _binder = binder;
+            _masker = masker;
         }
 
         /// <summary>
@@ -165,84 +93,48 @@ namespace Twenty2.VomitLib.View
             _localization = localization;
         }
         
-        /// <summary>
-        /// 设置在点击通过框架自动绑定的按钮之前调用的方法(方法拦截)
-        /// </summary>
-        /// <param name="action"></param>
-        public static void SetBeforeClickBtnAction(Action action) => _beforeClickButton = action;
-        
         #region OpenView
-        
-        /// <summary>
-        /// 打开一个和 T 同名的 View.
-        /// </summary>
-        public static void Open<T>(ViewParameterBase param = null) where T : ViewLogic, new()
-        {
-             OpenAsync(typeof(T), param).Forget();
-        }
-        
-        /// <summary>
-        /// 打开一个和 T 同名的 View.
-        /// </summary>
-        public static T OpenImmediately<T>(ViewParameterBase param = null) where T : ViewLogic, new()
-        {
-            return (T)OpenImmediately(typeof(T), param);
-        }
-        
-        /// <summary>
-        /// 立刻打开一个和 T 同名的 View.
-        /// 这个方法不等待动画结束.
-        /// 也不会阻止你和UI交互
-        /// </summary>
-        private static ViewLogic OpenImmediately(Type type, ViewParameterBase param = null)
-        {
-            var viewName = type.Name;
-
-            if (_visibleViewMap.TryGetValue(viewName, out var logic))
-            {
-                LogKit.I($"Try to open an already showed the View : {viewName}");
-                return logic;
-            }
-            
-            logic = LoadOrGenerateViewLogic(type);
-            
-            OnLoadLogic(logic);
-
-            logic.OnOpened(param).Forget();
-
-            var openTask = new UniTaskCompletionSource();
-            
-            Vomit.Interface.SendEvent(new EView.Open
-            {
-                LogicType = type,
-                ViewLogic = logic,
-                OpenTask = openTask,
-            });
-
-            openTask.TrySetResult();
-            
-            return logic;
-        }
         
         /// <summary>
         /// 异步打开一个View, 直到预期的动画结束.
         /// 直到加载完成,这个方法是同步的.
         /// 直到表现完成, 无法对UI进行交互(关闭射线检测)
+        /// TODO 独立的动画逻辑, 考虑用Animation实现
         /// </summary>
         public static async UniTask<T> OpenAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
         {
             return (T) await OpenAsync(typeof(T), param);
         }
         
+        /// <summary>
+        /// 打开一个View并等待它关闭
+        /// </summary>
+        public static async UniTask OpenAndWaitClose<T>(ViewParameterBase param = null)  where T : ViewLogic, new ()
+        {
+            await (await OpenAsync<T>(param)).WaitClose();
+        }
+        
         private static async UniTask<ViewLogic> OpenAsync(Type logicType, ViewParameterBase param = null)
         {
             var viewName = logicType.Name;
 
-            if (_visibleViewMap.TryGetValue(viewName, out var logic))
+            ViewLogic logic = null;
+
+            if (_visibleViewMap.TryGetValue(viewName, out logic))
             {
                 LogKit.I($"Try to open an already showed the View : {viewName}");
                 return logic;
             }
+
+            if (_animatingViewMap.TryGetValue(viewName, out logic))
+            {
+                LogKit.I($"Try to open animation  View : {viewName}");
+                return logic;
+            }
+            
+
+            if(_hiddenViewMap.TryGetValue(viewName))
+            
 
             logic = LoadOrGenerateViewLogic(logicType);
             
@@ -250,7 +142,7 @@ namespace Twenty2.VomitLib.View
 
             Freeze();
             
-            logic.isAsyncActioning = true;
+            logic.IsAsyncActioning = true;
 
             var openEvent = new EView.Open
             {
@@ -265,7 +157,7 @@ namespace Twenty2.VomitLib.View
 
             openEvent.OpenTask.TrySetResult();
             
-            logic.isAsyncActioning = false;
+            logic.IsAsyncActioning = false;
 
             UnFreeze();
 
@@ -277,9 +169,11 @@ namespace Twenty2.VomitLib.View
             return logic;
         }
         
+        
+        
         private static void OnLoadLogic(ViewLogic logic)
         {
-            if (logic.isAsyncActioning)
+            if (logic.IsAsyncActioning)
             {
                 LogKit.I($"Try to open an actioning view : {logic.Name}");
                 return;
@@ -295,7 +189,7 @@ namespace Twenty2.VomitLib.View
 
             if (logic.Config.EnableAutoMask)
             {
-                AutoGenerateViewMask(logic);
+                _masker?.Mask(logic);
             }
             
             if (!logic.gameObject.activeSelf)
@@ -305,7 +199,7 @@ namespace Twenty2.VomitLib.View
             
             logic.transform.parent = Root.transform;
             logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
-            logic.ViewCanvas.worldCamera = ViewCamera;
+            logic.ViewCanvas.worldCamera = Root.ViewCamera;
             logic.ViewCanvas.sortingLayerID = (int) logic.Config.Layer;
             logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
             
@@ -316,28 +210,17 @@ namespace Twenty2.VomitLib.View
         
         #region CloseView
         
-        public static void Close<T>()
-        {
-            _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
-            CloseAsync(logic, false).Forget();
-        }
-        
         public static UniTask CloseAsync<T>()
         {
             _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
             return CloseAsync(logic, false);
         }
         
-        public static void CloseImmediately(ViewLogic logic)
-        {
-            CloseAsync(logic, true).Forget();
-        }
-        
         public static async UniTask CloseAsync(ViewLogic logic, bool immediately)
         {
             if (logic is null) return;
             
-            if (logic.isAsyncActioning)
+            if (logic.IsAsyncActioning)
             {
                 LogKit.W($"Try to close an actioning view with name {logic.Name} !");
                 return;
@@ -355,7 +238,7 @@ namespace Twenty2.VomitLib.View
                 _viewMap.Remove(logic.Name);
             }
 
-            logic.isAsyncActioning = true;
+            logic.IsAsyncActioning = true;
             // 关闭射线检测   
             logic.Freeze();
             // 取消监听器
@@ -375,16 +258,16 @@ namespace Twenty2.VomitLib.View
             {
                 LogicType = logic.GetType(),
             });
-            logic.isAsyncActioning = false;
+            logic.IsAsyncActioning = false;
             // 不可见
             if (logic.Config.IsCache)
             {
                 logic.OnHidden();
                 logic.transform.parent = HiddenCanvas;
                 
-                if (logic.Config.EnableAutoMask && logic.transform.GetChild(0).name == "__AutoMask")
+                if (logic.Config.EnableAutoMask)
                 {
-                    Object.Destroy(logic.transform.GetChild(0).gameObject);
+                    _masker?.Unmask(logic);
                 }
                 logic.UnFreeze();
             }
@@ -394,20 +277,8 @@ namespace Twenty2.VomitLib.View
             }
         }
         
-        public static void CloseAll()
-        {
-            foreach (var l in _visibleViewMap.Values.ToList())
-            {
-                CloseImmediately(l);
-            }
-        }
-        
         #endregion
 
-        public static async UniTask OpenAndWaitClose<T>(ViewParameterBase param = null)  where T : ViewLogic, new ()
-        {
-            await (await OpenAsync<T>(param)).WaitClose();
-        }
         
         /// <summary>
         /// 获取 T 类型的 ViewLogic.
@@ -591,22 +462,18 @@ namespace Twenty2.VomitLib.View
         private static ViewLogic LoadOrGenerateViewLogic(Type logicType)
         {
             var viewName = logicType.Name;
-
-            // 如果在缓存中则直接返回
-            if (_viewMap.TryGetValue(viewName, out var viewLogic))
-            {
-                return viewLogic;
-            }
-
-            var address = $"{Vomit.RuntimeConfig.ViewFrameworkConfig.ViewAddressablePrefix}/{viewName}.prefab";
-            var viewObject = Addressables.InstantiateAsync(address, HiddenCanvas).WaitForCompletion();
             
-            viewLogic = viewObject.GetComponent<ViewLogic>();
+            if
+
+            var viewObject = Object.Instantiate(_loader.LoadView(viewName), HiddenCanvas); 
+            
+            var viewLogic = viewObject.GetComponent<ViewLogic>();
+            
             viewLogic.Name = viewName;
 
             if (viewLogic.Config.AutoBindButtons)
             {
-                AutoBindViewLogicButtons(viewLogic);
+                _binder?.Bind(viewLogic);
             }
 
             if (viewLogic.Config.AutoDefaultFont)
@@ -620,6 +487,7 @@ namespace Twenty2.VomitLib.View
             }
             
             viewLogic.OnCreated();
+            
             Vomit.Interface.SendEvent(new EView.Create
             {
                 LogicType = logicType,
@@ -629,35 +497,6 @@ namespace Twenty2.VomitLib.View
             _viewMap.Add(viewName, viewLogic);
             
             return viewLogic;
-        }
-
-        /// <summary>
-        /// 遍历 logic 所有的 Button 组件.
-        /// 并反射查找名为 "__OnClick_[button.name]" 的方法.
-        /// </summary>
-        private static void AutoBindViewLogicButtons(ViewLogic logic)
-        {
-            var buttons = logic.transform.GetComponentsInChildren<Button>(true);
-            foreach (var btn in buttons)
-            {
-                var methodName = $"__OnClick_{btn.name}";
-                const BindingFlags bindFlag = BindingFlags.NonPublic | BindingFlags.Instance;
-                var methodInfo = logic.GetType().GetMethod(methodName, bindFlag);
-                
-                if (methodInfo == null)
-                {
-                    LogKit.W($"Try to bind {logic.Name} button event but method not found! Please check method named [{methodName}]");
-                    continue;
-                }
-                
-                btn.onClick.AddListener(() =>
-                {
-                    _beforeClickButton?.Invoke();
-                    methodInfo.Invoke(logic, null);
-                });
-                
-                LogKit.I($"[{logic.Name}] Binding Button Event to [{methodName}] successful!");
-            }
         }
 
         /// <summary>
@@ -694,29 +533,6 @@ namespace Twenty2.VomitLib.View
                     string ret = _localization(textmeshpro.text);
                     textmeshpro.text = ret ?? textmeshpro.text;    
                 }
-            }
-        }
-
-        private static void AutoGenerateViewMask(ViewLogic logic)
-        {
-            var mask = new GameObject("__AutoMask", typeof(Image));
-            mask.GetComponent<Image>().color = Vomit.RuntimeConfig.ViewFrameworkConfig.AutoMaskColor;
-
-            var rectTrans = mask.GetComponent<RectTransform>();
-            rectTrans.sizeDelta = new Vector2(50000, 50000);
-            rectTrans.SetParent(logic.transform);
-            rectTrans.localPosition = Vector3.zero;
-            rectTrans.localScale = Vector3.one;
-            rectTrans.SetAsFirstSibling();
-            
-
-            if (logic.Config.ClickMaskTriggerClose)
-            {
-                mask.GetAsyncPointerClickTrigger().ForEachAwaitAsync(async _ =>
-                {
-                    await UniTask.NextFrame();
-                    CloseAsync(logic, false).Forget();
-                }, mask.gameObject.GetCancellationTokenOnDestroy());
             }
         }
 
