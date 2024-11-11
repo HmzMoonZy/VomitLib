@@ -50,11 +50,6 @@ namespace Twenty2.VomitLib.View
         /// 所有隐藏的面板
         /// </summary>
         private static Dictionary<string, ViewLogic> _hiddenViewMap = new Dictionary<string, ViewLogic>();
-        
-        /// <summary>
-        /// 正在播放动画的面板
-        /// </summary>
-        private static Dictionary<string, ViewLogic> _animatingViewMap = new Dictionary<string, ViewLogic>();
 
         /// <summary>
         /// ViewLogic - ViewComponent
@@ -125,12 +120,6 @@ namespace Twenty2.VomitLib.View
                 LogKit.I($"Try to open an already showed the View : {viewName}");
                 return logic;
             }
-
-            if (_animatingViewMap.TryGetValue(viewName, out logic))
-            {
-                LogKit.I($"Try to open animation  View : {viewName}");
-                return logic;
-            }
             
 
             if(_hiddenViewMap.TryGetValue(viewName))
@@ -168,8 +157,6 @@ namespace Twenty2.VomitLib.View
             
             return logic;
         }
-        
-        
         
         private static void OnLoadLogic(ViewLogic logic)
         {

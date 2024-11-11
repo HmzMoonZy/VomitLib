@@ -14,9 +14,9 @@ namespace Twenty2.VomitLib.View
         
         protected abstract UniTask OnOpened(TParam param);
         
-        public override UniTask OnOpened(ViewParameterBase param = null)
+        public override UniTask OnOpened(ViewParameterBase param)
         {
-            Param = (TParam)param;
+            Param = param as TParam;
             return OnOpened((TParam)param);
         }
     }
@@ -48,16 +48,6 @@ namespace Twenty2.VomitLib.View
         }
 
         private ViewConfig _config;
-
-        private RectTransform _rectView;
-        /// <summary>
-        /// 面板下命名为'View'的子节点
-        /// </summary>
-        protected RectTransform RectView
-        {
-            get => _rectView ??= transform.Find("View").GetComponent<RectTransform>();
-        }
-        
         /// <summary>
         /// UI 面板通用属性
         /// </summary>
@@ -78,6 +68,16 @@ namespace Twenty2.VomitLib.View
                 return _config;
             }
         }
+
+        private RectTransform _rectView;
+        /// <summary>
+        /// 面板下命名为'View'的子节点
+        /// </summary>
+        protected RectTransform RectView => _rectView ??= transform.Find("View").GetComponent<RectTransform>();
+
+        private Animation _animation;
+        public Animation Animation => _animation ??= GetComponent<Animation>();
+
         
         /// <summary>
         /// View 在该 Layer 下的层级.
@@ -124,14 +124,15 @@ namespace Twenty2.VomitLib.View
         #region Events
         
         private List<IUnRegister> _viewEvents = new();
+        
+        /// <summary>
+        /// 注册事件, 当 View 被关闭或隐藏后,事件会被移除.
+        /// </summary>
+        /// <param name="onEvent"></param>
+        /// <typeparam name="T"></typeparam>
         protected new void RegisterEvent<T>(Action<T> onEvent) where T : struct
         {
             _viewEvents.Add(this.RegisterEventWithoutUnRegister(onEvent));
-        }
-
-        protected void RegisterAliveEvent<T>(Action<T> onEvent) where T : struct
-        {
-            this.As<ICanRegisterEvent>().RegisterEvent(onEvent).UnRegisterWhenGameObjectDestroyed(gameObject);
         }
         
         #endregion
@@ -165,26 +166,26 @@ namespace Twenty2.VomitLib.View
             _viewEvents.Clear();
         }
         
-        protected void CloseSelf()
+        protected UniTask CloseSelf()
         {
-            View.CloseAsync(this, false).Forget();
+            return View.CloseAsync(this, false);
         }
 
         public void Freeze()
         {
-            var raycaster = transform.GetComponent<GraphicRaycaster>();
-            if (raycaster != null)
+            var rayCaster = transform.GetComponent<GraphicRaycaster>();
+            if (rayCaster != null)
             {
-                raycaster.enabled = false;
+                rayCaster.enabled = false;
             }
         }
 
         public void UnFreeze()
         {
-            var raycaster = transform.GetComponent<GraphicRaycaster>();
-            if (raycaster != null)
+            var rayCaster = transform.GetComponent<GraphicRaycaster>();
+            if (rayCaster != null)
             {
-                raycaster.enabled = true;
+                rayCaster.enabled = true;
             }
         }
 
@@ -222,7 +223,7 @@ namespace Twenty2.VomitLib.View
         /// <summary>
         /// 移除首次打开的key
         /// </summary>
-        protected void DeleteFirstOpenKey()
+        public void DeleteFirstOpenKey()
         {
             PlayerPrefs.DeleteKey($"__FIRST__{Name}");
         }
