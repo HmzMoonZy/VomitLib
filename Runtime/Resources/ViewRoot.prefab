@@ -9,9 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6731983585291268654}
-  - component: {fileID: 6731983585291268655}
-  - component: {fileID: 6731983585291268652}
   - component: {fileID: 9114771230072563811}
+  - component: {fileID: 6731983585291268655}
   m_Layer: 0
   m_Name: ViewRoot
   m_TagString: Untagged
@@ -36,6 +35,20 @@ Transform:
   - {fileID: 6731983585445846577}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9114771230072563811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6731983585291268653}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f543a46541914a05835275acf7076b13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _viewCamera: {fileID: 6731983586226402844}
+  _hiddenCanvas: {fileID: 6731983585445846577}
 --- !u!114 &6731983585291268655
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51,40 +64,6 @@ MonoBehaviour:
   m_FirstSelected: {fileID: 0}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
---- !u!114 &6731983585291268652
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6731983585291268653}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f231c4fb786f3946a6b90b886c48677, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SendPointerHoverToParent: 1
-  m_HorizontalAxis: Horizontal
-  m_VerticalAxis: Vertical
-  m_SubmitButton: Submit
-  m_CancelButton: Cancel
-  m_InputActionsPerSecond: 10
-  m_RepeatDelay: 0.5
-  m_ForceModuleActive: 0
---- !u!114 &9114771230072563811
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6731983585291268653}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f543a46541914a05835275acf7076b13, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _viewCamera: {fileID: 6731983586226402844}
-  _hiddenCanvas: {fileID: 6731983585445846577}
 --- !u!1 &6731983585445846574
 GameObject:
   m_ObjectHideFlags: 0
