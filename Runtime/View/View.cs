@@ -76,7 +76,7 @@ namespace Twenty2.VomitLib.View
             {
                 foreach (var type in assembly.GetTypes())
                 {
-                    // 记录 ViewComponent 和 View 的引用关系
+                    // 记录 ViewComponent 和 View 的引用关系 TODO 还没有实现释放
                     if (type.HasAttribute<ViewCompAttribute>())
                     {   
                         var att = type.GetAttribute<ViewCompAttribute>();
@@ -92,7 +92,6 @@ namespace Twenty2.VomitLib.View
         
         /// <summary>
         /// 异步打开一个View
-        /// 直到加载完成,这个方法是同步的.
         /// </summary>
         public static async UniTask<T> OpenAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
         {
@@ -243,7 +242,6 @@ namespace Twenty2.VomitLib.View
             
             UnFreeze();
         }
-
         
         /// <summary>
         /// 获取 T 类型的 ViewLogic.
@@ -259,6 +257,10 @@ namespace Twenty2.VomitLib.View
             return (T) info;
         }
         
+        /// <summary>
+        /// 获取最顶层的 View
+        /// </summary>
+        /// <returns></returns>
         public static ViewLogic GetTop()
         {
             var maxLayer = _visibleViewMap.Values.Max(info => info.Config.Layer);
@@ -266,6 +268,11 @@ namespace Twenty2.VomitLib.View
             return _visibleViewMap.Values.First(info => info.SortOrder == maxSort && info.Config.Layer == maxLayer);
         }
 
+        /// <summary>
+        /// 如果给定的T是最顶层, 返回True
+        /// </summary>
+        /// <param name="ignoreTypes">忽略的类型</param>
+        /// <returns></returns>
         public static bool IsTop<T>(params Type[] ignoreTypes) where T : ViewLogic
         {
             var view = GetView<T>();
@@ -305,6 +312,9 @@ namespace Twenty2.VomitLib.View
             
         }
 
+        /// <summary>
+        /// 判断一个View是否可见
+        /// </summary>
         public static bool IsViewVisible<T>() where T : ViewLogic
         {
             return _visibleViewMap.ContainsKey(typeof(T).Name);
@@ -314,12 +324,6 @@ namespace Twenty2.VomitLib.View
         /// 实例化一个在资源面板中标注为 VC 的对象.
         /// 并返回同名的类型.
         /// </summary>
-        /// TODO 所有的 VC 继承同一个父类,并实现泛型的Init方法.
-        /// <param name="parent"></param>
-        /// <param name="position"></param>
-        /// <param name="go"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public static async UniTask<T> CreateComp<T>(Transform parent, Vector3 position) where T : ViewComponent
         {
             var go = Object.Instantiate(await _loader.LoadComp(typeof(T).Name), parent);
@@ -328,6 +332,10 @@ namespace Twenty2.VomitLib.View
             return go.GetComponent<T>();
         }
         
+        /// <summary>
+        /// 实例化一个在资源面板中标注为 VC 的对象.
+        /// 并返回同名的类型.
+        /// </summary>
         public static async UniTask<T> CreateComp<T>(Transform parent) where T : UnityEngine.Component
         {
             var prefab = await _loader.LoadComp(typeof(T).Name);
