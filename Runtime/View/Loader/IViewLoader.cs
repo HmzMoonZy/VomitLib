@@ -5,11 +5,13 @@ namespace Twenty2.VomitLib.View
 {
     public interface IViewLoader
     {
-        public GameObject LoadView(string viewName);
+        public UniTask<GameObject> LoadView(string viewName);
+
+        public UniTask<GameObject> LoadComp(string compName);
         
         public void ReleaseView(GameObject view);
-
-        public bool IsViewLoaded(string viewName);
+        
+        public void ReleaseComp(GameObject comp);
     }
 }
 

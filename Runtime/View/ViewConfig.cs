@@ -24,9 +24,6 @@ namespace Twenty2.VomitLib.View
         [Tooltip("点击遮罩关闭这个面板")]
         [SerializeField] private bool _clickMaskTriggerClose = false;
 
-        [Tooltip("替换默认字体")]
-        [SerializeField] private bool _autoDefaultFont = true;
-
         [Tooltip("本地化")]
         [SerializeField] private bool _enableLocalization = true;
         
@@ -45,8 +42,6 @@ namespace Twenty2.VomitLib.View
         public bool EnableAutoMask => _enableAutoMask;
 
         public bool ClickMaskTriggerClose => _clickMaskTriggerClose;
-
-        public bool AutoDefaultFont => _autoDefaultFont;
 
         public bool EnableLocalization => _enableLocalization;
 

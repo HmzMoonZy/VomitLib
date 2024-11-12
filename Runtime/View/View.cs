@@ -30,7 +30,7 @@ namespace Twenty2.VomitLib.View
                 if (_root is null)
                 {
                     var prefab = Resources.Load<GameObject>("ViewRoot");
-                    _root = Object.Instantiate(prefab, Vomit.RuntimeConfig.ViewFrameworkConfig.ViewRootPosition, Quaternion.identity).GetComponent<ViewRoot>();
+                    _root = Object.Instantiate(prefab, Vector3.zero, Quaternion.identity).GetComponent<ViewRoot>();
                     if (_root is null)
                     {
                         throw new NotImplementedException("No \"ViewRoot\" component was added in the scene!");
@@ -56,49 +56,138 @@ namespace Twenty2.VomitLib.View
         /// key : ViewLogic.Name
         /// value : List,ViewComponent
         /// </summary>
-        private static Dictionary<string, List<Type>> _viewComponents = new Dictionary<string,  List<Type>>();
-
-        /// <summary>
-        /// 加载再内存中的ViewComponent预制体
-        /// </summary>
-        private static Dictionary<string, GameObject> _viewComponentPrefabs = new Dictionary<string, GameObject>(); 
-
-        /// <summary>
-        /// 本地化回调
-        /// </summary>
-        private static Func<string, string> _localization = null;
+        private static Dictionary<string, List<Type>> _compMap = new Dictionary<string,  List<Type>>();
         
         private static IViewLoader _loader;
         private static IViewBinder _binder;
         private static IViewMasker _masker;
+        private static IViewLocalizer _localizer;
+        private static IViewRecorder _recorder;
         
-        public static void Init(IViewLoader loader, IViewBinder binder = null, IViewMasker masker = null)
+        public static void Init(IViewLoader loader, IViewBinder binder = null, IViewMasker masker = null, IViewLocalizer localizer = null, IViewRecorder recorder = null)
         {
             _loader = loader;
             _binder = binder;
             _masker = masker;
-        }
-
-        /// <summary>
-        /// 本地化回调.
-        /// </summary>
-        /// <param name="localization"></param>
-        public static void SetLocalization(Func<string, string> localization)
-        {
-            _localization = localization;
+            _localizer = localizer;
+            _recorder = recorder;
+            
+            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (var type in assembly.GetTypes())
+                {
+                    // 记录 ViewComponent 和 View 的引用关系
+                    if (type.HasAttribute<ViewCompAttribute>())
+                    {   
+                        var att = type.GetAttribute<ViewCompAttribute>();
+                        foreach (var parentType in att.ParentTypes)
+                        {
+                            _compMap.TryAdd(parentType.Name, new List<Type>());
+                            _compMap[parentType.Name].Add(type);
+                        }
+                    }
+                }
+            }
         }
         
-        #region OpenView
-        
         /// <summary>
-        /// 异步打开一个View, 直到预期的动画结束.
+        /// 异步打开一个View
         /// 直到加载完成,这个方法是同步的.
-        /// 直到表现完成, 无法对UI进行交互(关闭射线检测)
-        /// TODO 独立的动画逻辑, 考虑用Animation实现
         /// </summary>
         public static async UniTask<T> OpenAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
         {
-            return (T) await OpenAsync(typeof(T), param);
+            return (T) await OpenAsync(typeof(T).Name, param);
+        }
+
+        public static async UniTask<ViewLogic> OpenAsync(string viewName, ViewParameterBase param = null)
+        {
+            ViewLogic logic = null;
+
+            if (_visibleViewMap.TryGetValue(viewName, out logic))
+            {
+                LogKit.I($"Try to open an already showed the View : {viewName}");
+                return logic;
+            }
+            
+            _hiddenViewMap.Remove(viewName, out logic);
+            
+            _visibleViewMap.Add(viewName, null);          // 添加标记
+            
+            if(logic == null)
+            {
+                var viewObject = Object.Instantiate(await _loader.LoadView(viewName), Root.transform);
+
+                logic = viewObject.GetComponent<ViewLogic>();
+
+                if (logic == null)
+                {
+                    throw new Exception($"ViewLogic : {viewName} is not found!");
+                }
+
+                logic.Name = viewName;
+
+                if (logic.Config.AutoBindButtons)
+                {
+                    _binder?.Bind(logic);
+                }
+                
+                if (_compMap.TryGetValue(logic.Name, out var components))
+                {
+                    foreach (var component in components)
+                    {
+                        _loader.LoadComp(component.Name);   // 预加载
+                    }
+                }
+                
+                logic.OnCreated();
+
+                Vomit.Interface.SendEvent(new EView.Create
+                {
+                    ViewLogic = logic
+                });
+            }
+            
+            _visibleViewMap[logic.Name] = logic;
+            
+            if (logic.Config.EnableAutoMask)
+            {
+                _masker?.Mask(logic);
+            }
+
+            if (logic.Config.EnableLocalization)
+            {
+                _localizer?.Localize(logic);
+            }
+            
+            logic.transform.parent = Root.transform;
+            logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+            logic.ViewCanvas.worldCamera = Root.ViewCamera;
+            logic.ViewCanvas.sortingLayerID = (int) logic.Config.Layer;
+            logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
+            
+            Freeze();
+            
+            Vomit.Interface.SendEvent(new EView.Open
+            {
+                ViewLogic = logic,
+            });
+            
+            await logic.OnOpened(param);
+            await logic.PlayOpenAnimation();
+            
+            if (logic.Config.RecordOpen)
+            {
+                _recorder?.RecordOpen(logic.Name);
+            }
+            
+            Vomit.Interface.SendEvent(new EView.OpenDone()
+            {
+                ViewLogic = logic,
+            });
+
+            UnFreeze();
+            
+            return logic;
         }
         
         /// <summary>
@@ -109,162 +198,51 @@ namespace Twenty2.VomitLib.View
             await (await OpenAsync<T>(param)).WaitClose();
         }
         
-        private static async UniTask<ViewLogic> OpenAsync(Type logicType, ViewParameterBase param = null)
+        public static UniTask CloseAsync<T>()
         {
-            var viewName = logicType.Name;
-
-            ViewLogic logic = null;
-
-            if (_visibleViewMap.TryGetValue(viewName, out logic))
+            return CloseAsync(typeof(T).Name);
+        }
+        
+        public static async UniTask CloseAsync(string viewName)
+        {
+            if(!_visibleViewMap.Remove(viewName, out var logic))
             {
-                LogKit.I($"Try to open an already showed the View : {viewName}");
-                return logic;
+                LogKit.I($"Try closing a non-existent View : {viewName}");
+                return;
             }
-            
-
-            if(_hiddenViewMap.TryGetValue(viewName))
-            
-
-            logic = LoadOrGenerateViewLogic(logicType);
-            
-            OnLoadLogic(logic);
 
             Freeze();
             
-            logic.IsAsyncActioning = true;
-
-            var openEvent = new EView.Open
-            {
-                LogicType = logicType,
-                ViewLogic = logic,
-                OpenTask =  new UniTaskCompletionSource(),
-            };
-            
-            Vomit.Interface.SendEvent(openEvent);
-
-            await logic.OnOpened(param);
-
-            openEvent.OpenTask.TrySetResult();
-            
-            logic.IsAsyncActioning = false;
-
-            UnFreeze();
-
-            if (logic.Config.RecordOpen)
-            {
-                logic.RecordFirstOpen();
-            }
-            
-            return logic;
-        }
-        
-        private static void OnLoadLogic(ViewLogic logic)
-        {
-            if (logic.IsAsyncActioning)
-            {
-                LogKit.I($"Try to open an actioning view : {logic.Name}");
-                return;
-            }
-            
-            if (_viewComponents.TryGetValue(logic.Name, out var components))
-            {
-                foreach (var component in components)
-                {
-                    LoadViewComponent(component.Name);
-                }
-            }
-
-            if (logic.Config.EnableAutoMask)
-            {
-                _masker?.Mask(logic);
-            }
-            
-            if (!logic.gameObject.activeSelf)
-            {
-                logic.gameObject.SetActive(true);
-            }
-            
-            logic.transform.parent = Root.transform;
-            logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
-            logic.ViewCanvas.worldCamera = Root.ViewCamera;
-            logic.ViewCanvas.sortingLayerID = (int) logic.Config.Layer;
-            logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
-            
-            _visibleViewMap.Add(logic.Name, logic);
-        }
-        
-        #endregion
-        
-        #region CloseView
-        
-        public static UniTask CloseAsync<T>()
-        {
-            _visibleViewMap.TryGetValue(typeof(T).Name, out var logic);
-            return CloseAsync(logic, false);
-        }
-        
-        public static async UniTask CloseAsync(ViewLogic logic, bool immediately)
-        {
-            if (logic is null) return;
-            
-            if (logic.IsAsyncActioning)
-            {
-                LogKit.W($"Try to close an actioning view with name {logic.Name} !");
-                return;
-            }
-            
-            // 清除可见字典
-            if (!_visibleViewMap.Remove(logic.Name))
-            {
-                LogKit.W($"Try to close a view with name {logic.Name} that does not exist!");
-                return;
-            }
-            // 清楚缓存字典
-            if (!logic.Config.IsCache)
-            {
-                _viewMap.Remove(logic.Name);
-            }
-
-            logic.IsAsyncActioning = true;
-            // 关闭射线检测   
-            logic.Freeze();
             // 取消监听器
             logic.Cancel();
-
-            // 回调生命周期事件
-            if (immediately)
+            
+            await logic.PlayCloseAnimation();
+            await logic.OnClose();
+            
+            if (logic.Config.IsCache)
             {
-                logic.OnClose().Forget();
+                logic.OnHidden();
+                logic.transform.parent = Root.HiddenCanvas;
+                _hiddenViewMap.Add(viewName, logic);
+                
+                if (logic.Config.EnableAutoMask)
+                {
+                    _masker?.Unmask(logic);
+                }
             }
             else
             {
-                await logic.OnClose();
+                Object.Destroy(logic.gameObject);
+                _loader.ReleaseView(logic.gameObject);
             }
             
             Vomit.Interface.SendEvent(new EView.Close()
             {
                 LogicType = logic.GetType(),
             });
-            logic.IsAsyncActioning = false;
-            // 不可见
-            if (logic.Config.IsCache)
-            {
-                logic.OnHidden();
-                logic.transform.parent = HiddenCanvas;
-                
-                if (logic.Config.EnableAutoMask)
-                {
-                    _masker?.Unmask(logic);
-                }
-                logic.UnFreeze();
-            }
-            else
-            {
-                Addressables.ReleaseInstance(logic.gameObject);
-            }
+            
+            UnFreeze();
         }
-        
-        #endregion
 
         
         /// <summary>
@@ -273,7 +251,7 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         public static T GetView<T>() where T : ViewLogic
         {
-            if (!_viewMap.TryGetValue(typeof(T).Name, out var info))
+            if (!_visibleViewMap.TryGetValue(typeof(T).Name, out var info))
             {
                 return null;
             }
@@ -281,16 +259,6 @@ namespace Twenty2.VomitLib.View
             return (T) info;
         }
         
-        public static ViewLogic GetView(string name)
-        {
-            if (!_viewMap.TryGetValue(name, out var info))
-            {
-                return null;
-            }
-
-            return info;
-        }
-
         public static ViewLogic GetTop()
         {
             var maxLayer = _visibleViewMap.Values.Max(info => info.Config.Layer);
@@ -352,28 +320,17 @@ namespace Twenty2.VomitLib.View
         /// <param name="go"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static T InstantiateVC<T>(Transform parent, Vector3 position, out GameObject go) where T : ViewComponent
+        public static async UniTask<T> CreateComp<T>(Transform parent, Vector3 position) where T : ViewComponent
         {
-            var prefab = LoadViewComponent<T>();
-
-            go = Object.Instantiate(prefab, parent);
+            var go = Object.Instantiate(await _loader.LoadComp(typeof(T).Name), parent);
             go.transform.position = position;
             
             return go.GetComponent<T>();
         }
-
-        public static T InstantiateVC<T>(Transform parent, out GameObject go) where T : ViewComponent
-        {
-            var prefab = LoadViewComponent<T>();
-            
-            go = Object.Instantiate(prefab, parent);
-
-            return go.GetComponent<T>();
-        }
         
-        public static T InstantiateVC<T>(Transform parent) where T : UnityEngine.Component
+        public static async UniTask<T> CreateComp<T>(Transform parent) where T : UnityEngine.Component
         {
-            var prefab = LoadViewComponent<T>();
+            var prefab = await _loader.LoadComp(typeof(T).Name);
             
             return Object.Instantiate(prefab, parent).GetComponent<T>();
         }
@@ -401,6 +358,16 @@ namespace Twenty2.VomitLib.View
             return false;
         }
 
+        public static bool IsFirstOpen<T>() where T : ViewLogic
+        {
+            if (_recorder == null)
+            {
+                throw  new Exception("请先初始化 ViewRecorder");
+            }
+            
+            return _recorder.IsFirstOpen(typeof(T).Name);
+        }
+
         public static void Freeze()
         {
             _visibleViewMap.Values.ForEach(logic =>
@@ -416,112 +383,5 @@ namespace Twenty2.VomitLib.View
                 logic.UnFreeze();
             });
         }
-
-        private static GameObject LoadViewComponent<T>() where T : UnityEngine.Component
-        {
-            string vcName = typeof(T).Name;
-
-            return LoadViewComponent(vcName);
-            
-            
-        }
-
-        private static GameObject LoadViewComponent(string component)
-        {
-            if (!_viewComponentPrefabs.TryGetValue(component, out GameObject prefab))
-            {
-                prefab = Addressables.LoadAssetAsync<GameObject>($"{Vomit.RuntimeConfig.ViewFrameworkConfig.ViewComponentAddressablePrefix}/{component}.prefab").WaitForCompletion();
-                _viewComponentPrefabs.TryAdd(component, prefab);
-            }
-
-            if (prefab.GetComponent(component) == null)
-            {
-                LogKit.I($"加载的 ViewComponent 不包含预期的组件.{component}");
-            }
-
-            return prefab;
-        }
-        
-        /// <summary>
-        /// 从缓存或硬盘中加载 T 类型的 ViewLogic.
-        /// </summary>
-        /// <returns></returns>
-        private static ViewLogic LoadOrGenerateViewLogic(Type logicType)
-        {
-            var viewName = logicType.Name;
-            
-            if
-
-            var viewObject = Object.Instantiate(_loader.LoadView(viewName), HiddenCanvas); 
-            
-            var viewLogic = viewObject.GetComponent<ViewLogic>();
-            
-            viewLogic.Name = viewName;
-
-            if (viewLogic.Config.AutoBindButtons)
-            {
-                _binder?.Bind(viewLogic);
-            }
-
-            if (viewLogic.Config.AutoDefaultFont)
-            {
-                AutoSetFont(viewLogic, Vomit.RuntimeConfig.ViewFrameworkConfig.DefaultFont);
-            }
-
-            if (viewLogic.Config.EnableLocalization && _localization != null)
-            {
-                Localization(viewLogic);
-            }
-            
-            viewLogic.OnCreated();
-            
-            Vomit.Interface.SendEvent(new EView.Create
-            {
-                LogicType = logicType,
-                ViewLogic = viewLogic
-            });
-
-            _viewMap.Add(viewName, viewLogic);
-            
-            return viewLogic;
-        }
-
-        /// <summary>
-        /// 如果 logic 中的Text组件是默认字体,则替换.
-        /// </summary>
-        private static void AutoSetFont(ViewLogic logic, Font font)
-        {
-            foreach (var cText in logic.transform.GetComponentsInChildren<Text>())
-            {
-                if (cText.font.name == "Arial")
-                {
-                    cText.font = font;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 调用本地化方法翻译 logic 中所有的 Text 组件.
-        /// </summary>
-        private static void Localization(ViewLogic logic)
-        {
-            foreach (var cText in logic.transform.GetComponentsInChildren<MaskableGraphic>())
-            {
-                if (cText is Text text)
-                {
-                
-                    string ret = _localization(text.text);
-                    text.text = ret ?? text.text;    
-                }
-                
-                if (cText is TextMeshProUGUI textmeshpro)
-                {
-                
-                    string ret = _localization(textmeshpro.text);
-                    textmeshpro.text = ret ?? textmeshpro.text;    
-                }
-            }
-        }
-
     }
 }

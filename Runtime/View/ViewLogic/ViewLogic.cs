@@ -74,10 +74,9 @@ namespace Twenty2.VomitLib.View
         /// 面板下命名为'View'的子节点
         /// </summary>
         protected RectTransform RectView => _rectView ??= transform.Find("View").GetComponent<RectTransform>();
-
+        
+        
         private Animation _animation;
-        public Animation Animation => _animation ??= GetComponent<Animation>();
-
         
         /// <summary>
         /// View 在该 Layer 下的层级.
@@ -98,6 +97,70 @@ namespace Twenty2.VomitLib.View
            
         }
 
+        public virtual UniTask PlayOpenAnimation()
+        {
+            _animation ??= GetComponent<Animation>();
+            
+            if (_animation == null)
+            {
+                return UniTask.CompletedTask;
+            }
+
+            var state = _animation["Open"];
+
+            if (state == null)
+            {
+                state = _animation[$"{Name}#Open"];
+            }
+
+            if (state == null)
+            {
+                return UniTask.CompletedTask;
+            }
+            
+            _animation.clip = state.clip;
+            _animation.Play();
+            try
+            {
+                return UniTask.WaitWhile(() => _animation.isPlaying, cancellationToken: CancellationToken);
+            }
+            catch (Exception e)
+            {
+                return UniTask.CompletedTask;
+            }
+        }
+
+        public virtual UniTask PlayCloseAnimation()
+        {
+            if (_animation == null)
+            {
+                return UniTask.CompletedTask;
+            }
+
+            var clip = _animation.GetClip("Close");
+
+            if (clip == null)
+            {
+                clip = _animation.GetClip($"{Name}#Close");
+            }
+
+            if (clip == null)
+            {
+                return UniTask.CompletedTask;
+            }
+
+            _animation.clip = clip;
+            _animation.Play();
+            try
+            {
+                return UniTask.WaitWhile(() => _animation.isPlaying, cancellationToken: CancellationToken);
+            }
+            catch (Exception e)
+            {
+                return UniTask.CompletedTask;
+            }
+        }
+        
         /// <summary>
         /// 当 ViewInfo 被展示后调用.
         /// </summary>
@@ -120,8 +183,6 @@ namespace Twenty2.VomitLib.View
         }
 
         #endregion
-
-        #region Events
         
         private List<IUnRegister> _viewEvents = new();
         
@@ -135,22 +196,20 @@ namespace Twenty2.VomitLib.View
             _viewEvents.Add(this.RegisterEventWithoutUnRegister(onEvent));
         }
         
-        #endregion
-
-        #region API
-        
         private CancellationTokenSource _closeCts;
-        
-        public CancellationToken GetViewCloseCancellationToken()
+
+        public CancellationToken CancellationToken
         {
-            _closeCts ??= new CancellationTokenSource();
-            
-            return _closeCts.Token;
+            get
+            {
+                _closeCts ??= new CancellationTokenSource();
+                return _closeCts.Token;
+            }
         }
 
         public UniTask WaitClose()
         {
-            return UniTask.WaitUntilCanceled(GetViewCloseCancellationToken());
+            return UniTask.WaitUntilCanceled(CancellationToken);
         }
         
         public void Cancel()
@@ -168,7 +227,7 @@ namespace Twenty2.VomitLib.View
         
         protected UniTask CloseSelf()
         {
-            return View.CloseAsync(this, false);
+            return View.CloseAsync(Name);
         }
 
         public void Freeze()
@@ -205,30 +264,6 @@ namespace Twenty2.VomitLib.View
 
             trans.DestroyChildrenWithCondition(child => !child.TryGetComponent<LayoutElement>(out var element) || !element.ignoreLayout);
         }
-
-        /// <summary>
-        /// 是否是该设备第一次打开该界面
-        /// </summary>
-        /// <returns></returns>
-        public bool IsFirstOpen()
-        {
-            return !PlayerPrefs.HasKey($"__FIRST__{Name}");
-        }
-
-        public void RecordFirstOpen()
-        {
-            PlayerPrefs.SetInt($"__FIRST__{Name}", 1);
-        }
-
-        /// <summary>
-        /// 移除首次打开的key
-        /// </summary>
-        public void DeleteFirstOpenKey()
-        {
-            PlayerPrefs.DeleteKey($"__FIRST__{Name}");
-        }
-
-        #endregion
     }
 
 
