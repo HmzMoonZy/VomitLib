@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Twenty2.VomitLib.Tools;
 using QFramework;
 
 namespace Twenty2.VomitLib.Procedure
 {
-    public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState , ICanSendQuery
-        where T : struct 
+    public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState, ICanSendQuery where T : struct 
     {
         /// <summary>
         /// 事件注册列表
@@ -39,10 +39,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 退出状态回调
         /// </summary>
-        protected virtual UniTask OnExit()
-        {
-            return UniTask.CompletedTask;
-        }
+        protected abstract UniTask OnExit();
         
         public UniTask Enter(IState context)
         {
@@ -80,15 +77,15 @@ namespace Twenty2.VomitLib.Procedure
         {
             return Procedure<T>.Change(id, this);
         }
-
-
-        protected void RegisterProcedureEvent<TEvent>(Action<TEvent> action) where TEvent : struct
+        
+        /// <summary>
+        /// 监听一个事件, 当退出状态时, 自动注销
+        /// </summary>
+        protected void RegisterEvent<TEvent>(Action<TEvent> action) where TEvent : struct
         {
-            _registers.Add(this.RegisterEvent(action));
-            
+            _registers.Add(((ICanRegisterEvent) this).RegisterEvent(action));
         }
         
-
         public IArchitecture GetArchitecture()
         {
             return Vomit.Interface;
