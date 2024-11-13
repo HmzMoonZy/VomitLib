@@ -97,7 +97,7 @@ namespace Twenty2.VomitLib.Tools
                 return;
             }
 
-            if (state.Condition())
+            if (!state.Condition())
             {
                 LogKit.E($"无效的状态转换! {state}=>{t}, 请检查对应的条件.");
                 return;
