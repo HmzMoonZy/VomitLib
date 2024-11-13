@@ -24,16 +24,26 @@
         /// 用于动静分离的层级,例如伤害显示.
         /// </summary>
         Public = 30,
+        
+        /// <summary>
+        /// 高于 Operation 但低于 Public
+        /// </summary>
+        HighOperation = 40,
+        
+        /// <summary>
+        /// 低于 Loading 但高于 Public
+        /// </summary>
+        LowTip = 50,
 
         /// <summary>
         /// 加载遮罩层.
         /// </summary>
-        Load = 40,
+        Load = 60,
 
         /// <summary>
         /// 提示层.
         /// </summary>
-        Tip = 50,
+        Tip = 70,
 
         /// <summary>
         /// 顶级展示层.
