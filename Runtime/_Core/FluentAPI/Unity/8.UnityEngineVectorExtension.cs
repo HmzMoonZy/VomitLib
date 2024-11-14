@@ -8,32 +8,12 @@
 
 using UnityEngine;
 
-namespace QFramework
+namespace FluentAPI
 {
-#if ORIGIN_FRAMEWORK
-    [ClassAPI("00.FluentAPI.Unity", "UnityEngine.Vector2/3", 8)]
-    [APIDescriptionCN("针对 Vector2/Vector3 封装的函数")]
-    [APIDescriptionEN("wrapper function for Vector2/Vector3")]
-    [APIExampleCode(@"
-    gameObjA.DirectionFrom(gameObjB);
-    myComponentA.DirectionFrom(gameObjB);
-    gameObjA.DirectionFrom(myComponentB);
-    myComponentA.DirectionFrom(myComponentB);
 
-    // also support DirectionTo/ NormalizedDirectionFrom /NormalizedDirectionTo
-")]
-#endif
     public static class UnityEngineVectorExtension 
     {
-        #if ORIGIN_FRAMEWORK
-        // v1.0.79
-        [MethodAPI]
-        [APIDescriptionCN("to.transform.position - self.transform.position")]
-        [APIDescriptionEN("to.transform.position - self.transform.position")]
-        [APIExampleCode(@"
-gameObj/otherComponent.DirectionTo(otherGameObj/otherComponent)
-")]
-#endif
+        
         public static Vector3 DirectionTo(this Component self, Component to) =>
             to.transform.position - self.transform.position;
 
@@ -46,15 +26,7 @@ gameObj/otherComponent.DirectionTo(otherGameObj/otherComponent)
         public static Vector3 DirectionTo(this GameObject self, Component to) =>
             to.transform.position - self.transform.position;
 
-#if ORIGIN_FRAMEWORK
-        // v1.0.79
-        [MethodAPI]
-        [APIDescriptionCN("self.transform.position - from.transform.position")]
-        [APIDescriptionEN("self.transform.position - from.transform.position")]
-        [APIExampleCode(@"
-gameObj/otherComponent.DirectionFrom(otherGameObj/otherComponent)
-")]
-#endif
+
         public static Vector3 DirectionFrom(this Component self, Component from) =>
             self.transform.position - from.transform.position;
 
@@ -68,15 +40,7 @@ gameObj/otherComponent.DirectionFrom(otherGameObj/otherComponent)
             self.transform.position - from.transform.position;
 
         
-#if ORIGIN_FRAMEWORK
-        // v1.0.79
-        [MethodAPI]
-        [APIDescriptionCN("(to.transform.position - self.transform.position).normalized")]
-        [APIDescriptionEN("(to.transform.position - self.transform.position).normalized")]
-        [APIExampleCode(@"
-gameObj/otherComponent.NormalizedDirectionTo(otherGameObj/otherComponent)
-")]
-#endif
+
         public static Vector3 NormalizedDirectionTo(this Component self, Component to) =>
             self.DirectionTo(to).normalized;
 
@@ -89,15 +53,7 @@ gameObj/otherComponent.NormalizedDirectionTo(otherGameObj/otherComponent)
         public static Vector3 NormalizedDirectionTo(this GameObject self, Component to) =>
             self.DirectionTo(to).normalized;
 
-#if ORIGIN_FRAMEWORK
-        // v1.0.79
-        [MethodAPI]
-        [APIDescriptionCN("(self.transform.position - from.transform.position).normalized")]
-        [APIDescriptionEN("(self.transform.position - from.transform.position).normalized")]
-        [APIExampleCode(@"
-gameObj/otherComponent.NormalizedDirectionTo(otherGameObj/otherComponent)
-")]
-#endif
+
         public static Vector3 NormalizedDirectionFrom(this Component self, Component from) =>
             self.DirectionFrom(from).normalized;
 
@@ -111,15 +67,7 @@ gameObj/otherComponent.NormalizedDirectionTo(otherGameObj/otherComponent)
             self.DirectionFrom(from).normalized;
 
         
-#if ORIGIN_FRAMEWORK
-        // v1.0.79
-        [MethodAPI]
-        [APIDescriptionCN("(Vector2)(to.transform.position - self.transform.position)")]
-        [APIDescriptionEN("(Vector2)(to.transform.position - self.transform.position)")]
-        [APIExampleCode(@"
-gameObj/otherComponent.Direction2DTo(otherGameObj/otherComponent)
-")]
-#endif
+
         public static Vector2 Direction2DTo(this Component self, Component to) =>
             to.transform.position - self.transform.position;
 
@@ -132,15 +80,7 @@ gameObj/otherComponent.Direction2DTo(otherGameObj/otherComponent)
         public static Vector2 Direction2DTo(this GameObject self, Component to) =>
             to.transform.position - self.transform.position;
 
-#if ORIGIN_FRAMEWORK
-        // v1.0.79
-        [MethodAPI]
-        [APIDescriptionCN("(Vector2)(self.transform.position - from.transform.position)")]
-        [APIDescriptionEN("(Vector2)(self.transform.position - from.transform.position)")]
-        [APIExampleCode(@"
-gameObj/otherComponent.Direction2DFrom(otherGameObj/otherComponent)
-")]
-#endif
+
         public static Vector2 Direction2DFrom(this Component self, Component from) =>
             self.transform.position - from.transform.position;
 
@@ -155,15 +95,7 @@ gameObj/otherComponent.Direction2DFrom(otherGameObj/otherComponent)
 
 
         
-#if ORIGIN_FRAMEWORK
-        // v1.0.79
-        [MethodAPI]
-        [APIDescriptionCN("((Vector2)(to.transform.position - self.transform.position)).normalized")]
-        [APIDescriptionEN("((Vector2)(to.transform.position - self.transform.position)).normalized")]
-        [APIExampleCode(@"
-gameObj/otherComponent.NormalizedDirection2DTo(otherGameObj/otherComponent)
-")]
-#endif
+
         public static Vector2 NormalizedDirection2DTo(this Component self, Component to) =>
             self.Direction2DTo(to).normalized;
 
@@ -177,15 +109,7 @@ gameObj/otherComponent.NormalizedDirection2DTo(otherGameObj/otherComponent)
             self.Direction2DTo(to).normalized;
 
         
-#if ORIGIN_FRAMEWORK
-        // v1.0.79
-        [MethodAPI]
-        [APIDescriptionCN("((Vector2)(self.transform.position - from.transform.position)).normalized")]
-        [APIDescriptionEN("((Vector2)(self.transform.position - from.transform.position)).normalized")]
-        [APIExampleCode(@"
-gameObj/otherComponent.NormalizedDirection2DFrom(otherGameObj/otherComponent)
-")]
-#endif
+
         public static Vector2 NormalizedDirection2DFrom(this Component self, Component from) =>
             self.Direction2DFrom(from).normalized;
 

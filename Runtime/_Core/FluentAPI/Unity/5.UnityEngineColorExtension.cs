@@ -8,25 +8,12 @@
 
 using UnityEngine;
 
-namespace QFramework
+namespace FluentAPI
 {
-#if ORIGIN_FRAMEWORK
-    [ClassAPI("00.FluentAPI.Unity", "UnityEngine.Color", 5)]
-    [APIDescriptionCN("UnityEngine.Color 静态扩展")]
-    [APIDescriptionEN("UnityEngine.Color extension")]
-#endif
+
     public static class UnityEngineColorExtension
     {
-#if ORIGIN_FRAMEWORK
-        // v1 No.152
-        [MethodAPI]
-        [APIDescriptionCN("HTML string(#000000) 转 Color")]
-        [APIDescriptionEN("HTML string(like #000000)")]
-        [APIExampleCode(@"
-var color = ""#C5563CFF"".HtmlStringToColor();
-Debug.Log(color);"
-        )]
-#endif
+
         public static Color HtmlStringToColor(this string htmlString)
         {
             var parseSucceed = ColorUtility.TryParseHtmlString(htmlString, out var retColor);
