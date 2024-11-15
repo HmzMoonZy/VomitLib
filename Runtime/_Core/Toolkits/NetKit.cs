@@ -1,24 +1,25 @@
-using System.Net.Sockets;
-using System.Runtime.InteropServices;
+﻿using System.Net.Sockets;
 
-namespace Twenty2.VomitLib.Net
+namespace  Twenty2.VomitLib.Tools
 {
-    public class NetUtils
+    public static class NetKit
     {
-#if UNITY_IPHONE && !UNITY_EDITOR
-        [DllImport("__Internal")]
-        private static extern string getIPv6(string mHost, string mPort);
-#endif
+// #if UNITY_IPHONE && !UNITY_EDITOR
+//         [DllImport("__Internal")]
+//         private static extern string getIPv6(string mHost, string mPort);
+// #endif
 
         //"192.168.1.1&&ipv4"
         static string GetIPv6(string mHost, string mPort)
         {
-#if UNITY_IPHONE && !UNITY_EDITOR
-		    string mIPv6 = getIPv6(mHost, mPort);
-		    return mIPv6;
-#else
             return mHost + "&&ipv4";
-#endif
+            
+// #if UNITY_IPHONE && !UNITY_EDITOR
+// 		    string mIPv6 = getIPv6(mHost, mPort);
+// 		    return mIPv6;
+// #else
+//             return mHost + "&&ipv4";
+// #endif
         }
 
         public static (AddressFamily, string) GetIPv6Address(string host, int port)

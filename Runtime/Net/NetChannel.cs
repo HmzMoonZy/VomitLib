@@ -5,50 +5,44 @@ using System.Net.Sockets;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using QFramework;
 using Debug = UnityEngine.Debug;
 
 namespace Twenty2.VomitLib.Net
 {
     public class NetChannel
     {
-        protected Action<Message> onMessage;
-        protected Action onClose;
-        protected Pipe recvPipe;
-        protected TcpClient socket;
-        protected CancellationTokenSource closeSrc = new CancellationTokenSource();
+        protected Action<Message> _onMessage;
+        protected Action _onClose;
+        protected Pipe _recvPipe;
+        protected TcpClient _socket;
+        protected CancellationTokenSource _closeSrc = new CancellationTokenSource();
 
         public NetChannel(TcpClient socket, Action<Message> onMessage = null, Action onClose = null)
         {
-            this.socket = socket;
-            this.onMessage = onMessage;
-            this.onClose = onClose;
-            recvPipe = new Pipe();
+            this._socket = socket;
+            this._onMessage = onMessage;
+            this._onClose = onClose;
+            _recvPipe = new Pipe();
+
+            _ = StartAsync();
         }
 
-        public virtual void Close()
-        {
-            closeSrc.Cancel();
-        }
-
-        public virtual bool IsClose()
-        {
-            return closeSrc.IsCancellationRequested;
-        }
-
-        public async Task StartAsync()
+        private async Task StartAsync()
         {
             try
             {
-                _ = recvNetData();
-                var cancelToken = closeSrc.Token;
-                while (!cancelToken.IsCancellationRequested)
+                _ = ReadSocketTask();
+                
+                while (!IsClose())
                 {
-                    var result = await recvPipe.Reader.ReadAsync(cancelToken);
+                    var result = await _recvPipe.Reader.ReadAsync(_closeSrc.Token);
                     var buffer = result.Buffer;
                     if (buffer.Length > 0)
                     {
                         while (TryParseMessage(ref buffer)) ;
-                        recvPipe.Reader.AdvanceTo(buffer.Start, buffer.End);
+                        _recvPipe.Reader.AdvanceTo(buffer.Start, buffer.End);
                     }
                     else if (result.IsCanceled || result.IsCompleted)
                     {
@@ -65,21 +59,25 @@ namespace Twenty2.VomitLib.Net
             }
 
             Close();
-            onClose?.Invoke();
+            _onClose?.Invoke();
         }
-
-        async Task recvNetData()
+        
+        /// <summary>
+        /// 接收数据任务，异步读取套接字流中的数据并写入接收管道
+        /// </summary>
+        private async Task ReadSocketTask()
         {
-            byte[] readBuffer = new byte[2048];
-            var dataPipeWriter = recvPipe.Writer;
-            var cancelToken = closeSrc.Token;
-            while (!cancelToken.IsCancellationRequested)
+            var readBuffer = new byte[2048];
+            var writer = _recvPipe.Writer;
+            while (!IsClose())
             {
-                var length = await socket.GetStream().ReadAsync(readBuffer, 0, readBuffer.Length, cancelToken);
+                // 从套接字流中异步读取数据
+                var length = await _socket.GetStream().ReadAsync(readBuffer, 0, readBuffer.Length, _closeSrc.Token);
                 if (length > 0)
                 {
-                    dataPipeWriter.Write(readBuffer.AsSpan().Slice(0, length));
-                    var flushTask = dataPipeWriter.FlushAsync();
+                    // 将读取到的数据写入接收管道
+                    writer.Write(readBuffer.AsSpan().Slice(0, length));
+                    var flushTask = writer.FlushAsync();
                     if (!flushTask.IsCompleted)
                     {
                         await flushTask.ConfigureAwait(false);
@@ -90,6 +88,16 @@ namespace Twenty2.VomitLib.Net
                     break;
                 }
             }
+        }
+
+        public virtual void Close()
+        {
+            _closeSrc.Cancel();
+        }
+
+        public virtual bool IsClose()
+        {
+            return _closeSrc.IsCancellationRequested;
         }
 
         protected virtual bool TryParseMessage(ref ReadOnlySequence<byte> input)
@@ -103,19 +111,26 @@ namespace Twenty2.VomitLib.Net
 
             var payload = input.Slice(reader.Position, length - 4);
             if (payload.Length < 4)
+            {
                 throw new Exception("消息长度不够");
+            }
+            
             //消息id
             reader.TryReadBigEndian(out int msgId);
 
             var message = MessagePackSerializer.Deserialize<Message>(payload.Slice(4));
-            Debug.Log("收到消息:" + MessagePackSerializer.SerializeToJson(message));
+#if UNITY_EDITOR
+            LogKit.I("收到消息:" + MessagePackSerializer.SerializeToJson(message));
+#endif
             if (message.MsgId != msgId)
             {
                 throw new Exception($"解析消息错误，注册消息id和消息无法对应.real:{message.MsgId}, register:{msgId}");
             }
 
-            onMessage(message);
+            _onMessage(message);
+            
             input = input.Slice(input.GetPosition(length));
+            
             return true;
         }
 
@@ -125,14 +140,19 @@ namespace Twenty2.VomitLib.Net
         public void Write(Message msg)
         {
             if (IsClose())
+            {
                 return;
+            }
 
-            Debug.Log("发送消息:" + MessagePackSerializer.SerializeToJson(msg));
+#if UNITY_EDITOR
+            LogKit.I("发送消息:" + MessagePackSerializer.SerializeToJson(msg));
+#endif
             var bytes = MessagePackSerializer.Serialize(msg);
             int len = 4 + 8 + 4 + 4 + bytes.Length;
             var buffer = ArrayPool<byte>.Shared.Rent(len);
 
-            int magic = Magic + ++count;
+            count++;
+            int magic = Magic + count;
             magic ^= Magic << 8;
             magic ^= len;
 
@@ -143,7 +163,7 @@ namespace Twenty2.VomitLib.Net
             buffSpan.WriteInt(magic, ref offset);
             buffSpan.WriteInt(msg.MsgId, ref offset);
             buffSpan.WriteBytesWithoutLength(bytes, ref offset);
-            socket.GetStream().Write(buffer, 0, len);
+            _socket.GetStream().Write(buffer, 0, len);
             ArrayPool<byte>.Shared.Return(buffer);
         }
     }

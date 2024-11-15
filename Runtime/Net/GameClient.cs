@@ -4,6 +4,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using QFramework;
+using Twenty2.VomitLib.Tools;
 using Debug = UnityEngine.Debug;
 
 namespace Twenty2.VomitLib.Net
@@ -11,8 +14,7 @@ namespace Twenty2.VomitLib.Net
     public class GameClient
     {
         private const float DISPATCH_TICK_TIME = 0.06f;  //每一帧最大的派发事件时间，超过这个时间则停止派发，等到下一帧再派发 
-
-
+        
         private static GameClient _instance;
         public static GameClient Instance
         {
@@ -27,14 +29,20 @@ namespace Twenty2.VomitLib.Net
             }
         }
 
-        private NetChannel channel { get; set; }
+        private NetChannel _channel { get; set; }
         
-        private ConcurrentQueue<Message> msgQueue = new ConcurrentQueue<Message>();
+        private ConcurrentQueue<Message> _msgQueue = new ConcurrentQueue<Message>();
 
-        private Func<Message> onDisconnected;
+        private Func<Message> _onDisconnected;
         
-        
+        /// <summary>
+        /// 连接的端口
+        /// </summary>
         public int Port { private set; get; }
+        
+        /// <summary>
+        /// 连接的地址
+        /// </summary>
         public string Host { private set; get; }
         
         private GameClient()
@@ -44,19 +52,22 @@ namespace Twenty2.VomitLib.Net
         
         public GameClient Init(Func<Message> onDisconnected)
         {
-            this.onDisconnected = onDisconnected;
+            this._onDisconnected = onDisconnected;
             return this;
         }
         
-        public async Task<bool> Connect(string host, int port, int timeOut = 5000)
+        /// <summary>
+        /// 连接到地址
+        /// </summary>
+        public async UniTask<bool> Connect(string host, int port, int timeOut = 5000)
         {
             Host = host;
             Port = port;
             try
             {
                 ClearAllMsg();
-                var ipType = AddressFamily.InterNetwork;
-                (ipType, host) = NetUtils.GetIPv6Address(host, port);
+
+                (var ipType, string ip) = NetKit.GetIPv6Address(host, port);
 
                 var socket = new TcpClient(ipType);
                 try
@@ -74,10 +85,12 @@ namespace Twenty2.VomitLib.Net
                     return false;
                 }
 
-                Debug.Log($"connected success....");
+                LogKit.I($"connected success....");
+                
                 OnConnected();
-                channel = new NetChannel(socket, OnRevice, OnDisConnected);
-                _ = channel.StartAsync();
+                
+                _channel = new NetChannel(socket, OnReceived, OnDisConnected);
+                
                 return true;
             }
             catch (Exception e)
@@ -89,7 +102,7 @@ namespace Twenty2.VomitLib.Net
         
         public void Send(Message msg)
         {
-            channel?.Write(msg);
+            _channel?.Write(msg);
         }
 
         private void OnConnected()
@@ -97,30 +110,30 @@ namespace Twenty2.VomitLib.Net
             
         }
 
-        public void OnDisConnected()
+        private void OnDisConnected()
         {
-            if (onDisconnected != null)
+            if (_onDisconnected != null)
             {
-                msgQueue.Enqueue(onDisconnected.Invoke());     
+                _msgQueue.Enqueue(_onDisconnected.Invoke());     
             }
             
         }
 
-        public void OnRevice(Message msg)
+        private void OnReceived(Message msg)
         {
-            msgQueue.Enqueue(msg);
+            _msgQueue.Enqueue(msg);
         }
 
         public void Close()
         {
-            channel?.Close();
-            channel = null;
+            _channel?.Close();
+            _channel = null;
             ClearAllMsg();
         }
 
         public void ClearAllMsg()
         {
-            msgQueue = new ConcurrentQueue<Message>();
+            _msgQueue = new ConcurrentQueue<Message>();
         }
 
         public void Update(EventDispatcher evt, float maxTime = DISPATCH_TICK_TIME)
@@ -129,10 +142,10 @@ namespace Twenty2.VomitLib.Net
             float endTime = curTime + maxTime;
             while (curTime < endTime)
             {
-                if (msgQueue.IsEmpty)
+                if (_msgQueue.IsEmpty)
                     return;
 
-                if (!msgQueue.TryDequeue(out var msg))
+                if (!_msgQueue.TryDequeue(out var msg))
                     break;
 
                 if (msg == null)

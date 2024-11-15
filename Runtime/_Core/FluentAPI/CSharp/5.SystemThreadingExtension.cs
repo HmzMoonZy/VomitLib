@@ -6,7 +6,7 @@ namespace FluentAPI
     {
         public static void CancelAndDispose(this CancellationTokenSource cts)
         {
-            if (!cts.IsCancellationRequested)
+            if (!cts.IsNullOrCanceled())
             {
                 cts.Cancel();
                 cts.Dispose();    
