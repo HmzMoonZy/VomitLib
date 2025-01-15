@@ -133,51 +133,53 @@ public partial class {selectName}
 ";
             File.WriteAllText(designerFilePath, content, Encoding.UTF8);
 
+            PlayerPrefs.SetInt("__AUTO_BIND_VIEW_SCRIPTS__", 1);
+            
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-
         }
-        
-        
-        // [UnityEditor.Callbacks.DidReloadScripts]
-        // static void Bind()
-        // {
-        //     if (Selection.activeObject is not GameObject)
-        //     {
-        //         return;
-        //     }
-        //     
-        //     // 绑定脚本
-        //     var instance = PrefabUtility.InstantiatePrefab(Selection.activeObject) as GameObject;
-        //     if (instance == null)
-        //     {
-        //         return;
-        //     }
-        //
-        //     if (instance.GetComponent<ViewConfig>() == null)
-        //     {
-        //         Object.DestroyImmediate(instance);
-        //         return;
-        //     }
-        //
-        //     var logic = instance.GetComponent<ViewLogic>();
-        //     if (logic != null)
-        //     {
-        //         Object.DestroyImmediate(instance);
-        //         return;
-        //     }
-        //
-        //     var type = Assembly.Load("Assembly-CSharp").GetType(Selection.activeObject.name);
-        //     var addComponent = instance.AddComponent(type);
-        //     if (addComponent == null)
-        //     {
-        //         LogKit.E("没有!");
-        //     }
-        //
-        //     PrefabUtility.ApplyPrefabInstance(instance, InteractionMode.AutomatedAction);
-        //
-        //     Object.DestroyImmediate(instance);
-        // }
+
+        [UnityEditor.Callbacks.DidReloadScripts]
+        public static void BindScript()
+        {
+            if (PlayerPrefs.GetInt("__AUTO_BIND_VIEW_SCRIPTS__", 0) != 1)
+            {
+                return;
+            }
+            PlayerPrefs.SetInt("__AUTO_BIND_VIEW_SCRIPTS__", 0); 
+            var selectCount = Selection.count;
+            var selectName = Selection.activeObject.name;
+            var instantiatePrefab = PrefabUtility.InstantiatePrefab(Selection.activeObject) as GameObject;
+            Type bindType = null;
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (var type in assembly.GetTypes())
+                {
+                    if (type.Name == selectName)
+                    {
+                        bindType = type;
+                        break;
+                    }
+                }
+
+                if (bindType != null)
+                {
+                    break;
+                }
+            }
+
+            if (bindType != null)
+            {
+                instantiatePrefab!.AddComponent(bindType);
+                PrefabUtility.ApplyAddedComponent(instantiatePrefab.GetComponent(bindType),
+                    AssetDatabase.GetAssetPath(Selection.activeInstanceID), InteractionMode.AutomatedAction);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+            
+            Object.DestroyImmediate(instantiatePrefab);
+           
+        }
         
         
         
