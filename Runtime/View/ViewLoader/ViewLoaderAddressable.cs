@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.U2D;
 
 namespace Twenty2.VomitLib.View
 {
@@ -11,14 +12,17 @@ namespace Twenty2.VomitLib.View
     {
         private Dictionary<string, GameObject> _viewCache = new Dictionary<string, GameObject>();
         private Dictionary<string, GameObject> _compCache = new Dictionary<string, GameObject>();
+        private Dictionary<string, SpriteAtlas> _atlasCache = new Dictionary<string, SpriteAtlas>();
 
         private Func<string, string> _getViewAddress; 
         private Func<string, string> _getCompAddress; 
+        private Func<string, string> _getAtlasAddress; 
         
-        public ViewLoaderAddressable(Func<string, string> getViewAddress, Func<string, string> getCompAddress)
+        public ViewLoaderAddressable(Func<string, string> getViewAddress, Func<string, string> getCompAddress, Func<string, string> getAtlasAddress)
         {
             _getViewAddress = getViewAddress;
             _getCompAddress = getCompAddress;
+            _getAtlasAddress = getAtlasAddress;
         }
 
         public async UniTask<GameObject> LoadView(string viewName)
@@ -50,6 +54,20 @@ namespace Twenty2.VomitLib.View
             _compCache.Add(compName, comp);
             
             return comp;
+        }
+
+        public async UniTask<SpriteAtlas> LoadAtlas(string atlasName)
+        {
+            if (_atlasCache.TryGetValue(atlasName, out var atlas))
+            {
+                return atlas;
+            }
+            
+            var handle = Addressables.LoadAssetAsync<SpriteAtlas>(_getAtlasAddress(atlasName));
+            await handle.ToUniTask();
+            atlas = handle.Result;
+            _atlasCache.Add(atlasName, atlas);
+            return atlas;
         }
 
         public void ReleaseView(GameObject view)

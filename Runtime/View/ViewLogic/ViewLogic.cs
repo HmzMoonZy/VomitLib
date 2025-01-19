@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using FluentAPI;
 using QFramework;
 using UnityEngine;
+using UnityEngine.U2D;
 using UnityEngine.UI;
 
 namespace Twenty2.VomitLib.View
@@ -31,7 +32,6 @@ namespace Twenty2.VomitLib.View
         public string Name { get; set; }
 
         private Canvas _viewCanvas;
-
         /// <summary>
         /// 根据规范, UI 界面本身必须具有一个 Canvas 组件.
         /// </summary>
@@ -87,6 +87,24 @@ namespace Twenty2.VomitLib.View
             get => ViewCanvas.sortingOrder;
             set => ViewCanvas.sortingOrder = value;
         }
+
+        private SpriteAtlas _atlas;
+
+        public SpriteAtlas Atlas
+        {
+            get
+            {
+                return _atlas;
+            }
+
+            set
+            {
+                _atlas = value;
+                
+                // TODO 更换图集时应该刷新图集
+            }
+        }
+        
         
         #region 生命周期
 
@@ -266,7 +284,5 @@ namespace Twenty2.VomitLib.View
             trans.DestroyChildrenWithCondition(child => !child.TryGetComponent<LayoutElement>(out var element) || !element.ignoreLayout);
         }
     }
-
-
     
 }

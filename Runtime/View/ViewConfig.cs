@@ -36,19 +36,48 @@ namespace Twenty2.VomitLib.View
         [Tooltip("记录设备打开记录")] 
         [SerializeField] private bool  _recordOpen = false;
 
+        [Tooltip("自动装配图集")]
+        [SerializeField] private bool _autoLoadAtlas = true;
 
+
+        /// <summary>
+        /// 层级
+        /// </summary>
         public ViewSortLayer Layer => _layer;
 
+        /// <summary>
+        /// 自动产生一个遮罩
+        /// </summary>
         public bool EnableAutoMask => _enableAutoMask;
 
+        /// <summary>
+        /// 点击遮罩关闭这个面板
+        /// </summary>
         public bool ClickMaskTriggerClose => _clickMaskTriggerClose;
 
+        /// <summary>
+        /// 本地化
+        /// </summary>
         public bool EnableLocalization => _enableLocalization;
 
+        /// <summary>
+        /// 是否缓存
+        /// </summary>
         public bool IsCache => _isCache;
 
+        /// <summary>
+        /// 自动绑定按钮事件
+        /// </summary>
         public bool AutoBindButtons => _autoBindButtons;
         
+        /// <summary>
+        /// 记录设备打开记录
+        /// </summary>
         public bool RecordOpen => _recordOpen;
+        
+        /// <summary>
+        /// 自动装配图集
+        /// </summary>
+        public bool AutoLoadAtlas => _autoLoadAtlas;
     }
 }
