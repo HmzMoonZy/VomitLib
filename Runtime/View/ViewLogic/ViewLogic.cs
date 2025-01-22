@@ -87,24 +87,6 @@ namespace Twenty2.VomitLib.View
             get => ViewCanvas.sortingOrder;
             set => ViewCanvas.sortingOrder = value;
         }
-
-        private SpriteAtlas _atlas;
-
-        public SpriteAtlas Atlas
-        {
-            get
-            {
-                return _atlas;
-            }
-
-            set
-            {
-                _atlas = value;
-                
-                // TODO 更换图集时应该刷新图集
-            }
-        }
-        
         
         #region 生命周期
 

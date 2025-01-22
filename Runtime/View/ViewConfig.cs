@@ -36,9 +36,6 @@ namespace Twenty2.VomitLib.View
         [Tooltip("记录设备打开记录")] 
         [SerializeField] private bool  _recordOpen = false;
 
-        [Tooltip("自动装配图集")]
-        [SerializeField] private bool _autoLoadAtlas = true;
-
 
         /// <summary>
         /// 层级
@@ -74,10 +71,5 @@ namespace Twenty2.VomitLib.View
         /// 记录设备打开记录
         /// </summary>
         public bool RecordOpen => _recordOpen;
-        
-        /// <summary>
-        /// 自动装配图集
-        /// </summary>
-        public bool AutoLoadAtlas => _autoLoadAtlas;
     }
 }

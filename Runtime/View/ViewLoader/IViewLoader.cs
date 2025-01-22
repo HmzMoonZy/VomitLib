@@ -9,8 +9,6 @@ namespace Twenty2.VomitLib.View
         public UniTask<GameObject> LoadView(string viewName);
 
         public UniTask<GameObject> LoadComp(string compName);
-
-        public UniTask<SpriteAtlas> LoadAtlas(string atlasName);
         
         public void ReleaseView(GameObject view);
         

@@ -158,14 +158,6 @@ namespace Twenty2.VomitLib.View
             {
                 _localizer?.Localize(logic);
             }
-
-            if (logic.Config.AutoLoadAtlas)
-            {
-                if (_loader != null)
-                {
-                    logic.Atlas = await _loader.LoadAtlas(viewName);    
-                }
-            }
             
             logic.transform.parent = Root.transform;
             logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
