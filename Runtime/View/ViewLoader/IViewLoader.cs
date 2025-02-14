@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.U2D;
 
 namespace Twenty2.VomitLib.View
 {
