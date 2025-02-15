@@ -2,6 +2,7 @@
 using FluentAPI;
 using QFramework;
 using Twenty2.VomitLib.Config;
+using Twenty2.VomitLib.Procedure;
 using UnityEngine;
 
 namespace Twenty2.VomitLib
@@ -27,14 +28,27 @@ namespace Twenty2.VomitLib
         /// <param name="onLoadConfig">框架配置有更新需求, 则可以动态加载配置文件, 否则会从默认路径(Resource/VomitLibConfig)读取</param>
         public static void Init(IArchitecture architecture, Func<VomitConfig> onLoadConfig = null)
         {
-            Interface = architecture;
-            
             Config = onLoadConfig == null ? Resources.Load<VomitConfig>("VomitLibConfig") : onLoadConfig.Invoke();
             
             if (Config == null)
             {
                 LogKit.E("无法正确获得配置信息");
             }
+            
+            Interface = architecture;
+        }
+        
+        /// <summary>
+        /// 初始化 Vomit 框架,并自动调用 Procedure
+        /// </summary>
+        /// <param name="architecture">IArchitecture 实例</param>
+        /// <param name="onLoadConfig">框架配置有更新需求, 则可以动态加载配置文件, 否则会从默认路径(Resource/VomitLibConfig)读取</param>
+        /// <typeparam name="TProcedure">Procedure 的类型</typeparam>
+        public static void Init<TProcedure>(IArchitecture architecture, Func<VomitConfig> onLoadConfig = null) where TProcedure : struct
+        {
+            Init(architecture, onLoadConfig);
+            
+            Procedure<TProcedure>.Instance.Launch();
         }
     }
 

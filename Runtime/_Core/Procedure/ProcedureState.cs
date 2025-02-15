@@ -9,20 +9,25 @@ namespace Twenty2.VomitLib.Procedure
     public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState, ICanSendQuery where T : struct 
     {
         /// <summary>
+        /// 当前状态ID
+        /// </summary>
+        protected T CurrentStateID => Procedure.CurrentStateId;
+
+        /// <summary>
+        /// 上一个状态ID
+        /// </summary>
+        protected T PreviousStateID => Procedure.PreviousStateId;
+        
+        /// <summary>
         /// 事件注册列表
         /// </summary>
         private List<IUnRegister> _registers = new();
 
         /// <summary>
-        /// 当前状态ID
+        /// 当前状态机
         /// </summary>
-        protected T CurrentStateID => Procedure<T>.GetCurrState();
+        protected abstract Procedure<T> Procedure { get;}
         
-        /// <summary>
-        /// 上一个状态ID
-        /// </summary>
-        protected T PreviousStateID =>  Procedure<T>.GetPrevState();
-
         /// <summary>
         /// 状态机切换条件, 满足条件才能够执行ChangeState
         /// </summary>
@@ -75,7 +80,7 @@ namespace Twenty2.VomitLib.Procedure
         /// </summary>
         protected UniTask ChangeState(T id)
         {
-            return Procedure<T>.Change(id, this);
+            return Procedure.Change(id, this);
         }
         
         /// <summary>

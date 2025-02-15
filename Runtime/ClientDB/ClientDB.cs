@@ -13,7 +13,15 @@ namespace Twenty2.VomitLib.ClientDB
     /// TODO 支持懒加载, 支持卸载
     public static class ClientDB
     {
-        public static T Init<T>(Func<string, TextAsset> loader) where T : class
+        /// <summary>
+        /// 加载本地数据表, 并返回预期的 Tables 实例
+        /// </summary>
+        /// <param name="loader">加载数据表资源</param>
+        /// <param name="onLoad">Tables 实例构造完毕回调</param>
+        /// <typeparam name="T">Luban 生成的 Tables 类型</typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public static T Init<T>(Func<string, TextAsset> loader, Action<TextAsset> onLoad = null) where T : class
         {
             try
             {
@@ -34,7 +42,9 @@ namespace Twenty2.VomitLib.ClientDB
                     throw new NotImplementedException();
                 }
 
-                return (T) typeof(T).GetConstructors()[0].Invoke(new object[] {processor});
+                T table = typeof(T).GetConstructors()[0].Invoke(new object[] {processor}) as T;
+                
+                return table;
             }
             catch (Exception e)
             {
@@ -52,8 +62,12 @@ namespace Twenty2.VomitLib.ClientDB
                 {
                     return null;
                 }
+
+                var bytebuf = new Luban.ByteBuf(source.bytes);
                 
-                return new Luban.ByteBuf(source.bytes);
+                onLoad?.Invoke(source);
+
+                return bytebuf;
             }
 
             JArray JsonLoader(string sourceName)
@@ -65,7 +79,11 @@ namespace Twenty2.VomitLib.ClientDB
                     return null;
                 }
                 
-                return JsonConvert.DeserializeObject<JArray>(source.text);
+                var jarray = JsonConvert.DeserializeObject<JArray>(source.text);
+                
+                onLoad?.Invoke(source);
+
+                return jarray;
             }
         }
     }

@@ -9,17 +9,18 @@ using Twenty2.VomitLib.Tools;
 
 namespace Twenty2.VomitLib.Procedure
 {
-    public static class Procedure<T> where T : struct
+    public class Procedure<T> : FSM<T> where T : struct
     {
-        public static FSM<T> Fsm;
-        
+        private static Procedure<T> _instance;
+
+        public static Procedure<T> Instance => _instance ??= new Procedure<T>();
+
+
         /// <summary>
         /// 自动扫描所有可能的流程, 初始化流程系统
         /// </summary>
-        public static UniTask Init()
+        public UniTask Launch()
         {
-            Fsm = new();
-
             T start = default;
             
             foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
@@ -34,10 +35,11 @@ namespace Twenty2.VomitLib.Procedure
                     var attr = type.GetAttribute<ProcedureAttribute>();
                     var id = (T) attr.ProcedureID;
                     var obj = (IState) Activator.CreateInstance(type);
-
+                    // var obj = (IState) Activator.CreateInstance(type, args: new object[] {this});
+                    
                     LogKit.I($"创建 Procedure {id}");
 
-                    Fsm.AddState(id, obj);
+                    AddState(id, obj);
 
                     if (attr.IsEntry)
                     {
@@ -45,43 +47,20 @@ namespace Twenty2.VomitLib.Procedure
                     }
                 }
             }
+            
+            LogKit.I($"启动 Procedure {start}");
 
-            return Fsm.Launch(start);
-        }
-        
-
-        /// <summary>
-        /// 当前流程ID
-        /// </summary>
-        /// <returns></returns>
-        public static T GetCurrState()
-        {
-            return Fsm.CurrentStateId;
-        }
-        
-        /// <summary>
-        /// 上一个流程ID
-        /// </summary>
-        /// <returns></returns>
-        public static T GetPrevState()
-        {
-            return Fsm.PreviousStateId;
+            return Launch(start);
         }
         
         /// <summary>
         /// 切换流程
         /// </summary>
-        public static async UniTask Change(T id, IState context)
+        public async UniTask Change(T id, IState context)
         {
-            await Fsm.ChangeState(id, context);
+            await ChangeState(id, context);
             
-            Vomit.Interface.SendEvent(new EProcedure.Changed<T>()
-            {
-                Prev = GetPrevState(),
-                Curr = GetCurrState(),
-            });
-            
-            LogKit.I($"切换状态! {Fsm.PreviousStateId} => {id}");
+            Vomit.Interface.SendEvent<EProcedure.Changed>();
         }
     }
 

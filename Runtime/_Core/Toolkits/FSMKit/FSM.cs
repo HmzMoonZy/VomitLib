@@ -50,6 +50,12 @@ namespace Twenty2.VomitLib.Tools
                 LogKit.E($"The state machine has already been started. It can not be started again!");
                 return;
             }
+
+            if (_states.Count <= 0)
+            {
+                LogKit.I("The state machine has no states. It can not be started!");
+                return;
+            }
             
             if (!_states.TryGetValue(t, out var state))
             {
@@ -65,9 +71,9 @@ namespace Twenty2.VomitLib.Tools
             
             await CurrentState.Enter(null);
             
-            UniTask.WaitWhile(Update, PlayerLoopTiming.Update).Forget();
+            UniTask.WaitWhile(Update, PlayerLoopTiming.Update, cancellationToken: Application.exitCancellationToken).Forget();
 
-            UniTask.WaitWhile(FixedUpdate, PlayerLoopTiming.FixedUpdate).Forget();
+            UniTask.WaitWhile(FixedUpdate, PlayerLoopTiming.FixedUpdate, cancellationToken: Application.exitCancellationToken).Forget();
             
             IsRunning = true;
         }
@@ -103,8 +109,8 @@ namespace Twenty2.VomitLib.Tools
                 return;
             }
             
-            LogKit.I($"Start : {state}=>{t}");
-
+            LogKit.I($"state changing : {CurrentState} => {t}");
+            
             IsRunning = false;
             await CurrentState.Exit();
             PreviousStateId = CurrentStateId;
@@ -114,6 +120,8 @@ namespace Twenty2.VomitLib.Tools
             SecondsOfCurrentState = 0.0f;
             await CurrentState.Enter(context);
             IsRunning = true;
+            
+            LogKit.I($"state changed : {PreviousStateId} => {CurrentStateId}");
         }
         
         private bool FixedUpdate()
