@@ -25,7 +25,7 @@ namespace Twenty2.VomitLib.Audio
 
         public static void Init(bool preload, float bgmVolume = 1f, float seVolume = 1f)
         {
-            _config = Vomit.RuntimeConfig.AudioConfig;
+            _config = Vomit.Config.AudioConfig;
             
             GenerateAudioSource(0);
             

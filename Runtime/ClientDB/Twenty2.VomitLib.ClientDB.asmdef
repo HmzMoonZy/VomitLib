@@ -2,7 +2,8 @@
     "name": "Twenty2.VomitLib.ClientDB",
     "rootNamespace": "Twenty2.VomitLib.ClientDB",
     "references": [
-        "GUID:e57019d1e0c7f6943b33bef3b102e263"
+        "Twenty2.VomitLib",
+        "Luban.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

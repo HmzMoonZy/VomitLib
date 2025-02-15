@@ -1,28 +1,72 @@
-﻿namespace Twenty2.VomitLib.ClientDB
+﻿using System;
+using Luban;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Twenty2.VomitLib.Config;
+using UnityEngine;
+
+namespace Twenty2.VomitLib.ClientDB
 {
     /// <summary>
     /// 基于 Luban 的本地数据库.
     /// </summary>
-    /// <typeparam name="TTable">Luban 生成的 Tables 类型.</typeparam>
     /// TODO 支持懒加载, 支持卸载
-    public static class ClientDB<TTable>
+    public static class ClientDB
     {
-        /// <summary>
-        /// 本地数据库(只读)
-        /// </summary>
-        public static TTable T;
-
-        /// <summary>
-        /// 数据库是否可用
-        /// </summary>
-        private static bool _isValid;
-
-        public static bool IsValid => _isValid;
-
-        public static void Init(object t)
+        public static T Init<T>(Func<string, TextAsset> loader) where T : class
         {
-            T = (TTable) t;
-            _isValid = true;
+            try
+            {
+                Delegate processor = null;
+            
+                var config = Vomit.Config.ClientDatabaseConfig;
+                
+                if (config.Format is ClientDBConfig.JsonFormat.Bin)
+                {
+                    processor = new Func<string, Luban.ByteBuf>(BinLoader);
+                }
+                else if (config.Format is ClientDBConfig.JsonFormat.NewtonsoftJson)
+                {
+                    processor = new Func<string, JArray>(JsonLoader);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+
+                return (T) typeof(T).GetConstructors()[0].Invoke(new object[] {processor});
+            }
+            catch (Exception e)
+            {
+                LogKit.E("ClientDB Init Error!");
+                LogKit.E(e.Message);
+                throw;
+            }
+            
+            
+            ByteBuf BinLoader(string sourceName)
+            {
+                var source = loader?.Invoke(sourceName);
+                
+                if (source == null)
+                {
+                    return null;
+                }
+                
+                return new Luban.ByteBuf(source.bytes);
+            }
+
+            JArray JsonLoader(string sourceName)
+            {
+                var source = loader?.Invoke(sourceName);
+                
+                if (source == null)
+                {
+                    return null;
+                }
+                
+                return JsonConvert.DeserializeObject<JArray>(source.text);
+            }
         }
     }
 }

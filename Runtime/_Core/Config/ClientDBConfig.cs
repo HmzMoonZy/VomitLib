@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Twenty2.VomitLib.Config
 {
@@ -8,6 +10,7 @@ namespace Twenty2.VomitLib.Config
     {
         public enum JsonFormat
         {
+            [Obsolete("请使用 NewtonsoftJson")]
             SimpleJson,
             
             NewtonsoftJson,
@@ -21,7 +24,7 @@ namespace Twenty2.VomitLib.Config
 
         public string LocalizationPath;
 
-        public string JsonOutputPath;
+        public string GenDataPath;
 
         public string GenCodePath;
 

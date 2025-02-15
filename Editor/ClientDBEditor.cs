@@ -14,7 +14,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/ClientDB/打开数据配置目录")]
         private static void OpenDataTableFolder()
         {
-            var directoryInfo = new FileInfo(Vomit.GetConfigInEditor().ClientDBConfig.ConfigPath).Directory;
+            var directoryInfo = new FileInfo(Vomit.GetConfigInEditor().ClientDatabaseConfig.ConfigPath).Directory;
             if (directoryInfo != null)
             {
                 Process.Start(directoryInfo.FullName);
@@ -25,9 +25,9 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/ClientDB/生成客户端数据")]
         private static void GenerateData()
         {
-            var config = Vomit.GetConfigInEditor().ClientDBConfig;
+            var config = Vomit.GetConfigInEditor().ClientDatabaseConfig;
             
-            string cmd = GenerateCmd(config.GenCodePath, config.JsonOutputPath, true, config.Format);
+            string cmd = GenerateCmd(config.GenCodePath, config.GenDataPath, true, config.Format);
             RunCmd(cmd);
             
             AssetDatabase.Refresh();
@@ -37,9 +37,9 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/ClientDB/生成客户端数据(Clean)")]
         private static void ClearAndGenerateData()
         {
-            var config = Vomit.GetConfigInEditor().ClientDBConfig;
+            var config = Vomit.GetConfigInEditor().ClientDatabaseConfig;
             
-            DirectoryInfo dir = new DirectoryInfo(config.JsonOutputPath);
+            DirectoryInfo dir = new DirectoryInfo(config.GenDataPath);
         
             foreach (var fileInfo in dir.GetFiles())
             {
@@ -59,7 +59,7 @@ namespace Twenty2.VomitLib.Editor
         
         private static string GenerateCmd(string outputCodeDir, string outputDataDir, bool enableL10N, ClientDBConfig.JsonFormat format)
         {
-            var config = Vomit.GetConfigInEditor().ClientDBConfig;
+            var config = Vomit.GetConfigInEditor().ClientDatabaseConfig;
 
             string strFormatC = format switch
             {

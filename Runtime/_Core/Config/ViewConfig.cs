@@ -5,7 +5,7 @@ using UnityEngine.Serialization;
 namespace Twenty2.VomitLib.Config
 {
     [Serializable]
-    public class ViewFrameworkConfig
+    public class ViewConfig
     {
         [SerializeField, Tooltip("UI代码生成目录")]
         private string _scriptGeneratePath;
