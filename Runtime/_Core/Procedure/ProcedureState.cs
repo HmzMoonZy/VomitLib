@@ -11,22 +11,18 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 当前状态ID
         /// </summary>
-        protected T CurrentStateID => Procedure.CurrentStateId;
+        protected T CurrentStateID => Procedure<T>.Instance.CurrentStateId;
 
         /// <summary>
         /// 上一个状态ID
         /// </summary>
-        protected T PreviousStateID => Procedure.PreviousStateId;
+        protected T PreviousStateID => Procedure<T>.Instance.PreviousStateId;
         
         /// <summary>
         /// 事件注册列表
         /// </summary>
         private List<IUnRegister> _registers = new();
-
-        /// <summary>
-        /// 当前状态机
-        /// </summary>
-        protected abstract Procedure<T> Procedure { get;}
+        
         
         /// <summary>
         /// 状态机切换条件, 满足条件才能够执行ChangeState
@@ -80,7 +76,7 @@ namespace Twenty2.VomitLib.Procedure
         /// </summary>
         protected UniTask ChangeState(T id)
         {
-            return Procedure.Change(id, this);
+            return Procedure<T>.Instance.Change(id, this);
         }
         
         /// <summary>
