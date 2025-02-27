@@ -11,17 +11,12 @@
         {
             public ViewLogic ViewLogic;
         }
-
-        public struct OpenDone
-        {
-            public ViewLogic ViewLogic;
-        }
         
         public struct Close
         {
-            public System.Type LogicType;
-
             public string ViewName;
+
+            public bool IsCache;
         }
     }
 }

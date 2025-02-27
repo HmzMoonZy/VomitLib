@@ -25,6 +25,24 @@ namespace Twenty2.VomitLib
         /// 初始化 Vomit 框架
         /// </summary>
         /// <param name="architecture">IArchitecture 实例</param>
+        /// <param name="config">框架启动配置</param>
+        public static void Init(IArchitecture architecture, VomitConfig config = null)
+        {
+            Config = config;
+            
+            if (Config == null)
+            {
+                LogKit.E("无法正确获得配置信息");
+                return;
+            }
+            
+            Interface = architecture;
+        }
+        
+        /// <summary>
+        /// 初始化 Vomit 框架
+        /// </summary>
+        /// <param name="architecture">IArchitecture 实例</param>
         /// <param name="onLoadConfig">框架配置有更新需求, 则可以动态加载配置文件, 否则会从默认路径(Resource/VomitLibConfig)读取</param>
         public static void Init(IArchitecture architecture, Func<VomitConfig> onLoadConfig = null)
         {
@@ -33,6 +51,7 @@ namespace Twenty2.VomitLib
             if (Config == null)
             {
                 LogKit.E("无法正确获得配置信息");
+                return;
             }
             
             Interface = architecture;
@@ -47,6 +66,19 @@ namespace Twenty2.VomitLib
         public static void Init<TProcedure>(IArchitecture architecture, Func<VomitConfig> onLoadConfig = null) where TProcedure : struct
         {
             Init(architecture, onLoadConfig);
+            
+            Procedure<TProcedure>.Instance.Launch();
+        }
+        
+        /// <summary>
+        /// 初始化 Vomit 框架,并自动调用 Procedure
+        /// </summary>
+        /// <param name="architecture">IArchitecture 实例</param>
+        /// <param name="config">框架启动配置</param>
+        /// <typeparam name="TProcedure">Procedure 的类型</typeparam>
+        public static void Init<TProcedure>(IArchitecture architecture, VomitConfig config) where TProcedure : struct
+        {
+            Init(architecture, config);
             
             Procedure<TProcedure>.Instance.Launch();
         }

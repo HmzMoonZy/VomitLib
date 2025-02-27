@@ -74,9 +74,22 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 切换状态
         /// </summary>
-        protected UniTask ChangeState(T id)
+        protected void ChangeState(T id)
         {
-            return Procedure<T>.Instance.Change(id, this);
+            Procedure<T>.Instance.Change(id, this).Forget();
+        }
+
+        /// <summary>
+        /// 更安全的切换状态
+        /// </summary>
+        /// <param name="id"></param>
+        protected void ChangeStateSafety(T id)
+        {
+            UniTask.Create(async () =>
+            {
+                await UniTask.NextFrame();
+                Procedure<T>.Instance.Change(id, this).Forget();
+            });
         }
         
         /// <summary>

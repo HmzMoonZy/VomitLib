@@ -40,6 +40,7 @@ namespace Twenty2.VomitLib.Tools
 
         protected bool IsRunning { get; private set; } = false;
         
+        
         /// <summary>
         /// 启动状态机
         /// </summary>
@@ -88,6 +89,12 @@ namespace Twenty2.VomitLib.Tools
         
         public async UniTask ChangeState(T t, IState context)
         {
+            if (!IsRunning)
+            {
+                LogKit.E("状态机不在运行, 请检查初始化状态或切换时机.");
+                return;
+            }
+            
             if (CurrentState == null)
             {
                 return;

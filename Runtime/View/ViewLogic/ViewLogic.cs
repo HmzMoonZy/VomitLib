@@ -14,12 +14,12 @@ namespace Twenty2.VomitLib.View
     {
         protected TParam Param;
         
-        protected abstract UniTask OnOpened(TParam param);
+        protected abstract void OnOpened(TParam param);
         
-        public override UniTask OnOpened(ViewParameterBase param)
+        public override void OnOpened(ViewParameterBase param)
         {
             Param = param as TParam;
-            return OnOpened((TParam)param);
+            OnOpened((TParam)param);
         }
     }
     
@@ -29,7 +29,7 @@ namespace Twenty2.VomitLib.View
         /// UI 的名称, 必须是唯一标识.
         /// 可以用作查找 Prefab 和 管理的 ID.
         /// </summary>
-        public string Name { get; set; }
+        public string ID { get; set; }
 
         private Canvas _viewCanvas;
         /// <summary>
@@ -63,7 +63,7 @@ namespace Twenty2.VomitLib.View
 
                 if (_config == null)
                 {
-                    throw new NullReferenceException($"{Name}没有对应的ViewConfig!");
+                    throw new NullReferenceException($"{ID}没有对应的ViewConfig!");
                 }
 
                 return _config;
@@ -75,9 +75,6 @@ namespace Twenty2.VomitLib.View
         /// 面板下命名为'View'的子节点
         /// </summary>
         protected RectTransform RectView => _rectView ??= transform.Find("View").GetComponent<RectTransform>();
-        
-        
-        private Animation _animation;
         
         /// <summary>
         /// View 在该 Layer 下的层级.
@@ -91,94 +88,26 @@ namespace Twenty2.VomitLib.View
         #region 生命周期
 
         /// <summary>
-        /// 当 ViewInfo 被加载时,初始化前被调用.
+        /// 当 ViewInfo 被加载时调用.
+        /// 如果这个面板不缓存, 每个UI实例都只会被调用一次
         /// </summary>
         public virtual void OnCreated()
         {
            
         }
 
-        public virtual UniTask PlayOpenAnimation()
-        {
-            _animation ??= GetComponent<Animation>();
-            
-            if (_animation == null)
-            {
-                return UniTask.CompletedTask;
-            }
-
-            var state = _animation["Open"];
-
-            if (state == null)
-            {
-                state = _animation[$"{Name}#Open"];
-            }
-
-            if (state == null)
-            {
-                return UniTask.CompletedTask;
-            }
-            
-            _animation.clip = state.clip;
-            _animation.Play();
-            try
-            {
-                return UniTask.WaitWhile(() => _animation.isPlaying, cancellationToken: CancellationToken);
-            }
-            catch (Exception e)
-            {
-                return UniTask.CompletedTask;
-            }
-        }
-
-        public virtual UniTask PlayCloseAnimation()
-        {
-            if (_animation == null)
-            {
-                return UniTask.CompletedTask;
-            }
-
-            var clip = _animation.GetClip("Close");
-
-            if (clip == null)
-            {
-                clip = _animation.GetClip($"{Name}#Close");
-            }
-
-            if (clip == null)
-            {
-                return UniTask.CompletedTask;
-            }
-
-            _animation.clip = clip;
-            _animation.Play();
-            try
-            {
-                return UniTask.WaitWhile(() => _animation.isPlaying, cancellationToken: CancellationToken);
-            }
-            catch (Exception e)
-            {
-                return UniTask.CompletedTask;
-            }
-        }
-        
         /// <summary>
         /// 当 ViewInfo 被展示后调用.
         /// </summary>
-        public abstract UniTask OnOpened(ViewParameterBase param);
+        public abstract void OnOpened(ViewParameterBase param);
 
         /// <summary>
-        /// 当 ViewInfo 被关闭时调用,不论它是 Hidden 还是 Destroy.
+        /// 关闭时调用.
         /// </summary>
-        public virtual UniTask OnClose()
-        {
-            return UniTask.CompletedTask;
-        }
-
-        /// <summary>
-        /// 如果 ViewInfo 被关闭后被缓存,则调用
-        /// </summary>
-        public virtual void OnHidden()
+        /// <param name="isCache">是否缓存</param>
+        /// <param name="param">关闭参数</param>
+        /// <returns></returns>
+        public virtual void OnClose(ViewParameterBase param = null)
         {
             return;
         }
@@ -226,27 +155,19 @@ namespace Twenty2.VomitLib.View
             _viewEvents.Clear();
         }
         
-        protected UniTask CloseSelf()
+        protected void CloseSelf()
         {
-            return View.CloseAsync(Name);
+            View.Close(ID);
         }
 
-        public void Freeze()
+        protected void Freeze()
         {
-            var rayCaster = transform.GetComponent<GraphicRaycaster>();
-            if (rayCaster != null)
-            {
-                rayCaster.enabled = false;
-            }
+            View.Freeze(ID);
         }
 
-        public void UnFreeze()
+        protected void UnFreeze()
         {
-            var rayCaster = transform.GetComponent<GraphicRaycaster>();
-            if (rayCaster != null)
-            {
-                rayCaster.enabled = true;
-            }
+            View.UnFreeze(ID);
         }
 
         /// <summary>

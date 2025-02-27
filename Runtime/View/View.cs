@@ -51,71 +51,53 @@ namespace Twenty2.VomitLib.View
         /// 所有隐藏的面板
         /// </summary>
         private static Dictionary<string, ViewLogic> _hiddenViewMap = new Dictionary<string, ViewLogic>();
-
-        /// <summary>
-        /// ViewLogic - ViewComponent
-        /// key : ViewLogic.Name
-        /// value : List,ViewComponent
-        /// </summary>
-        private static Dictionary<string, List<Type>> _compMap = new Dictionary<string,  List<Type>>();
         
         private static IViewLoader _loader;
         private static IViewBinder _binder;
         private static IViewMasker _masker;
         private static IViewLocalizer _localizer;
         private static IViewRecorder _recorder;
+        private static IViewLocker _locker;
         
-        public static void Init(IViewLoader loader, IViewBinder binder = null, IViewMasker masker = null, IViewLocalizer localizer = null, IViewRecorder recorder = null)
+        public static void Init(IViewLoader loader = null, IViewBinder binder = null, IViewMasker masker = null, IViewLocalizer localizer = null, IViewRecorder recorder = null, IViewLocker locker = null)
         {
-            _loader = loader;
-            _binder = binder;
-            _masker = masker;
-            _localizer = localizer;
-            _recorder = recorder;
-            
-            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
-            {
-                foreach (var type in assembly.GetTypes())
-                {
-                    // 记录 ViewComponent 和 View 的引用关系 TODO 还没有实现释放
-                    if (type.HasAttribute<ViewCompAttribute>())
-                    {   
-                        var att = type.GetAttribute<ViewCompAttribute>();
-                        foreach (var parentType in att.ParentTypes)
-                        {
-                            _compMap.TryAdd(parentType.Name, new List<Type>());
-                            _compMap[parentType.Name].Add(type);
-                        }
-                    }
-                }
-            }
-        }
-        
-        /// <summary>
-        /// 异步打开一个View
-        /// </summary>
-        public static async UniTask<T> OpenAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
-        {
-            return (T) await OpenAsync(typeof(T).Name, param);
+            _loader = loader ?? new ViewLoaderAddressable(viewName => $"View/{viewName}.prefab");
+            _binder = binder ?? new ViewBinder(null);
+            _masker = masker ?? new ViewMasker(new Color(0, 0, 0, 0.5f));
+            _localizer = localizer ?? new ViewLocalizer();
+            _recorder = recorder ?? new ViewRecorder();
+            _locker = locker ?? new ViewLocker();
         }
 
-        public static async UniTask<ViewLogic> OpenAsync(string viewName, ViewParameterBase param = null)
+        public static void Init(Func<string, string> viewName2Addr, IViewBinder binder = null,
+            IViewMasker masker = null, IViewLocalizer localizer = null, IViewRecorder recorder = null,
+            IViewLocker locker = null)
         {
-            ViewLogic logic = null;
+            _loader = new ViewLoaderAddressable(viewName2Addr);
+            Init(_loader);
+        }
 
-            if (_visibleViewMap.TryGetValue(viewName, out logic))
+        public static T Open<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
+        {
+            return (T)Open(typeof(T).Name);
+   
+        }
+
+        public static ViewLogic Open(string viewName, ViewParameterBase param = null)
+        {
+                     
+            if (_visibleViewMap.TryGetValue(viewName, out var logic))
             {
                 LogKit.I($"Try to open an already showed the View : {viewName}");
                 return logic;
             }
             
-            _hiddenViewMap.Remove(viewName, out logic);
-            
-            _visibleViewMap.Add(viewName, null);          // 添加标记
-            
-            if(logic == null)
+            _hiddenViewMap.Remove(viewName, out logic);     // 移除隐藏列表
+
+            // 进入加载流程
+            if (logic == null)
             {
-                var viewObject = Object.Instantiate(await _loader.LoadView(viewName), Root.transform);
+                var viewObject = _loader.CreateView(viewName, Root.transform);
 
                 logic = viewObject.GetComponent<ViewLogic>();
 
@@ -124,19 +106,16 @@ namespace Twenty2.VomitLib.View
                     throw new Exception($"ViewLogic : {viewName} is not found!");
                 }
 
-                logic.Name = viewName;
+                logic.ID = viewName;
 
-                if (logic.Config.AutoBindButtons)
+                if (logic.Config.AutoBindButtons)       // 绑定组件
                 {
                     _binder?.Bind(logic);
                 }
                 
-                if (_compMap.TryGetValue(logic.Name, out var components))
+                if (logic.Config.EnableLocalization)    // 本地化
                 {
-                    foreach (var component in components)
-                    {
-                        _loader.LoadComp(component.Name);   // 预加载
-                    }
+                    _localizer?.Localize(logic);
                 }
                 
                 logic.OnCreated();
@@ -147,16 +126,12 @@ namespace Twenty2.VomitLib.View
                 });
             }
             
-            _visibleViewMap[logic.Name] = logic;
+            // 展示逻辑
+            _visibleViewMap[logic.ID] = logic;
             
-            if (logic.Config.EnableAutoMask)
+            if (logic.Config.EnableAutoMask)        // 遮罩
             {
                 _masker?.Mask(logic);
-            }
-
-            if (logic.Config.EnableLocalization)
-            {
-                _localizer?.Localize(logic);
             }
             
             logic.transform.parent = Root.transform;
@@ -165,29 +140,62 @@ namespace Twenty2.VomitLib.View
             logic.ViewCanvas.sortingLayerID = (int) logic.Config.Layer;
             logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
             
-            Freeze();
+            logic.OnOpened(param);
+            
+            if (logic.Config.RecordOpen)
+            {
+                _recorder?.RecordOpen(logic.ID);
+            }
             
             Vomit.Interface.SendEvent(new EView.Open
             {
                 ViewLogic = logic,
             });
             
-            await logic.OnOpened(param);
-            await logic.PlayOpenAnimation();
-            
-            if (logic.Config.RecordOpen)
+            return logic;
+        }
+        
+        public static void Close(string viewName, ViewParameterBase param = null)
+        {
+            if(!_visibleViewMap.Remove(viewName, out var logic))
             {
-                _recorder?.RecordOpen(logic.Name);
+                LogKit.I($"Try closing a non-existent View : {viewName}");
+                return;
             }
             
-            Vomit.Interface.SendEvent(new EView.OpenDone()
-            {
-                ViewLogic = logic,
-            });
-
-            UnFreeze();
+            // 取消监听器
+            logic.Cancel();
             
-            return logic;
+            var isCache = logic.Config.IsCache;
+            
+            logic.OnClose(param);
+            
+            if (isCache)
+            {
+                logic.Parent(Root.HiddenCanvas);
+                _hiddenViewMap.Add(viewName, logic);
+                if (logic.Config.EnableAutoMask)
+                {
+                    _masker?.Unmask(logic);
+                }
+                _locker?.UnLock(logic);
+            }
+            else
+            {
+                Object.Destroy(logic.gameObject);
+                _loader?.ReleaseView(logic.gameObject);
+            }
+            
+            Vomit.Interface.SendEvent(new EView.Close()
+            {
+                ViewName = viewName,
+                IsCache = logic.Config.IsCache,
+            });
+        }
+
+        public static void Close<T>(ViewParameterBase param = null)
+        {
+            Close(typeof(T).Name);
         }
         
         /// <summary>
@@ -195,67 +203,41 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         public static async UniTask OpenAndWaitClose<T>(ViewParameterBase param = null)  where T : ViewLogic, new ()
         {
-            await (await OpenAsync<T>(param)).WaitClose();
-        }
-        
-        public static UniTask CloseAsync<T>()
-        {
-            return CloseAsync(typeof(T).Name);
-        }
-        
-        public static async UniTask CloseAsync(string viewName)
-        {
-            if(!_visibleViewMap.Remove(viewName, out var logic))
-            {
-                LogKit.I($"Try closing a non-existent View : {viewName}");
-                return;
-            }
-
-            Freeze();
-            
-            // 取消监听器
-            logic.Cancel();
-            
-            await logic.PlayCloseAnimation();
-            await logic.OnClose();
-            
-            if (logic.Config.IsCache)
-            {
-                logic.OnHidden();
-                logic.transform.parent = Root.HiddenCanvas;
-                _hiddenViewMap.Add(viewName, logic);
-                
-                if (logic.Config.EnableAutoMask)
-                {
-                    _masker?.Unmask(logic);
-                }
-            }
-            else
-            {
-                Object.Destroy(logic.gameObject);
-                _loader.ReleaseView(logic.gameObject);
-            }
-            
-            Vomit.Interface.SendEvent(new EView.Close()
-            {
-                LogicType = logic.GetType(),
-            });
-            
-            UnFreeze();
+            await Open<T>(param).WaitClose();
         }
         
         /// <summary>
         /// 获取 T 类型的 ViewLogic.
         /// 只要它在缓存中,就能被获取到.
         /// </summary>
-        public static T GetView<T>() where T : ViewLogic
+        public static T GetView<T>(bool findHidden = false) where T : ViewLogic
         {
-            if (!_visibleViewMap.TryGetValue(typeof(T).Name, out var info))
+            if (_visibleViewMap.TryGetValue(typeof(T).Name, out var info))
             {
-                return null;
+                return (T)info;
+            }
+            
+            if (findHidden && _hiddenViewMap.TryGetValue(typeof(T).Name, out info))
+            {
+                return (T)info;
+            }
+            
+            return null;
+        }
+
+        public static ViewLogic GetView(string viewName, bool findHidden = false)
+        {
+            if (_visibleViewMap.TryGetValue(viewName, out var view))
+            {
+                return view;
             }
 
-            return (T) info;
+            if (findHidden && _hiddenViewMap.TryGetValue(viewName, out view))
+            {
+                return view;
+            }
+
+            return null;
         }
         
         /// <summary>
@@ -321,29 +303,6 @@ namespace Twenty2.VomitLib.View
             return _visibleViewMap.ContainsKey(typeof(T).Name);
         }
         
-        /// <summary>
-        /// 实例化一个在资源面板中标注为 VC 的对象.
-        /// 并返回同名的类型.
-        /// </summary>
-        public static async UniTask<T> CreateComp<T>(Transform parent, Vector3 position) where T : ViewComponent
-        {
-            var go = Object.Instantiate(await _loader.LoadComp(typeof(T).Name), parent);
-            go.transform.position = position;
-            
-            return go.GetComponent<T>();
-        }
-        
-        /// <summary>
-        /// 实例化一个在资源面板中标注为 VC 的对象.
-        /// 并返回同名的类型.
-        /// </summary>
-        public static async UniTask<T> CreateComp<T>(Transform parent) where T : UnityEngine.Component
-        {
-            var prefab = await _loader.LoadComp(typeof(T).Name);
-            
-            return Object.Instantiate(prefab, parent).GetComponent<T>();
-        }
-
         public static bool IsHitView(Vector3 position)
         {
             PointerEventData ed = new(Root.GetComponent<EventSystem>())
@@ -377,20 +336,24 @@ namespace Twenty2.VomitLib.View
             return _recorder.IsFirstOpen(typeof(T).Name);
         }
 
-        public static void Freeze()
+        public static void Freeze(string viewName)
         {
-            _visibleViewMap.Values.ForEach(logic =>
+            var view = GetView(viewName);
+
+            if (view != null)
             {
-                logic.Freeze();
-            });
+                _locker?.Lock(view); 
+            }
         }
 
-        public static void UnFreeze()
+        public static void UnFreeze(string viewName)
         {
-            _visibleViewMap.Values.ForEach(logic =>
+            var view = GetView(viewName);
+
+            if (view != null)
             {
-                logic.UnFreeze();
-            });
+                _locker?.UnLock(view); 
+            }
         }
     }
 }

@@ -36,7 +36,6 @@ namespace Twenty2.VomitLib.View
         [Tooltip("记录设备打开记录")] 
         [SerializeField] private bool  _recordOpen = false;
 
-
         /// <summary>
         /// 层级
         /// </summary>
