@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Twenty2.VomitLib.View.Component;
 using UnityEngine;
 
 namespace Twenty2.VomitLib.View
