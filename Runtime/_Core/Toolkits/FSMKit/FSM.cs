@@ -69,13 +69,13 @@ namespace Twenty2.VomitLib.Tools
             FrameCountOfCurrentState = 0;
             SecondsOfCurrentState = 0.0f;
             
-            UniTask.WaitWhile(Update, PlayerLoopTiming.Update, cancellationToken: Application.exitCancellationToken).Forget();
-
-            UniTask.WaitWhile(FixedUpdate, PlayerLoopTiming.FixedUpdate, cancellationToken: Application.exitCancellationToken).Forget();
+            CurrentState.Enter(null);
             
             IsRunning = true;
             
-            CurrentState.Enter(null);
+            UniTask.WaitWhile(Update, PlayerLoopTiming.Update, cancellationToken: Application.exitCancellationToken);
+
+            UniTask.WaitWhile(FixedUpdate, PlayerLoopTiming.FixedUpdate, cancellationToken: Application.exitCancellationToken);
         }
         
         /// <summary>
@@ -106,6 +106,7 @@ namespace Twenty2.VomitLib.Tools
 
             if (!_states.TryGetValue(t, out var state))
             {
+                LogKit.E($"无效的状态转换! {t}");
                 return;
             }
 

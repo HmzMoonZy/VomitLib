@@ -23,6 +23,7 @@ namespace Twenty2.VomitLib.View
         }
     }
     
+    [DisallowMultipleComponent]
     public abstract class ViewLogic : MonoController
     {
         /// <summary>

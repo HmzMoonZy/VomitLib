@@ -4,7 +4,6 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using FluentAPI;
 using QFramework;
-using TMPro;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.EventSystems;
@@ -134,7 +133,7 @@ namespace Twenty2.VomitLib.View
                 _masker?.Mask(logic);
             }
             
-            logic.transform.parent = Root.transform;
+            logic.transform.SetParent(Root.transform, false);
             logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
             logic.ViewCanvas.worldCamera = Root.ViewCamera;
             logic.ViewCanvas.sortingLayerID = (int) logic.Config.Layer;
