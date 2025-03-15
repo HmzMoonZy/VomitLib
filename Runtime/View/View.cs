@@ -151,6 +151,12 @@ namespace Twenty2.VomitLib.View
             {
                 ViewLogic = logic,
             });
+
+            UniTask.Create(async () =>
+            {
+                await logic.OpenEffect();
+                logic.OnOpenEffectDone();
+            });
             
             return logic;
         }
@@ -339,9 +345,10 @@ namespace Twenty2.VomitLib.View
         public static void Freeze(string viewName)
         {
             var view = GetView(viewName);
-
+            
             if (view != null)
             {
+                Debug.Log($"Freeze { viewName}");
                 _locker?.Lock(view); 
             }
         }
@@ -352,6 +359,7 @@ namespace Twenty2.VomitLib.View
 
             if (view != null)
             {
+                Debug.Log($"UnFreeze { viewName}");
                 _locker?.UnLock(view); 
             }
         }

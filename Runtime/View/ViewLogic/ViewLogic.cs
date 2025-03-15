@@ -30,6 +30,7 @@ namespace Twenty2.VomitLib.View
         /// 可以用作查找 Prefab 和 管理的 ID.
         /// </summary>
         public string ID { get; set; }
+        
 
         private Canvas _viewCanvas;
         /// <summary>
@@ -47,6 +48,7 @@ namespace Twenty2.VomitLib.View
                 return _viewCanvas;
             }
         }
+        
 
         private ViewConfig _config;
         /// <summary>
@@ -69,12 +71,15 @@ namespace Twenty2.VomitLib.View
                 return _config;
             }
         }
+        
 
         private RectTransform _rectView;
         /// <summary>
         /// 面板下命名为'View'的子节点
         /// </summary>
         protected RectTransform RectView => _rectView ??= transform.Find("View").GetComponent<RectTransform>();
+
+
         
         /// <summary>
         /// View 在该 Layer 下的层级.
@@ -100,6 +105,16 @@ namespace Twenty2.VomitLib.View
         /// 当 ViewInfo 被展示后调用.
         /// </summary>
         public abstract void OnOpened(ViewParameterBase param);
+        
+        public virtual UniTask OpenEffect()
+        {
+            return UniTask.CompletedTask;
+        }
+        
+        public virtual void OnOpenEffectDone()
+        {
+            
+        }
 
         /// <summary>
         /// 关闭时调用.

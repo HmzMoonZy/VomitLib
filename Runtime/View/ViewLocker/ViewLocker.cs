@@ -36,9 +36,9 @@ namespace Twenty2.VomitLib.View
                 rectTrans.sizeDelta = new Vector2(50000, 50000);
                 rectTrans.SetParent(view.transform);
                 rectTrans.localPosition = Vector3.zero;
-                rectTrans.localScale = Vector3.one;
                 rectTrans.SetAsFirstSibling();
                 rectTrans.SetParent(locker.transform);
+                rectTrans.localScale = Vector3.one;
             }
 #endif
         }

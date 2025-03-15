@@ -22,17 +22,17 @@ namespace Twenty2.VomitLib.Editor
             GUILayout.BeginHorizontal();
             GUILayout.BeginHorizontal(GUILayout.Width(350));
             
-            if (GUILayout.Button("数据文件夹", GUILayout.Width(130)))
+            if (GUILayout.Button("数据文件夹", GUILayout.Width(80)))
             {
                 ClientDBEditor.OpenDataTableFolder();
             }
         
-            if (GUILayout.Button("生成数据", GUILayout.Width(130)))
+            if (GUILayout.Button("生成数据",  GUILayout.Width(80)))
             {
                 ClientDBEditor.GenerateData();
             }
             
-            if (GUILayout.Button("配置文件", GUILayout.Width(130)))
+            if (GUILayout.Button("配置文件",  GUILayout.Width(80)))
             {
                 var findAsset = UnityEditor.AssetDatabase.FindAssets($"t:{nameof(VomitConfig)}")[0];
                 var obj = UnityEditor.AssetDatabase.LoadAssetAtPath<Object>(UnityEditor.AssetDatabase.GUIDToAssetPath(findAsset));
