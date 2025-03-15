@@ -1,3 +1,4 @@
+using Twenty2.VomitLib.Config;
 using UnityEditor;
 using UnityEngine;
 
@@ -29,6 +30,15 @@ namespace Twenty2.VomitLib.Editor
             if (GUILayout.Button("生成数据", GUILayout.Width(130)))
             {
                 ClientDBEditor.GenerateData();
+            }
+            
+            if (GUILayout.Button("配置文件", GUILayout.Width(130)))
+            {
+                var findAsset = UnityEditor.AssetDatabase.FindAssets($"t:{nameof(VomitConfig)}")[0];
+                var obj = UnityEditor.AssetDatabase.LoadAssetAtPath<Object>(UnityEditor.AssetDatabase.GUIDToAssetPath(findAsset));
+                UnityEditor.EditorGUIUtility.PingObject(obj);
+                //在Project面板自动选中，并在Inspector面板显示详情
+                UnityEditor.Selection.activeObject = obj;
             }
       
             GUILayout.Space(5);

@@ -10,14 +10,21 @@ namespace Twenty2.VomitLib
     public static class Vomit
     {
         public static VomitConfig Config { get; private set; }
-        
-        #if UNITY_EDITOR
-        public static VomitConfig GetConfigInEditor()
+
+        public static VomitConfig EditorConfig
         {
-            var guid = UnityEditor.AssetDatabase.FindAssets($"t:{nameof(VomitConfig)}")[0];
-            return UnityEditor.AssetDatabase.LoadAssetAtPath<VomitConfig>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
+            get
+            {
+#if UNITY_EDITOR
+                var guid = UnityEditor.AssetDatabase.FindAssets($"t:{nameof(VomitConfig)}")[0]; 
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<VomitConfig>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
+#endif
+                return null;
+            }
         }
-        #endif
+        
+        
+
 
         public static IArchitecture Interface { get; private set; }
         

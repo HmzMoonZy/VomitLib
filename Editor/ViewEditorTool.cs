@@ -73,7 +73,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/View/删除初次打开Token")]
         public static void DeleteAllKeys()
         {
-            var folderPath = Path.Combine(Application.dataPath[..^7], Vomit.GetConfigInEditor().ViewConfig.ScriptGeneratePath);
+            var folderPath = Path.Combine(Application.dataPath[..^7], Vomit.EditorConfig.ViewConfig.ScriptGeneratePath);
             DirectoryInfo dir = new(folderPath);
 
             foreach (var fileInfo in dir.GetFiles("*.cs"))
@@ -92,7 +92,7 @@ namespace Twenty2.VomitLib.Editor
             if (selectCount != 1) return;
             if (!selectName.StartsWith("View")) return;
             
-            var folderPath = Path.Combine(Application.dataPath[..^7], Vomit.GetConfigInEditor().ViewConfig.ScriptGeneratePath);
+            var folderPath = Path.Combine(Application.dataPath[..^7], Vomit.EditorConfig.ViewConfig.ScriptGeneratePath);
             var filePath = Path.Combine(folderPath, selectName + ".cs");
             var designerFilePath = Path.Combine(folderPath, selectName + ".Designer.cs");
             if (File.Exists(filePath) ||File.Exists(designerFilePath))
@@ -197,7 +197,7 @@ public partial class {selectName}
             canvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             canvas.GetComponent<CanvasScaler>().matchWidthOrHeight = 0;
             canvas.GetComponent<CanvasScaler>().referenceResolution =
-                Vomit.GetConfigInEditor().ViewConfig.ViewResolution;
+                Vomit.EditorConfig.ViewConfig.ViewResolution;
 
             canvas.gameObject.layer = 5;
         }
@@ -215,7 +215,7 @@ public partial class {selectName}
             canvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             canvas.GetComponent<CanvasScaler>().matchWidthOrHeight = 0;
             canvas.GetComponent<CanvasScaler>().referenceResolution =
-                Vomit.GetConfigInEditor().ViewConfig.ViewResolution;
+                Vomit.EditorConfig.ViewConfig.ViewResolution;
 
             canvas.GetComponent<GraphicRaycaster>().enabled = false;
             

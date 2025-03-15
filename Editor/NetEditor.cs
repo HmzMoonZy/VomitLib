@@ -14,7 +14,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/Net/启动服务器")]
         private static void LaunchServer()
         {
-            var config = Vomit.GetConfigInEditor().NetConfig;
+            var config = Vomit.EditorConfig.NetConfig;
 
             if (string.IsNullOrEmpty(config.ServerPath))
             {
@@ -50,7 +50,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/Net/Build Server")]
         private static void BuildServer()
         {
-            var config = Vomit.GetConfigInEditor().NetConfig;
+            var config = Vomit.EditorConfig.NetConfig;
             // 运行 bat
             ProcessStartInfo startInfo = new ProcessStartInfo 
             {
@@ -74,7 +74,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/Net/同步协议")]
         private static void SynchronizeProtocol()
         {
-            var config = Vomit.GetConfigInEditor().NetConfig;
+            var config = Vomit.EditorConfig.NetConfig;
             var workPath = Path.Combine(Application.dataPath[..^6], config.ServerPath, "Tools", "Geek.MsgPackTool");
             var filePath = Path.Combine(workPath, "MessagePack.Generator.exe");
             

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAPI;
 using Twenty2.VomitLib.Config;
 using UnityEditor;
 using Debug = UnityEngine.Debug;
@@ -15,7 +16,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/ClientDB/打开数据配置目录")]
         public static void OpenDataTableFolder()
         {
-            var directoryInfo = new FileInfo(Vomit.GetConfigInEditor().ClientDatabaseConfig.ConfigPath).Directory;
+            var directoryInfo = new FileInfo(Vomit.EditorConfig.ClientDatabaseConfig.ConfigPath).Directory;
             if (directoryInfo != null)
             {
                 Process.Start(directoryInfo.FullName);
@@ -28,9 +29,9 @@ namespace Twenty2.VomitLib.Editor
         {
             try
             {
-                var config = Vomit.GetConfigInEditor().ClientDatabaseConfig;
+                var config = Vomit.EditorConfig.ClientDatabaseConfig;
             
-                string cmd = GenerateCmd(config.GenCodePath, config.GenDataPath, true, config.NoneStyle, config.Format);
+                string cmd = GenerateCmd(config.GenCodePath, config.GenDataPath, config.LocalizationPath.IsNotNullAndEmpty(), config.NoneStyle, config.Format);
                 await RunCmd(cmd);
                 EditorUtility.DisplayDialog("生成客户端数据", "生成客户端数据成功", "确定");
                 AssetDatabase.Refresh();
@@ -47,7 +48,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/ClientDB/生成客户端数据(Clean)")]
         public static void ClearAndGenerateData()
         {
-            var config = Vomit.GetConfigInEditor().ClientDatabaseConfig;
+            var config = Vomit.EditorConfig.ClientDatabaseConfig;
             
             DirectoryInfo dir = new DirectoryInfo(config.GenDataPath);
         
@@ -62,14 +63,14 @@ namespace Twenty2.VomitLib.Editor
         // [MenuItem("VomitLib/ClientDB/生成服务器数据")]
         // private static void ClearAndGenerateServerData()
         // {
-        //     var config = Vomit.GetConfigInEditor().NetConfig;
+        //     var config = Vomit.EditorConfig.NetConfig;
         //     string cmd = GenerateCmd(config.ServerScriptPath, config.ServerDataPath, true, config.Format);
         //     RunCmd(cmd);
         // }
         
         private static string GenerateCmd(string outputCodeDir, string outputDataDir, bool enableL10N, bool useNoneStyle, ClientDBConfig.JsonFormat format)
         {
-            var config = Vomit.GetConfigInEditor().ClientDatabaseConfig;
+            var config = Vomit.EditorConfig.ClientDatabaseConfig;
 
             string strFormatC = format switch
             {
@@ -130,8 +131,19 @@ namespace Twenty2.VomitLib.Editor
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    Debug.Log(e.Data);      // 正常日志
-                    //EditorUtility.DisplayProgressBar("正在生成客户端数据...", e.Data, 0);
+                    if (e.Data.Contains("|ERROR|"))
+                    {
+                        Debug.LogError($"<color=red>{e.Data}</color>");
+                    }
+                    else if (e.Data.Contains("|WARN|"))
+                    {
+                        Debug.Log($"<color=yellow>{e.Data}</color>");
+                    }
+                    else
+                    {
+                        Debug.Log(e.Data);    
+                    }
+                      
                 }
             };
             process.ErrorDataReceived += (sender, e) =>
