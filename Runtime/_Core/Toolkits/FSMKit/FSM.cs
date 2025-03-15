@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using QFramework;
 using UnityEngine;
 
 namespace Twenty2.VomitLib.Tools
@@ -44,7 +43,7 @@ namespace Twenty2.VomitLib.Tools
         /// <summary>
         /// 启动状态机
         /// </summary>
-        public async UniTask Launch(T t)
+        public void Launch(T t)
         {
             if (CurrentState != null)
             {
@@ -70,13 +69,13 @@ namespace Twenty2.VomitLib.Tools
             FrameCountOfCurrentState = 0;
             SecondsOfCurrentState = 0.0f;
             
-            await CurrentState.Enter(null);
-            
             UniTask.WaitWhile(Update, PlayerLoopTiming.Update, cancellationToken: Application.exitCancellationToken).Forget();
 
             UniTask.WaitWhile(FixedUpdate, PlayerLoopTiming.FixedUpdate, cancellationToken: Application.exitCancellationToken).Forget();
             
             IsRunning = true;
+            
+            CurrentState.Enter(null);
         }
         
         /// <summary>
@@ -87,7 +86,7 @@ namespace Twenty2.VomitLib.Tools
             _states.Add(id, state);
         }
         
-        public async UniTask ChangeState(T t, IState context)
+        public void ChangeState(T t, IState context)
         {
             if (!IsRunning)
             {
@@ -119,13 +118,13 @@ namespace Twenty2.VomitLib.Tools
             LogKit.I($"state changing : {CurrentState} => {t}");
             
             IsRunning = false;
-            await CurrentState.Exit();
+            CurrentState.Exit();
             PreviousStateId = CurrentStateId;
             CurrentState = state;
             CurrentStateId = t;
             FrameCountOfCurrentState = 1;
             SecondsOfCurrentState = 0.0f;
-            await CurrentState.Enter(context);
+            CurrentState.Enter(context);
             IsRunning = true;
             
             LogKit.I($"state changed : {PreviousStateId} => {CurrentStateId}");

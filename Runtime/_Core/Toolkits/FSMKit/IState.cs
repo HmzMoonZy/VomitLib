@@ -9,7 +9,7 @@ namespace Twenty2.VomitLib.Tools
             return true;
         }
         
-        public UniTask Enter(IState context);
+        public void Enter(IState context);
 
         public virtual void Update()
         {
@@ -21,6 +21,6 @@ namespace Twenty2.VomitLib.Tools
             
         }
         
-        public UniTask Exit();
+        public void Exit();
     }
 }

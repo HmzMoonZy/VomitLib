@@ -19,7 +19,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 自动扫描所有可能的流程, 初始化流程系统
         /// </summary>
-        public UniTask Launch()
+        public void Launch()
         {
             T start = default;
             
@@ -50,15 +50,15 @@ namespace Twenty2.VomitLib.Procedure
             
             LogKit.I($"启动 Procedure {start}");
 
-            return Launch(start);
+            Launch(start);
         }
         
         /// <summary>
         /// 切换流程
         /// </summary>
-        public async UniTask Change(T id, IState context)
+        public void Change(T id, IState context)
         {
-            await ChangeState(id, context);
+            ChangeState(id, context);
             
             Vomit.Interface.SendEvent<EProcedure.Changed>();
         }

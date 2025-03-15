@@ -35,26 +35,26 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 进入状态回调
         /// </summary>
-        protected abstract UniTask OnEnter(IState context);
+        protected abstract void OnEnter(IState context);
 
         /// <summary>
         /// 退出状态回调
         /// </summary>
-        protected abstract UniTask OnExit();
+        protected abstract void OnExit();
         
-        public UniTask Enter(IState context)
+        public void Enter(IState context)
         {
-            return OnEnter(context);
+            OnEnter(context);
         }
 
-        public UniTask Exit()
+        public void Exit()
         {
             foreach (var unRegister in _registers)
             {
                 unRegister.UnRegister();
             }
             _registers.Clear();
-            return OnExit();
+            OnExit();
         }
 
         /// <summary>
@@ -76,20 +76,7 @@ namespace Twenty2.VomitLib.Procedure
         /// </summary>
         protected void ChangeState(T id)
         {
-            Procedure<T>.Instance.Change(id, this).Forget();
-        }
-
-        /// <summary>
-        /// 更安全的切换状态
-        /// </summary>
-        /// <param name="id"></param>
-        protected void ChangeStateSafety(T id)
-        {
-            UniTask.Create(async () =>
-            {
-                await UniTask.NextFrame();
-                Procedure<T>.Instance.Change(id, this).Forget();
-            });
+            Procedure<T>.Instance.Change(id, this);
         }
         
         /// <summary>
