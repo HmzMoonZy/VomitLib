@@ -30,7 +30,7 @@ namespace Twenty2.VomitLib.Editor
             {
                 var config = Vomit.GetConfigInEditor().ClientDatabaseConfig;
             
-                string cmd = GenerateCmd(config.GenCodePath, config.GenDataPath, true, config.Format);
+                string cmd = GenerateCmd(config.GenCodePath, config.GenDataPath, true, config.NoneStyle, config.Format);
                 await RunCmd(cmd);
                 EditorUtility.DisplayDialog("生成客户端数据", "生成客户端数据成功", "确定");
                 AssetDatabase.Refresh();
@@ -67,7 +67,7 @@ namespace Twenty2.VomitLib.Editor
         //     RunCmd(cmd);
         // }
         
-        private static string GenerateCmd(string outputCodeDir, string outputDataDir, bool enableL10N, ClientDBConfig.JsonFormat format)
+        private static string GenerateCmd(string outputCodeDir, string outputDataDir, bool enableL10N, bool useNoneStyle, ClientDBConfig.JsonFormat format)
         {
             var config = Vomit.GetConfigInEditor().ClientDatabaseConfig;
 
@@ -91,9 +91,16 @@ namespace Twenty2.VomitLib.Editor
             cmd.Append($"-c {strFormatC} -d {strFormatD} ");
             cmd.Append($"-x \"outputCodeDir={outputCodeDir}\" ");
             cmd.Append($"-x \"outputDataDir={outputDataDir}\" ");
+            cmd.Append($"-x \"{strFormatD}.fileExt=bytes\" ");
+
+            if (useNoneStyle)
+            {
+                cmd.Append($"-x \"codeStyle=none\" ");    
+            }
+            
             if(enableL10N)
             {
-                cmd.Append($"-x l10n.provider=default -x \"l10n.textFile.path={config.LocalizationPath}\" -x l10n.textFile.keyFieldName=key ");
+                cmd.Append($"-x l10n.provider=default -x \"l10n.textFile.path={config.LocalizationPath}\" -x l10n.textFile.keyFieldName=key");
             }
             // cmd.AppendLine("\n pause");
 

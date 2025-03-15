@@ -30,6 +30,8 @@ namespace Twenty2.VomitLib.Config
 
         public JsonFormat Format;
 
+        public bool NoneStyle = false;
+
 
     }
 }
