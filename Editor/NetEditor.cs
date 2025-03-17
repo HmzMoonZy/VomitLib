@@ -18,7 +18,7 @@ namespace Twenty2.VomitLib.Editor
 
             if (string.IsNullOrEmpty(config.ServerPath))
             {
-                LogKit.E("未配置服务器路径");
+                Log.Error("未配置服务器路径");
                 return;
             }
             
@@ -27,7 +27,7 @@ namespace Twenty2.VomitLib.Editor
 
             if (!File.Exists(filePath))
             {
-                LogKit.E("未找到服务器文件");
+                Log.Error("未找到服务器文件");
                 return;
             }
             
@@ -43,7 +43,7 @@ namespace Twenty2.VomitLib.Editor
             }
             catch (Exception e)
             {
-                LogKit.E(e.Message);
+                Log.Error(e.Message);
             }
         }
         

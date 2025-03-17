@@ -21,7 +21,7 @@ namespace Twenty2.VomitLib.Addr
             }
             catch (Exception e)
             {
-                LogKit.E("创建Addr子类型时出错.");
+                Log.Error("创建Addr子类型时出错.");
                 throw;
             }
         }

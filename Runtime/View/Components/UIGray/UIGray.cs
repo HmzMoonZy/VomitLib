@@ -30,7 +30,7 @@ namespace Twenty2.VomitLib.View.Component
                 Shader shader = Shader.Find("VomitLib/UI/UIGray");
                 if (shader == null)
                 {
-                    LogKit.E("VomitLib/UI/UIGray : null");
+                    Log.Error("VomitLib/UI/UIGray : null");
                 }
                 _grayMat = new Material(shader);
             }

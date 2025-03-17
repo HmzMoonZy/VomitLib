@@ -86,7 +86,7 @@ namespace Twenty2.VomitLib
             }
             catch (Exception e)
             {
-                LogKit.W($"BreakWaitEvent Error : {typeof(T).Name} {e.Message}");
+                Log.Warning($"BreakWaitEvent Error : {typeof(T).Name} {e.Message}");
             }
         }
     }

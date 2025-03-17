@@ -120,7 +120,7 @@ namespace Twenty2.VomitLib.Net
 
             var message = MessagePackSerializer.Deserialize<Message>(payload.Slice(4));
 #if UNITY_EDITOR
-            LogKit.I("收到消息:" + MessagePackSerializer.SerializeToJson(message));
+            Log.Debug("收到消息:" + MessagePackSerializer.SerializeToJson(message));
 #endif
             if (message.MsgId != msgId)
             {
@@ -145,7 +145,7 @@ namespace Twenty2.VomitLib.Net
             }
 
 #if UNITY_EDITOR
-            LogKit.I("发送消息:" + MessagePackSerializer.SerializeToJson(msg));
+            Log.Debug("发送消息:" + MessagePackSerializer.SerializeToJson(msg));
 #endif
             var bytes = MessagePackSerializer.Serialize(msg);
             int len = 4 + 8 + 4 + 4 + bytes.Length;

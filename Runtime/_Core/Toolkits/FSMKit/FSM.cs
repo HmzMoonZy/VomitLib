@@ -47,13 +47,13 @@ namespace Twenty2.VomitLib.Tools
         {
             if (CurrentState != null)
             {
-                LogKit.E($"The state machine has already been started. It can not be started again!");
+                Log.Error($"The state machine has already been started. It can not be started again!");
                 return;
             }
 
             if (_states.Count <= 0)
             {
-                LogKit.I("The state machine has no states. It can not be started!");
+                Log.Debug("The state machine has no states. It can not be started!");
                 return;
             }
             
@@ -90,7 +90,7 @@ namespace Twenty2.VomitLib.Tools
         {
             if (!IsRunning)
             {
-                LogKit.E("状态机不在运行, 请检查初始化状态或切换时机.");
+                Log.Error("状态机不在运行, 请检查初始化状态或切换时机.");
                 return;
             }
             
@@ -106,17 +106,17 @@ namespace Twenty2.VomitLib.Tools
 
             if (!_states.TryGetValue(t, out var state))
             {
-                LogKit.E($"无效的状态转换! {t}");
+                Log.Error($"无效的状态转换! {t}");
                 return;
             }
 
             if (!state.Condition())
             {
-                LogKit.E($"无效的状态转换! {state}=>{t}, 请检查对应的条件.");
+                Log.Error($"无效的状态转换! {state}=>{t}, 请检查对应的条件.");
                 return;
             }
             
-            LogKit.I($"state changing : {CurrentState} => {t}");
+            Log.Debug($"state changing : {CurrentState} => {t}");
             
             IsRunning = false;
             CurrentState.Exit();
@@ -128,7 +128,7 @@ namespace Twenty2.VomitLib.Tools
             CurrentState.Enter(context);
             IsRunning = true;
             
-            LogKit.I($"state changed : {PreviousStateId} => {CurrentStateId}");
+            Log.Debug($"state changed : {PreviousStateId} => {CurrentStateId}");
         }
         
         private bool FixedUpdate()

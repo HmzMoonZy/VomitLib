@@ -50,7 +50,7 @@ namespace Twenty2.VomitLib.Audio
             {
                 _audioClipsCache.Add(clip.name, clip);
 #if UNITY_EDITOR
-                LogKit.I($"Load Audio : {clip.name}");
+                Log.Debug($"Load Audio : {clip.name}");
 #endif
             }
         }

@@ -11,15 +11,7 @@ namespace Twenty2.VomitLib.Tools
 
         public static int NextID<T>()
         {
-            var key = typeof(T).Name;
-            if (!_map.TryGetValue(key, out var result))
-            {
-                _map.Add(key, int.MinValue);
-            }
-
-            result = _map[key];
-            _map[key]++;
-            return result;
+            return NextID(typeof(T).Name);
         }
         
         public static int NextID(string key)

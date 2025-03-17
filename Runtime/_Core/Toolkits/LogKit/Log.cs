@@ -5,50 +5,39 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
+using System.Diagnostics;
+
 namespace Twenty2.VomitLib
 {
     /// <summary>
-    /// 游戏框架日志类。
+    /// 日志工具集。
     /// </summary>
-    public static partial class LogKit
+    public static class Log
     {
-        private static ILogHelper s_LogHelper = null;
-
-        /// <summary>
-        /// 设置游戏框架日志辅助器。
-        /// </summary>
-        /// <param name="logHelper">要设置的游戏框架日志辅助器。</param>
-        public static void SetLogHelper(ILogHelper logHelper)
-        {
-            s_LogHelper = logHelper;
-        }
-
         /// <summary>
         /// 打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <param name="message">日志内容。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug(object message)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, message);
+            LogKit.Debug(message);
         }
 
         /// <summary>
         /// 打印调试级别日志，用于记录调试类日志信息。
         /// </summary>
         /// <param name="message">日志内容。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug(string message)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, message);
+            LogKit.Debug(message);
         }
 
         /// <summary>
@@ -57,14 +46,13 @@ namespace Twenty2.VomitLib
         /// <typeparam name="T">日志参数的类型。</typeparam>
         /// <param name="format">日志格式。</param>
         /// <param name="arg">日志参数。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T>(string format, T arg)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg));
+            LogKit.Debug(format, arg);
         }
 
         /// <summary>
@@ -75,14 +63,13 @@ namespace Twenty2.VomitLib
         /// <param name="format">日志格式。</param>
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2>(string format, T1 arg1, T2 arg2)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2));
+            LogKit.Debug(format, arg1, arg2);
         }
 
         /// <summary>
@@ -95,14 +82,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3));
+            LogKit.Debug(format, arg1, arg2, arg3);
         }
 
         /// <summary>
@@ -117,14 +103,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4);
         }
 
         /// <summary>
@@ -141,14 +126,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
@@ -167,14 +151,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
         /// <summary>
@@ -195,14 +178,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
         /// <summary>
@@ -225,14 +207,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
 
         /// <summary>
@@ -257,14 +238,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
 
         /// <summary>
@@ -291,14 +271,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
         }
 
         /// <summary>
@@ -327,14 +306,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
         }
 
         /// <summary>
@@ -365,14 +343,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
         }
 
         /// <summary>
@@ -405,14 +382,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
         }
 
         /// <summary>
@@ -447,14 +423,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
         }
 
         /// <summary>
@@ -491,14 +466,13 @@ namespace Twenty2.VomitLib
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
         }
 
         /// <summary>
@@ -537,42 +511,41 @@ namespace Twenty2.VomitLib
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
         /// <param name="arg16">日志参数 16。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_DEBUG_LOG 或 ENABLE_DEBUG_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_DEBUG_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
         public static void Debug<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Debug, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+            LogKit.Debug(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
         }
 
         /// <summary>
         /// 打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <param name="message">日志内容。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info(object message)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, message);
+            LogKit.Info(message);
         }
 
         /// <summary>
         /// 打印信息级别日志，用于记录程序正常运行日志信息。
         /// </summary>
         /// <param name="message">日志内容。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info(string message)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, message);
+            LogKit.Info(message);
         }
 
         /// <summary>
@@ -581,14 +554,14 @@ namespace Twenty2.VomitLib
         /// <typeparam name="T">日志参数的类型。</typeparam>
         /// <param name="format">日志格式。</param>
         /// <param name="arg">日志参数。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T>(string format, T arg)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg));
+            LogKit.Info(format, arg);
         }
 
         /// <summary>
@@ -599,14 +572,14 @@ namespace Twenty2.VomitLib
         /// <param name="format">日志格式。</param>
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2>(string format, T1 arg1, T2 arg2)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2));
+            LogKit.Info(format, arg1, arg2);
         }
 
         /// <summary>
@@ -619,14 +592,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3));
+            LogKit.Info(format, arg1, arg2, arg3);
         }
 
         /// <summary>
@@ -641,14 +614,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4));
+            LogKit.Info(format, arg1, arg2, arg3, arg4);
         }
 
         /// <summary>
@@ -665,14 +638,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
@@ -691,14 +664,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
         /// <summary>
@@ -719,14 +692,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
         /// <summary>
@@ -749,14 +722,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
 
         /// <summary>
@@ -781,14 +754,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
 
         /// <summary>
@@ -815,14 +788,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
         }
 
         /// <summary>
@@ -851,14 +824,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
         }
 
         /// <summary>
@@ -889,14 +862,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
         }
 
         /// <summary>
@@ -929,14 +902,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
         }
 
         /// <summary>
@@ -971,14 +944,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
         }
 
         /// <summary>
@@ -1015,14 +988,14 @@ namespace Twenty2.VomitLib
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
         }
 
         /// <summary>
@@ -1061,42 +1034,44 @@ namespace Twenty2.VomitLib
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
         /// <param name="arg16">日志参数 16。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_INFO_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
         public static void Info<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Info, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+            LogKit.Info(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
         }
 
         /// <summary>
         /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <param name="message">日志内容。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning(object message)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, message);
+            LogKit.Warning(message);
         }
 
         /// <summary>
         /// 打印警告级别日志，建议在发生局部功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <param name="message">日志内容。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning(string message)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, message);
+            LogKit.Warning(message);
         }
 
         /// <summary>
@@ -1105,14 +1080,15 @@ namespace Twenty2.VomitLib
         /// <typeparam name="T">日志参数的类型。</typeparam>
         /// <param name="format">日志格式。</param>
         /// <param name="arg">日志参数。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T>(string format, T arg)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg));
+            LogKit.Warning(format, arg);
         }
 
         /// <summary>
@@ -1123,14 +1099,15 @@ namespace Twenty2.VomitLib
         /// <param name="format">日志格式。</param>
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2>(string format, T1 arg1, T2 arg2)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2));
+            LogKit.Warning(format, arg1, arg2);
         }
 
         /// <summary>
@@ -1143,14 +1120,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3));
+            LogKit.Warning(format, arg1, arg2, arg3);
         }
 
         /// <summary>
@@ -1165,14 +1143,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4);
         }
 
         /// <summary>
@@ -1189,14 +1168,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
@@ -1215,14 +1195,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
         /// <summary>
@@ -1243,14 +1224,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
         /// <summary>
@@ -1273,14 +1255,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
 
         /// <summary>
@@ -1305,14 +1288,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
 
         /// <summary>
@@ -1339,14 +1323,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
         }
 
         /// <summary>
@@ -1375,14 +1360,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
         }
 
         /// <summary>
@@ -1413,14 +1399,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
         }
 
         /// <summary>
@@ -1453,14 +1440,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
         }
 
         /// <summary>
@@ -1495,14 +1483,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
         }
 
         /// <summary>
@@ -1539,14 +1528,15 @@ namespace Twenty2.VomitLib
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
         }
 
         /// <summary>
@@ -1585,42 +1575,47 @@ namespace Twenty2.VomitLib
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
         /// <param name="arg16">日志参数 16。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_WARNING_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG 或 ENABLE_WARNING_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_WARNING_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
         public static void Warning<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Warning, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+            LogKit.Warning(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
         }
 
         /// <summary>
         /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <param name="message">日志内容。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error(object message)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, message);
+            LogKit.Error(message);
         }
 
         /// <summary>
         /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <param name="message">日志内容。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error(string message)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, message);
+            LogKit.Error(message);
         }
 
         /// <summary>
@@ -1629,14 +1624,16 @@ namespace Twenty2.VomitLib
         /// <typeparam name="T">日志参数的类型。</typeparam>
         /// <param name="format">日志格式。</param>
         /// <param name="arg">日志参数。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T>(string format, T arg)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg));
+            LogKit.Error(format, arg);
         }
 
         /// <summary>
@@ -1647,14 +1644,16 @@ namespace Twenty2.VomitLib
         /// <param name="format">日志格式。</param>
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2>(string format, T1 arg1, T2 arg2)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2));
+            LogKit.Error(format, arg1, arg2);
         }
 
         /// <summary>
@@ -1667,14 +1666,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3));
+            LogKit.Error(format, arg1, arg2, arg3);
         }
 
         /// <summary>
@@ -1689,14 +1690,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4));
+            LogKit.Error(format, arg1, arg2, arg3, arg4);
         }
 
         /// <summary>
@@ -1713,14 +1716,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
@@ -1739,14 +1744,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
         /// <summary>
@@ -1767,14 +1774,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
         /// <summary>
@@ -1797,14 +1806,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
 
         /// <summary>
@@ -1829,14 +1840,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
 
         /// <summary>
@@ -1863,14 +1876,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
         }
 
         /// <summary>
@@ -1899,14 +1914,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
         }
 
         /// <summary>
@@ -1937,14 +1954,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
         }
 
         /// <summary>
@@ -1977,14 +1996,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
         }
 
         /// <summary>
@@ -2019,14 +2040,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
         }
 
         /// <summary>
@@ -2063,14 +2086,16 @@ namespace Twenty2.VomitLib
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
         }
 
         /// <summary>
@@ -2109,42 +2134,50 @@ namespace Twenty2.VomitLib
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
         /// <param name="arg16">日志参数 16。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_ERROR_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG 或 ENABLE_ERROR_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
         public static void Error<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Error, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+            LogKit.Error(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
         }
 
         /// <summary>
         /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <param name="message">日志内容。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal(object message)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, message);
+            LogKit.Fatal(message);
         }
 
         /// <summary>
         /// 打印严重错误级别日志，建议在发生严重错误，可能导致游戏崩溃或异常时使用，此时应尝试重启进程或重建游戏框架。
         /// </summary>
         /// <param name="message">日志内容。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal(string message)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, message);
+            LogKit.Fatal(message);
         }
 
         /// <summary>
@@ -2153,14 +2186,17 @@ namespace Twenty2.VomitLib
         /// <typeparam name="T">日志参数的类型。</typeparam>
         /// <param name="format">日志格式。</param>
         /// <param name="arg">日志参数。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T>(string format, T arg)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg));
+            LogKit.Fatal(format, arg);
         }
 
         /// <summary>
@@ -2171,14 +2207,17 @@ namespace Twenty2.VomitLib
         /// <param name="format">日志格式。</param>
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2>(string format, T1 arg1, T2 arg2)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2));
+            LogKit.Fatal(format, arg1, arg2);
         }
 
         /// <summary>
@@ -2191,14 +2230,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3>(string format, T1 arg1, T2 arg2, T3 arg3)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3));
+            LogKit.Fatal(format, arg1, arg2, arg3);
         }
 
         /// <summary>
@@ -2213,14 +2255,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4);
         }
 
         /// <summary>
@@ -2237,14 +2282,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
@@ -2263,14 +2311,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
         /// <summary>
@@ -2291,14 +2342,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
         /// <summary>
@@ -2321,14 +2375,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
 
         /// <summary>
@@ -2353,14 +2410,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
 
         /// <summary>
@@ -2387,14 +2447,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
         }
 
         /// <summary>
@@ -2423,14 +2486,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
         }
 
         /// <summary>
@@ -2461,14 +2527,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12);
         }
 
         /// <summary>
@@ -2501,14 +2570,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13);
         }
 
         /// <summary>
@@ -2543,14 +2615,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
         }
 
         /// <summary>
@@ -2587,14 +2662,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
         }
 
         /// <summary>
@@ -2633,14 +2711,17 @@ namespace Twenty2.VomitLib
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
         /// <param name="arg16">日志参数 16。</param>
+        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_FATAL_LOG、ENABLE_DEBUG_AND_ABOVE_LOG、ENABLE_INFO_AND_ABOVE_LOG、ENABLE_WARNING_AND_ABOVE_LOG、ENABLE_ERROR_AND_ABOVE_LOG 或 ENABLE_FATAL_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_FATAL_LOG")]
+        [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_INFO_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_WARNING_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_ERROR_AND_ABOVE_LOG")]
+        [Conditional("ENABLE_FATAL_AND_ABOVE_LOG")]
         public static void Fatal<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(string format, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16)
         {
-            if (s_LogHelper == null)
-            {
-                return;
-            }
-
-            s_LogHelper.Log(LogLevel.Fatal, string.Format(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16));
+            LogKit.Fatal(format, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16);
         }
     }
 }

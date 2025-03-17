@@ -23,9 +23,6 @@ namespace Twenty2.VomitLib
             }
         }
         
-        
-
-
         public static IArchitecture Interface { get; private set; }
         
         /// <summary>
@@ -35,11 +32,13 @@ namespace Twenty2.VomitLib
         /// <param name="config">框架启动配置</param>
         public static void Init(IArchitecture architecture, VomitConfig config = null)
         {
+            LogKit.SetLogHelper(new DefaultLogHelper());
+            
             Config = config;
             
             if (Config == null)
             {
-                LogKit.E("无法正确获得配置信息");
+                Log.Error("无法正确获得配置信息");
                 return;
             }
             
@@ -53,15 +52,7 @@ namespace Twenty2.VomitLib
         /// <param name="onLoadConfig">框架配置有更新需求, 则可以动态加载配置文件, 否则会从默认路径(Resource/VomitLibConfig)读取</param>
         public static void Init(IArchitecture architecture, Func<VomitConfig> onLoadConfig = null)
         {
-            Config = onLoadConfig == null ? Resources.Load<VomitConfig>("VomitLibConfig") : onLoadConfig.Invoke();
-            
-            if (Config == null)
-            {
-                LogKit.E("无法正确获得配置信息");
-                return;
-            }
-            
-            Interface = architecture;
+            Init(architecture, onLoadConfig == null ? Resources.Load<VomitConfig>("VomitLibConfig") : onLoadConfig.Invoke());
         }
         
         /// <summary>

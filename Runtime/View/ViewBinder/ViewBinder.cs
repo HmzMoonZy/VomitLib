@@ -26,7 +26,7 @@ namespace Twenty2.VomitLib.View
                 
                 if (methodInfo == null)
                 {
-                    LogKit.W($"Try to bind {view.ID} button event but method not found! Please check method named [{methodName}]");
+                    Log.Warning($"Try to bind {view.ID} button event but method not found! Please check method named [{methodName}]");
                     continue;
                 }
                 
@@ -36,7 +36,7 @@ namespace Twenty2.VomitLib.View
                     methodInfo.Invoke(view, null);
                 });
                 
-                LogKit.I($"[{view.ID}] Binding Button Event to [{methodName}] successful!");
+                Log.Debug($"[{view.ID}] Binding Button Event to [{methodName}] successful!");
             }
         }
     }

@@ -33,7 +33,7 @@ namespace Twenty2.VomitLib.Net
         {
             if (_isInit)
             {
-                LogKit.E("重复初始化 Net !!!");
+                Log.Error("重复初始化 Net !!!");
                 return;
             }
 
@@ -79,7 +79,7 @@ namespace Twenty2.VomitLib.Net
             msg.UniId = UniID++;
             GameClient.Instance.Send(msg);
 #if UNITY_EDITOR
-            LogKit.I("开始等待消息:" + msg.UniId);
+            Log.Debug("开始等待消息:" + msg.UniId);
 #endif
             
             return MsgWaiterMgr.StartWait(msg.UniId);

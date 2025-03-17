@@ -13,7 +13,7 @@ namespace Twenty2.VomitLib.Net
         {
             if (WaiterMap.ContainsKey(uniId))
             {
-                LogKit.E("MsgWaiterMgr : 发现重复消息id：" + uniId);
+                Log.Error("MsgWaiterMgr : 发现重复消息id：" + uniId);
                 return true;
             }
 
@@ -24,17 +24,17 @@ namespace Twenty2.VomitLib.Net
 
         public static void EndWait(int uniId, bool result)
         {
-            LogKit.I($"{uniId}返回结果!");
+            Log.Debug($"{uniId}返回结果!");
             
             if (!WaiterMap.TryGetValue(uniId, out var waiter))
             {
-                LogKit.E($"找不到EndWait! uniId {uniId}");
+                Log.Error($"找不到EndWait! uniId {uniId}");
                 return;
             }
             
             if (!result)
             {
-                LogKit.E("await 失败：" + uniId);
+                Log.Error("await 失败：" + uniId);
             }
             
             waiter.Done(result);

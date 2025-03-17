@@ -21,7 +21,7 @@ namespace Twenty2.VomitLib.Net
         {
             msg.UniId = UniId++;
             GameClient.Instance.Send(msg);
-            LogKit.I("开始等待消息:" + msg.UniId);
+            Log.Debug("开始等待消息:" + msg.UniId);
             return MsgWaiterMgr.StartWait(msg.UniId);
         }
         
@@ -47,7 +47,7 @@ namespace Twenty2.VomitLib.Net
         {
             if (!_eventMap.TryAdd(msgId, handler))
             {
-                LogKit.E($"重复注册网络事件 > {msgId}");
+                Log.Error($"重复注册网络事件 > {msgId}");
                 Net.Dispatcher.RemoveListener(msgId, _eventMap[msgId]);
                 _eventMap[msgId] = handler;
             }

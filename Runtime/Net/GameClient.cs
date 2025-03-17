@@ -85,7 +85,7 @@ namespace Twenty2.VomitLib.Net
                     return false;
                 }
 
-                LogKit.I($"connected success....");
+                Log.Debug($"connected success....");
                 
                 OnConnected();
                 

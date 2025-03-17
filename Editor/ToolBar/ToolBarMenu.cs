@@ -24,7 +24,7 @@ namespace Twenty2.VomitLib.Editor
             
             if (GUILayout.Button("数据文件夹", GUILayout.Width(80)))
             {
-                ClientDBEditor.OpenDataTableFolder();
+                OpenFolder.OpenFolderDesign();
             }
         
             if (GUILayout.Button("生成数据",  GUILayout.Width(80)))

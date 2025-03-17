@@ -37,7 +37,7 @@ namespace Twenty2.VomitLib.Procedure
                     var obj = (IState) Activator.CreateInstance(type);
                     // var obj = (IState) Activator.CreateInstance(type, args: new object[] {this});
                     
-                    LogKit.I($"创建 Procedure {id}");
+                    Log.Debug($"创建 Procedure {id}");
 
                     AddState(id, obj);
 
@@ -48,7 +48,7 @@ namespace Twenty2.VomitLib.Procedure
                 }
             }
             
-            LogKit.I($"启动 Procedure {start}");
+            Log.Debug($"启动 Procedure {start}");
 
             Launch(start);
         }

@@ -87,7 +87,7 @@ namespace Twenty2.VomitLib.View
                      
             if (_visibleViewMap.TryGetValue(viewName, out var logic))
             {
-                LogKit.I($"Try to open an already showed the View : {viewName}");
+                Log.Debug($"Try to open an already showed the View : {viewName}");
                 return logic;
             }
             
@@ -164,7 +164,7 @@ namespace Twenty2.VomitLib.View
         {
             if(!_visibleViewMap.Remove(viewName, out var logic))
             {
-                LogKit.I($"Try closing a non-existent View : {viewName}");
+                Log.Debug($"Try closing a non-existent View : {viewName}");
                 return;
             }
             

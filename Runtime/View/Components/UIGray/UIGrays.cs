@@ -25,7 +25,7 @@ namespace Twenty2.VomitLib.View.Component
                 Shader shader = Shader.Find("VomitLib/UI/UIGray");
                 if (shader == null)
                 {
-                    LogKit.I("null");
+                    Log.Debug("null");
                     return null;
                 }
 
@@ -75,7 +75,7 @@ namespace Twenty2.VomitLib.View.Component
                 
                 if (target == null)
                 {
-                    LogKit.E($"UIGrays.m_targets index:{i} is null");
+                    Log.Error($"UIGrays.m_targets index:{i} is null");
                     continue;
                 }
                 

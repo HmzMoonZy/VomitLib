@@ -13,17 +13,6 @@ namespace Twenty2.VomitLib.Editor
     // TODO 支持 luban 特性
     public class ClientDBEditor : UnityEditor.Editor
     {
-        [MenuItem("VomitLib/ClientDB/打开数据配置目录")]
-        public static void OpenDataTableFolder()
-        {
-            var directoryInfo = new FileInfo(Vomit.EditorConfig.ClientDatabaseConfig.ConfigPath).Directory;
-            if (directoryInfo != null)
-            {
-                Process.Start(directoryInfo.FullName);
-            }
-        }
-        
-        
         [MenuItem("VomitLib/ClientDB/生成客户端数据")]
         public static async void GenerateData()
         {

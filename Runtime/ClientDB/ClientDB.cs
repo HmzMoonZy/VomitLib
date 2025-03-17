@@ -48,8 +48,8 @@ namespace Twenty2.VomitLib.ClientDB
             }
             catch (Exception e)
             {
-                LogKit.E("ClientDB Init Error!");
-                LogKit.E(e.Message);
+                Log.Error("ClientDB Init Error!");
+                Log.Error(e.Message);
                 throw;
             }
             

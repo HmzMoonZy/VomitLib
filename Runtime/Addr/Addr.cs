@@ -70,7 +70,7 @@ namespace Twenty2.VomitLib.Addr
             // 寻找规则
             if (!splicingRule.TryGetValue(resType, out var func))
             {
-                LogKit.E("Addr 没有对应的寻址规则");
+                Log.Error("Addr 没有对应的寻址规则");
                 return null;
             }
             
@@ -85,7 +85,7 @@ namespace Twenty2.VomitLib.Addr
 
             if (asyncHandles.ContainsKey(address))
             {
-                LogKit.E($"同步加载的资源{address}正在异步加载中,会造成重复加载");
+                Log.Error($"同步加载的资源{address}正在异步加载中,会造成重复加载");
             }
 
             var result = Addressables.LoadAssetAsync<T>(address).WaitForCompletion();
@@ -98,7 +98,7 @@ namespace Twenty2.VomitLib.Addr
             // 寻找规则
             if (!splicingRule.TryGetValue(resType, out var func))
             {
-                LogKit.E("Addr 没有对应的寻址规则");
+                Log.Error("Addr 没有对应的寻址规则");
                 return null;
             }
 
@@ -112,7 +112,7 @@ namespace Twenty2.VomitLib.Addr
             
             if (asyncHandles.TryGetValue(address, out var addrHandle))
             {
-                LogKit.W($"多个重复的异步加载请求 [{address}]");
+                Log.Warning($"多个重复的异步加载请求 [{address}]");
                 await addrHandle.ToUniTask();
                 return (T) addrHandle.Result;
             }
@@ -130,7 +130,7 @@ namespace Twenty2.VomitLib.Addr
             // 寻找规则
             if (!splicingRule.TryGetValue(resType, out var func))
             {
-                LogKit.E("Addr 没有对应的寻址规则");
+                Log.Error("Addr 没有对应的寻址规则");
                 return;
             }
 
@@ -145,7 +145,7 @@ namespace Twenty2.VomitLib.Addr
             
             if (asyncHandles.TryGetValue(address, out var addrHandle))
             {
-                LogKit.W($"多个重复的异步加载请求 [{address}]");
+                Log.Warning($"多个重复的异步加载请求 [{address}]");
                 addrHandle.OnComplete(callback);    
                 return;
             }
