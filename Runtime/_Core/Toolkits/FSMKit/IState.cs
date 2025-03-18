@@ -11,7 +11,7 @@ namespace Twenty2.VomitLib.Tools
         
         public void Enter(IState context);
 
-        public virtual void Update()
+        public virtual void Update(float elapseTime, float realElapseTime)
         {
             
         }

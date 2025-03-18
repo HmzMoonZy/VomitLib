@@ -66,6 +66,8 @@ namespace Twenty2.VomitLib.View
             _localizer = localizer ?? new ViewLocalizer();
             _recorder = recorder ?? new ViewRecorder();
             _locker = locker ?? new ViewLocker();
+            
+            Log.Debug("View 初始化完成");
         }
 
         public static void Init(Func<string, string> viewName2Addr, IViewBinder binder = null,

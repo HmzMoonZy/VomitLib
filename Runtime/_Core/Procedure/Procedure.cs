@@ -9,12 +9,38 @@ using Twenty2.VomitLib.Tools;
 
 namespace Twenty2.VomitLib.Procedure
 {
-    public class Procedure<T> : FSM<T> where T : struct
+    public class Procedure<T> where T : struct
     {
+        private readonly Fsm<T> _fsm;
+        
         private static Procedure<T> _instance;
 
         public static Procedure<T> Instance => _instance ??= new Procedure<T>();
 
+        /// <summary>
+        /// 当前流程
+        /// </summary>
+        public T CurrentState => _fsm.CurrentStateId;
+
+        /// <summary>
+        /// 上一个流程
+        /// </summary>
+        public T PrevState => _fsm.PreviousStateId;
+
+        /// <summary>
+        /// 当前流程帧数
+        /// </summary>
+        public long FrameCountOfCurrentState => _fsm.FrameCountOfCurrentState;
+        
+        /// <summary>
+        /// 当前流程时间
+        /// </summary>
+        public float CurrentStateTime => _fsm.SecondsOfCurrentState;
+        
+        private Procedure()
+        {
+            _fsm = new();
+        }
 
         /// <summary>
         /// 自动扫描所有可能的流程, 初始化流程系统
@@ -23,6 +49,7 @@ namespace Twenty2.VomitLib.Procedure
         {
             T start = default;
             
+            // 扫描所有流程
             foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
             {
                 foreach (var type in assembly.GetTypes())
@@ -35,11 +62,10 @@ namespace Twenty2.VomitLib.Procedure
                     var attr = type.GetAttribute<ProcedureAttribute>();
                     var id = (T) attr.ProcedureID;
                     var obj = (IState) Activator.CreateInstance(type);
-                    // var obj = (IState) Activator.CreateInstance(type, args: new object[] {this});
                     
                     Log.Debug($"创建 Procedure {id}");
 
-                    AddState(id, obj);
+                    _fsm.AddState(id, obj);
 
                     if (attr.IsEntry)
                     {
@@ -47,10 +73,14 @@ namespace Twenty2.VomitLib.Procedure
                     }
                 }
             }
-            
-            Log.Debug($"启动 Procedure {start}");
 
-            Launch(start);
+            // 启动
+            UniTask.Create(async () =>
+            {
+                await UniTask.NextFrame();
+                Log.Debug($"启动 Procedure {start}");
+                _fsm.Launch(start);
+            });
         }
         
         /// <summary>
@@ -58,7 +88,7 @@ namespace Twenty2.VomitLib.Procedure
         /// </summary>
         public void Change(T id, IState context)
         {
-            ChangeState(id, context);
+            _fsm.ChangeState(id, context);
             
             Vomit.Interface.SendEvent<EProcedure.Changed>();
         }

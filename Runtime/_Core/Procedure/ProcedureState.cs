@@ -9,16 +9,6 @@ namespace Twenty2.VomitLib.Procedure
     public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetSystem, ICanRegisterEvent, ICanSendEvent, ICanSendCommand, IState, ICanSendQuery where T : struct 
     {
         /// <summary>
-        /// 当前状态ID
-        /// </summary>
-        protected T CurrentStateID => Procedure<T>.Instance.CurrentStateId;
-
-        /// <summary>
-        /// 上一个状态ID
-        /// </summary>
-        protected T PreviousStateID => Procedure<T>.Instance.PreviousStateId;
-        
-        /// <summary>
         /// 事件注册列表
         /// </summary>
         private List<IUnRegister> _registers = new();
@@ -60,7 +50,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 每帧调用的方法
         /// </summary>
-        public virtual void Update()
+        public virtual void Update(float elapseSeconds, float realElapseSeconds)
         {
         }
 

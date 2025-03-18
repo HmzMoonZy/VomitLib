@@ -57,7 +57,7 @@ namespace Twenty2.VomitLib.ClientDB
             ByteBuf BinLoader(string sourceName)
             {
                 var source = loader?.Invoke(sourceName);
-                
+                Log.Debug($"读取{sourceName}");
                 if (source == null)
                 {
                     return null;
@@ -73,7 +73,7 @@ namespace Twenty2.VomitLib.ClientDB
             JArray JsonLoader(string sourceName)
             {
                 var source = loader?.Invoke(sourceName);
-                
+                Log.Debug($"读取{sourceName}");
                 if (source == null)
                 {
                     return null;
