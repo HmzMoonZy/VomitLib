@@ -8,6 +8,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using LubanSupport.Editor;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,7 +25,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/Open Folder/Design Path", false, 9)]
         public static void OpenFolderDesign()
         {
-            var directoryInfo = new FileInfo(Vomit.EditorConfig.ClientDatabaseConfig.ConfigPath).Directory;
+            var directoryInfo = new FileInfo(LubanTool.Config.ConfigPath).Directory;
             if (directoryInfo != null)
             {
                 Execute(directoryInfo.FullName);

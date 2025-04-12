@@ -2,10 +2,10 @@
     "name": "Twenty2.VomitLib.Editor",
     "rootNamespace": "",
     "references": [
-        "Twenty2.VomitLib.ClientDB",
         "Twenty2.VomitLib",
         "Twenty2.VomitLib.View",
-        "Twenty2.VomitLib.Config"
+        "Luban.Runtime",
+        "Twenty2.VomitLib.LubanSupport"
     ],
     "includePlatforms": [
         "Editor"

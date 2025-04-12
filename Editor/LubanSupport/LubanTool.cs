@@ -3,24 +3,89 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using FluentAPI;
+using Luban;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Twenty2.VomitLib.Config;
+using Twenty2.VomitLib.Editor;
+using Twenty2.VomitLib.LubanSupport;
 using UnityEditor;
+using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace Twenty2.VomitLib.Editor
+namespace LubanSupport.Editor
 {
     // TODO 支持 luban 特性
-    public class ClientDBEditor : UnityEditor.Editor
+    public class LubanTool : UnityEditor.Editor
     {
+        public static LubanConfig Config
+        {
+            get
+            {
+                return VomitEditor.Config.LubanConfig;
+            }
+        }
+
+        /// <summary>
+        /// 在编辑器下直接读取配置
+        /// </summary>
+        public static T GetTable<T>(string sourceName = null)
+        {
+            var constructor = typeof(T).GetConstructors()[0];
+            var parameter = constructor.GetParameters()[0];
+            sourceName ??= typeof(T).Name.ToLower().Substring(2); 
+            
+            if (parameter.ParameterType == typeof(Luban.ByteBuf))
+            {
+                return (T)constructor.Invoke(new object[] { BinLoader()});
+            }
+
+            if (parameter.ParameterType == typeof(JArray))
+            {
+                return (T)constructor.Invoke(new object[] { JsonLoader()});
+            }
+
+            throw new NotImplementedException();
+            
+            ByteBuf BinLoader()
+            {
+                var source = GetTableAssetInEditor(sourceName);
+                return new Luban.ByteBuf(source.bytes);
+            }
+
+            JArray JsonLoader()
+            {
+                var source = GetTableAssetInEditor(sourceName);
+                return JsonConvert.DeserializeObject<JArray>(source.text);
+            }
+        }
+
+        private static TextAsset GetTableAssetInEditor(string filename)
+        {
+            // 遍历 Config.GenDataPath 文件夹, 用 AssetsDatabase
+            var results = AssetDatabase.FindAssets($"t:TextAsset tb{filename}", new[] { Config.GenDataPath });
+            if (results.Length <= 0)
+            {
+                throw new Exception($"{filename} not found");
+            }
+            
+            foreach (var ret in results)
+            {
+                return AssetDatabase.LoadAssetAtPath<TextAsset>(AssetDatabase.GUIDToAssetPath(ret));
+            }
+
+            throw new Exception($"{filename} not found");
+        }
+        
+        
         [MenuItem("VomitLib/ClientDB/生成客户端数据")]
         public static async void GenerateData()
         {
             try
             {
-                var config = Vomit.EditorConfig.ClientDatabaseConfig;
+                var config = Config;
             
-                string cmd = GenerateCmd(config.GenCodePath, config.GenDataPath, config.LocalizationPath.IsNotNullAndEmpty(), config.NoneStyle, config.Format);
+                string cmd = GenerateCmd(config.GenCodePath, config.GenDataPath, !string.IsNullOrEmpty(config.LocalizationPath), config.NoneStyle, config.Format);
                 await RunCmd(cmd);
                 EditorUtility.DisplayDialog("生成客户端数据", "生成客户端数据成功", "确定");
                 AssetDatabase.Refresh();
@@ -37,7 +102,7 @@ namespace Twenty2.VomitLib.Editor
         [MenuItem("VomitLib/ClientDB/生成客户端数据(Clean)")]
         public static void ClearAndGenerateData()
         {
-            var config = Vomit.EditorConfig.ClientDatabaseConfig;
+            var config = Config;
             
             DirectoryInfo dir = new DirectoryInfo(config.GenDataPath);
         
@@ -52,27 +117,27 @@ namespace Twenty2.VomitLib.Editor
         // [MenuItem("VomitLib/ClientDB/生成服务器数据")]
         // private static void ClearAndGenerateServerData()
         // {
-        //     var config = Vomit.EditorConfig.NetConfig;
+        //     var config = VomitEditor.Config.NetConfig;
         //     string cmd = GenerateCmd(config.ServerScriptPath, config.ServerDataPath, true, config.Format);
         //     RunCmd(cmd);
         // }
         
-        private static string GenerateCmd(string outputCodeDir, string outputDataDir, bool enableL10N, bool useNoneStyle, ClientDBConfig.JsonFormat format)
+        private static string GenerateCmd(string outputCodeDir, string outputDataDir, bool enableL10N, bool useNoneStyle, LubanFormat format)
         {
-            var config = Vomit.EditorConfig.ClientDatabaseConfig;
+            var config = Config;
 
             string strFormatC = format switch
             {
-                ClientDBConfig.JsonFormat.SimpleJson => "cs-simple-json",
-                ClientDBConfig.JsonFormat.NewtonsoftJson => "cs-newtonsoft-json",
-                ClientDBConfig.JsonFormat.Bin => "cs-bin",
+                LubanFormat.SimpleJson => "cs-simple-json",
+                LubanFormat.NewtonsoftJson => "cs-newtonsoft-json",
+                LubanFormat.Bin => "cs-bin",
             };
             
             string strFormatD = format switch
             {
-                ClientDBConfig.JsonFormat.SimpleJson => "json",
-                ClientDBConfig.JsonFormat.NewtonsoftJson => "json",
-                ClientDBConfig.JsonFormat.Bin => "bin",
+                LubanFormat.SimpleJson => "json",
+                LubanFormat.NewtonsoftJson => "json",
+                LubanFormat.Bin => "bin",
             };
 
             //https://luban.doc.code-philosophy.com/docs/manual/commandtools#unity--c--json

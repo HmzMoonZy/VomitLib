@@ -119,7 +119,7 @@ namespace Twenty2.VomitLib.View
                 
                 logic.OnCreated();
 
-                Vomit.Interface.SendEvent(new EView.Create
+                Vomit.Interface?.SendEvent(new EView.Create
                 {
                     ViewLogic = logic
                 });
@@ -146,7 +146,7 @@ namespace Twenty2.VomitLib.View
                 _recorder?.RecordOpen(logic.ID);
             }
             
-            Vomit.Interface.SendEvent(new EView.Open
+            Vomit.Interface?.SendEvent(new EView.Open
             {
                 ViewLogic = logic,
             });
@@ -191,7 +191,7 @@ namespace Twenty2.VomitLib.View
                 _loader?.ReleaseView(logic.gameObject);
             }
             
-            Vomit.Interface.SendEvent(new EView.Close()
+            Vomit.Interface?.SendEvent(new EView.Close()
             {
                 ViewName = viewName,
                 IsCache = logic.Config.IsCache,

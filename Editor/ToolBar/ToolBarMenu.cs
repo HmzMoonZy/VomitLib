@@ -1,3 +1,4 @@
+using LubanSupport.Editor;
 using Twenty2.VomitLib.Config;
 using UnityEditor;
 using UnityEngine;
@@ -29,7 +30,7 @@ namespace Twenty2.VomitLib.Editor
         
             if (GUILayout.Button("生成数据",  GUILayout.Width(80)))
             {
-                ClientDBEditor.GenerateData();
+                LubanTool.GenerateData();
             }
             
             if (GUILayout.Button("配置文件",  GUILayout.Width(80)))

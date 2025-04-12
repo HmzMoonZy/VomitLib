@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using LubanSupport.Editor;
+using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace Twenty2.VomitLib.Config
@@ -8,14 +9,8 @@ namespace Twenty2.VomitLib.Config
     {
         [Header("View 配置")] 
         public ViewConfig ViewConfig;
-
-        [Header("ClientDB 配置")] 
-        public ClientDBConfig ClientDatabaseConfig;
-
-        [Header("Audio 配置")]
-        public AudioConfig AudioConfig;
-
-        [Header("网络 配置")]
-        public NetConfig NetConfig;
+        
+        [Header("Luban 配置")] 
+        public LubanConfig LubanConfig;
     }
 }

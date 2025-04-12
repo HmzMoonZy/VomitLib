@@ -13,7 +13,7 @@ namespace Twenty2.VomitLib
     public static partial class LogKit
     {
         private static ILogHelper s_LogHelper = null;
-
+        
         /// <summary>
         /// 设置游戏框架日志辅助器。
         /// </summary>

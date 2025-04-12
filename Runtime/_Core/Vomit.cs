@@ -1,86 +1,73 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using FluentAPI;
 using QFramework;
-using Twenty2.VomitLib.Config;
-using Twenty2.VomitLib.Procedure;
 using UnityEngine;
 
 namespace Twenty2.VomitLib
 {
-    public static class Vomit
+    public static partial class Vomit
     {
-        public static VomitConfig Config { get; private set; }
-
-        public static VomitConfig EditorConfig
-        {
-            get
-            {
-#if UNITY_EDITOR
-                var guid = UnityEditor.AssetDatabase.FindAssets($"t:{nameof(VomitConfig)}")[0]; 
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<VomitConfig>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
-#endif
-                return null;
-            }
-        }
-        
         public static IArchitecture Interface { get; private set; }
-        
+
+        public static bool IsInit => Interface != null;
+
         /// <summary>
-        /// 初始化 Vomit 框架
+        /// 关联框架的接口
         /// </summary>
-        /// <param name="architecture">IArchitecture 实例</param>
-        /// <param name="config">框架启动配置</param>
-        public static void Init(IArchitecture architecture, VomitConfig config = null)
+        /// <param name="architecture"></param>
+        public static void Init(IArchitecture architecture)
         {
-            LogKit.SetLogHelper(new DefaultLogHelper());
-            
-            Config = config;
-            
-            if (Config == null)
-            {
-                Log.Error("无法正确获得配置信息");
-                return;
-            }
-            
             Interface = architecture;
         }
-        
+
         /// <summary>
-        /// 初始化 Vomit 框架
+        /// 依照合理的顺序关联框架的系统和数据, 性能略低, 适合在开发阶段调用
         /// </summary>
-        /// <param name="architecture">IArchitecture 实例</param>
-        /// <param name="onLoadConfig">框架配置有更新需求, 则可以动态加载配置文件, 否则会从默认路径(Resource/VomitLibConfig)读取</param>
-        public static void Init(IArchitecture architecture, Func<VomitConfig> onLoadConfig = null)
+        public static void AutoLoad(Assembly assembly)
         {
-            Init(architecture, onLoadConfig == null ? Resources.Load<VomitConfig>("VomitLibConfig") : onLoadConfig.Invoke());
-        }
-        
-        /// <summary>
-        /// 初始化 Vomit 框架,并自动调用 Procedure
-        /// </summary>
-        /// <param name="architecture">IArchitecture 实例</param>
-        /// <param name="onLoadConfig">框架配置有更新需求, 则可以动态加载配置文件, 否则会从默认路径(Resource/VomitLibConfig)读取</param>
-        /// <typeparam name="TProcedure">Procedure 的类型</typeparam>
-        public static void Init<TProcedure>(IArchitecture architecture, Func<VomitConfig> onLoadConfig = null) where TProcedure : struct
-        {
-            Init(architecture, onLoadConfig);
+            if (IsInit == false)
+            {
+                throw new Exception("请先调用 Vomit.Init(IArchitecture architecture)");
+            }
+
+            HashSet<Type> modelTypes = new();
+            HashSet<Type> systemTypes = new();
             
-            Procedure<TProcedure>.Instance.Launch();
-        }
-        
-        /// <summary>
-        /// 初始化 Vomit 框架,并自动调用 Procedure
-        /// </summary>
-        /// <param name="architecture">IArchitecture 实例</param>
-        /// <param name="config">框架启动配置</param>
-        /// <typeparam name="TProcedure">Procedure 的类型</typeparam>
-        public static void Init<TProcedure>(IArchitecture architecture, VomitConfig config) where TProcedure : struct
-        {
-            Init(architecture, config);
+            foreach (var type in assembly.GetTypes())
+            {
+                if (type.IsSubclassOf(typeof(AbstractModel)))
+                {
+                    modelTypes.Add(type);
+                }
+                
+                if (type.IsSubclassOf(typeof(AbstractSystem)))
+                {
+                    systemTypes.Add(type);
+                }
+            }
+
+
+            var registerModel = Interface.GetType().GetMethod("RegisterModel", BindingFlags.Public | BindingFlags.Instance);
+            foreach (var type in modelTypes)
+            {
+                // 反射泛型方法 Interface.RegisterModel<T>()
+                Log.Debug($"Auto Load {type.Name}");
+                registerModel!.MakeGenericMethod(type).Invoke(Interface, new[] {Activator.CreateInstance(type)});
+            }
             
-            Procedure<TProcedure>.Instance.Launch();
+            var registerSystem = Interface.GetType().GetMethod("RegisterSystem", BindingFlags.Public | BindingFlags.Instance);
+            foreach (var type in systemTypes)
+            {
+                // 反射泛型方法 Interface.RegisterSystem<T>()
+                Log.Debug($"Auto Load {type.Name}");
+                registerSystem!.MakeGenericMethod(type).Invoke(Interface, new[] {Activator.CreateInstance(type)});
+            }
         }
     }
+    
 
     public class MonoController : MonoBehaviour, IAbstractController
     {
