@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Twenty2.VomitLib.Tools
 {
-    public class FSM<T>
+    public class Fsm<T>
     {
         /// <summary>
         /// 当前的状态机
@@ -33,7 +33,7 @@ namespace Twenty2.VomitLib.Tools
         public float SecondsOfCurrentState { get; private set; }
         
         /// <summary>
-        /// 所有的状态机
+        /// 所有的状态
         /// </summary>
         protected Dictionary<T, IState> _states = new Dictionary<T, IState>();
 
@@ -86,6 +86,11 @@ namespace Twenty2.VomitLib.Tools
             _states.Add(id, state);
         }
         
+        /// <summary>
+        /// 切换状态机
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="context"></param>
         public void ChangeState(T t, IState context)
         {
             if (!IsRunning)
@@ -123,7 +128,7 @@ namespace Twenty2.VomitLib.Tools
             PreviousStateId = CurrentStateId;
             CurrentState = state;
             CurrentStateId = t;
-            FrameCountOfCurrentState = 1;
+            FrameCountOfCurrentState = 0;
             SecondsOfCurrentState = 0.0f;
             CurrentState.Enter(context);
             IsRunning = true;
@@ -145,7 +150,7 @@ namespace Twenty2.VomitLib.Tools
         {
             if (IsRunning)
             {
-                CurrentState?.Update();
+                CurrentState?.Update(Time.deltaTime, Time.unscaledDeltaTime);
             }
             FrameCountOfCurrentState++;
             SecondsOfCurrentState += Time.deltaTime;

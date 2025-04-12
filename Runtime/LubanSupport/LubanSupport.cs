@@ -2,15 +2,16 @@
 using Luban;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Twenty2.VomitLib.Config;
 using UnityEngine;
 
-namespace Twenty2.VomitLib.LubanSupport
+namespace Twenty2.VomitLib.ClientDB
 {
     /// <summary>
     /// 基于 Luban 的本地数据库.
     /// </summary>
     /// TODO 支持懒加载, 支持卸载
-    public static class LubanSupport
+    public static class ClientDB
     {
         /// <summary>
         /// 加载本地数据表, 并返回预期的 Tables 实例
@@ -25,16 +26,14 @@ namespace Twenty2.VomitLib.LubanSupport
             try
             {
                 Delegate processor = null;
-
-                var constructor = typeof(T).GetConstructors()[0];
-                var parameter = constructor.GetParameters()[0];
-                var loaderReturnType = parameter.ParameterType.GetGenericArguments()[1];
-
-                if (loaderReturnType == typeof(Luban.ByteBuf))
+            
+                var config = Vomit.Config.ClientDatabaseConfig;
+                
+                if (config.Format is ClientDBConfig.JsonFormat.Bin)
                 {
                     processor = new Func<string, Luban.ByteBuf>(BinLoader);
                 }
-                else if (loaderReturnType == typeof(JArray))
+                else if (config.Format is ClientDBConfig.JsonFormat.NewtonsoftJson)
                 {
                     processor = new Func<string, JArray>(JsonLoader);
                 }
@@ -43,14 +42,14 @@ namespace Twenty2.VomitLib.LubanSupport
                     throw new NotImplementedException();
                 }
 
-                T table = constructor.Invoke(new object[] {processor}) as T;
+                T table = typeof(T).GetConstructors()[0].Invoke(new object[] {processor}) as T;
                 
                 return table;
             }
             catch (Exception e)
             {
-                Debug.LogError("ClientDB Init Error!");
-                Debug.LogError(e.Message);
+                Log.Error("ClientDB Init Error!");
+                Log.Error(e.Message);
                 throw;
             }
             
@@ -58,7 +57,7 @@ namespace Twenty2.VomitLib.LubanSupport
             ByteBuf BinLoader(string sourceName)
             {
                 var source = loader?.Invoke(sourceName);
-                Debug.Log($"读取{sourceName}");
+                Log.Debug($"读取{sourceName}");
                 if (source == null)
                 {
                     return null;
@@ -74,7 +73,7 @@ namespace Twenty2.VomitLib.LubanSupport
             JArray JsonLoader(string sourceName)
             {
                 var source = loader?.Invoke(sourceName);
-                Debug.Log($"读取{sourceName}");
+                Log.Debug($"读取{sourceName}");
                 if (source == null)
                 {
                     return null;
