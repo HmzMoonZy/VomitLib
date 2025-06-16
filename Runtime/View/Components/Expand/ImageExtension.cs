@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace View.Components.Expand
+namespace Twenty2.VomitLib.View
 {
     public static class ImageExtension
     {

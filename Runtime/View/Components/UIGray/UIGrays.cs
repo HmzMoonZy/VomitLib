@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Twenty2.VomitLib.View.Component
+namespace Twenty2.VomitLib.View
 {
     [DisallowMultipleComponent]
     public class UIGrays : MonoBehaviour

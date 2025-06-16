@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Twenty2.VomitLib.View.Component
+namespace Twenty2.VomitLib.View
 {
     public class SpriteRegister : MonoBehaviour
     {

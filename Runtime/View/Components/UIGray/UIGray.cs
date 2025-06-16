@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-namespace Twenty2.VomitLib.View.Component
+namespace Twenty2.VomitLib.View
 {
     /// <summary>
     /// 图片置灰
