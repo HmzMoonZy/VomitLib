@@ -128,21 +128,19 @@ namespace LubanSupport.Editor
 
             string strFormatC = format switch
             {
-                LubanFormat.SimpleJson => "cs-simple-json",
                 LubanFormat.NewtonsoftJson => "cs-newtonsoft-json",
                 LubanFormat.Bin => "cs-bin",
             };
             
             string strFormatD = format switch
             {
-                LubanFormat.SimpleJson => "json",
                 LubanFormat.NewtonsoftJson => "json",
                 LubanFormat.Bin => "bin",
             };
 
             //https://luban.doc.code-philosophy.com/docs/manual/commandtools#unity--c--json
             StringBuilder cmd = new();
-            cmd.Append($"dotnet \"{config.ClientServerDllPath}\" -t all --conf \"{config.ConfigPath}\" ");
+            cmd.Append($"dotnet \"{config.DllPath}\" -t all --conf \"{config.ConfigPath}\" ");
             cmd.Append($"-c {strFormatC} -d {strFormatD} ");
             cmd.Append($"-x \"outputCodeDir={outputCodeDir}\" ");
             cmd.Append($"-x \"outputDataDir={outputDataDir}\" ");

@@ -354,6 +354,11 @@ namespace Twenty2.VomitLib.View
             }
         }
 
+        public static void Freeze<T>() where T : ViewLogic
+        {
+            Freeze(typeof(T).Name);
+        }
+
         public static void UnFreeze(string viewName)
         {
             var view = GetView(viewName);
@@ -363,6 +368,11 @@ namespace Twenty2.VomitLib.View
                 Debug.Log($"UnFreeze { viewName}");
                 _locker?.UnLock(view); 
             }
+        }
+
+        public static void UnFreeze<T>() where T : ViewLogic
+        {
+            UnFreeze(typeof(T).Name);
         }
     }
 }

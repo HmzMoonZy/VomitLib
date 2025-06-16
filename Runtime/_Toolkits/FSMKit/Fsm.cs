@@ -91,34 +91,34 @@ namespace Twenty2.VomitLib.Tools
         /// </summary>
         /// <param name="t"></param>
         /// <param name="context"></param>
-        public void ChangeState(T t, IState context)
+        public bool ChangeState(T t, IState context)
         {
             if (!IsRunning)
             {
                 Log.Error("状态机不在运行, 请检查初始化状态或切换时机.");
-                return;
+                return false;
             }
             
             if (CurrentState == null)
             {
-                return;
+                return false;
             }
             
             if (t.Equals(CurrentStateId))
             {
-                return;
+                return true;
             }
 
             if (!_states.TryGetValue(t, out var state))
             {
                 Log.Error($"无效的状态转换! {t}");
-                return;
+                return false;
             }
 
             if (!state.Condition())
             {
                 Log.Error($"无效的状态转换! {state}=>{t}, 请检查对应的条件.");
-                return;
+                return false;
             }
             
             Log.Debug($"state changing : {CurrentState} => {t}");
@@ -134,6 +134,7 @@ namespace Twenty2.VomitLib.Tools
             IsRunning = true;
             
             Log.Debug($"state changed : {PreviousStateId} => {CurrentStateId}");
+            return true;
         }
         
         private bool FixedUpdate()
