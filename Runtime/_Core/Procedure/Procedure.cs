@@ -9,7 +9,12 @@ using Twenty2.VomitLib.Tools;
 
 namespace Twenty2.VomitLib.Procedure
 {
-    public class Procedure<T> where T : struct
+    public interface IProcedure
+    {
+        public void Launch();
+    }
+    
+    public class Procedure<T> : IProcedure where T : struct
     {
         private readonly Fsm<T> _fsm;
         
@@ -36,8 +41,8 @@ namespace Twenty2.VomitLib.Procedure
         /// 当前流程时间
         /// </summary>
         public float CurrentStateTime => _fsm.SecondsOfCurrentState;
-        
-        private Procedure()
+
+        protected Procedure()
         {
             _fsm = new();
         }

@@ -17,10 +17,19 @@ namespace Twenty2.VomitLib
         /// <summary>
         /// 关联框架的接口
         /// </summary>
-        /// <param name="architecture"></param>
-        public static void Init(IArchitecture architecture)
+        public static void Init(
+            IArchitecture architecture, 
+            Twenty2.VomitLib.Procedure.IProcedure procedure = null,
+            Twenty2.VomitLib.ILogHelper logger = null)
         {
+            LogKit.SetLogHelper(logger ?? new DefaultLogHelper());
+
             Interface = architecture;
+
+            if (procedure != null)
+            {
+                procedure.Launch();
+            }
         }
 
         /// <summary>
