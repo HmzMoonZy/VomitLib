@@ -17,6 +17,9 @@ namespace Twenty2.VomitLib
         /// <summary>
         /// 关联框架的接口
         /// </summary>
+        /// <param name="architecture">关联框架的接口</param>
+        /// <param name="procedure">流程管理器</param>
+        /// <param name="logger">日志管理器</param>
         public static void Init(
             IArchitecture architecture, 
             Twenty2.VomitLib.Procedure.IProcedure procedure = null,
