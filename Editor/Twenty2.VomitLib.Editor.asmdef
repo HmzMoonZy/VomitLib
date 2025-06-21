@@ -5,7 +5,8 @@
         "Twenty2.VomitLib",
         "Twenty2.VomitLib.View",
         "Luban.Runtime",
-        "Twenty2.VomitLib.LubanSupport"
+        "Twenty2.VomitLib.LubanSupport",
+        "Twenty2.VomitLib.ToolKits"
     ],
     "includePlatforms": [
         "Editor"
