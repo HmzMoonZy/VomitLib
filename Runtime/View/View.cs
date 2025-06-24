@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Cysharp.Threading.Tasks;
 using FluentAPI;
 using QFramework;
@@ -67,15 +68,87 @@ namespace Twenty2.VomitLib.View
             _recorder = recorder ?? new ViewRecorder();
             _locker = locker ?? new ViewLocker();
             
+            // 预加载带有ViewPreloadAttribute的View
+            PreloadViews();
+            
             Log.Debug("View 初始化完成");
         }
-
-        public static void Init(Func<string, string> viewName2Addr, IViewBinder binder = null,
-            IViewMasker masker = null, IViewLocalizer localizer = null, IViewRecorder recorder = null,
-            IViewLocker locker = null)
+        
+        /// <summary>
+        /// 扫描并预加载所有带ViewPreloadAttribute的View
+        /// </summary>
+        private static void PreloadViews()
         {
-            _loader = new ViewLoaderAddressable(viewName2Addr);
-            Init(_loader);
+            Log.Debug("开始扫描和预加载View");
+            
+            var preloadableViews = new List<(string viewName, string resourcePath, int priority)>();
+            
+            // 获取当前域中的所有程序集
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            
+            foreach (var assembly in assemblies)
+            {
+                try
+                {
+                    // 查找继承自ViewLogic的类
+                    var viewTypes = assembly.GetTypes()
+                        .Where(type => type.IsSubclassOf(typeof(ViewLogic)) && !type.IsAbstract);
+                    
+                    foreach (var viewType in viewTypes)
+                    {
+                        // 检查是否有ViewPreloadAttribute
+                        var preloadAttr = viewType.GetCustomAttribute<ViewPreloadAttribute>();
+                        if (preloadAttr != null)
+                        {
+                            preloadableViews.Add((viewType.Name, preloadAttr.ResourcePath, preloadAttr.Priority));
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // 跳过无法加载的程序集
+                    Log.Warning($"跳过程序集 {assembly.FullName}: {ex.Message}");
+                }
+            }
+            
+            // 按优先级排序（数字越小优先级越高）
+            preloadableViews.Sort((a, b) => a.priority.CompareTo(b.priority));
+            
+            Log.Debug($"找到 {preloadableViews.Count} 个需要预加载的View");
+            
+            // 预加载所有View资源
+            foreach (var (viewName, resourcePath, priority) in preloadableViews)
+            {
+                try
+                {
+                    var prefab = Resources.Load<GameObject>(resourcePath);
+                    if (prefab != null)
+                    {
+                        var view = Object.Instantiate(prefab, Root.transform);
+                        var logic = view.GetComponent<ViewLogic>();
+                        if (logic == null)
+                        {
+                            Object.Destroy(view.gameObject);
+                            Log.Error($"预加载失败: {viewName}, 未找到逻辑组件: ViewLogic");
+                            continue;
+                        }
+                        CreateLogic(viewName, logic);
+                        OpenLogic(logic, null);
+                        Close(viewName);
+                        Log.Debug($"预加载成功: {viewName}, 路径: {resourcePath}, 优先级: {priority}");
+                    }
+                    else
+                    {
+                        Log.Warning($"预加载失败: {viewName}, 未找到资源: {resourcePath}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"预加载失败: {viewName}, 错误: {ex.Message}");
+                }
+            }
+            
+            Log.Debug("预加载完成");
         }
 
         public static T Open<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
@@ -107,26 +180,38 @@ namespace Twenty2.VomitLib.View
                     throw new Exception($"ViewLogic : {viewName} is not found!");
                 }
 
-                logic.ID = viewName;
-
-                if (logic.Config.AutoBindButtons)       // 绑定组件
-                {
-                    _binder?.Bind(logic);
-                }
-                
-                if (logic.Config.EnableLocalization)    // 本地化
-                {
-                    _localizer?.Localize(logic);
-                }
-                
-                logic.OnCreated();
-
-                Vomit.Interface?.SendEvent(new EView.Create
-                {
-                    ViewLogic = logic
-                });
+                CreateLogic(viewName, logic);
             }
             
+            OpenLogic(logic, param);
+            
+            return logic;
+        }
+
+        private static void CreateLogic(string viewName, ViewLogic logic)
+        {
+            logic.ID = viewName;
+
+            if (logic.Config.AutoBindButtons)       // 绑定组件
+            {
+                _binder?.Bind(logic);
+            }
+                
+            if (logic.Config.EnableLocalization)    // 本地化
+            {
+                _localizer?.Localize(logic);
+            }
+                
+            logic.OnCreated();
+
+            Vomit.Interface?.SendEvent(new EView.Create
+            {
+                ViewLogic = logic
+            });
+        }
+
+        private static void OpenLogic(ViewLogic logic, ViewParameterBase param = null)
+        {
             // 展示逻辑
             _visibleViewMap[logic.ID] = logic;
             
@@ -158,8 +243,6 @@ namespace Twenty2.VomitLib.View
                 await logic.OpenEffect();
                 logic.OnOpenEffectDone();
             });
-            
-            return logic;
         }
         
         public static void Close(string viewName, ViewParameterBase param = null)
