@@ -11,7 +11,7 @@ namespace VomitLib.Editor.SpriteAtlas
     /// <summary>
     /// SpriteAtlas管理器
     /// </summary>
-    public static class SpriteAtlasManager
+    public static class SpriteAtlasTool
     {
         /// <summary>
         /// 获取配置

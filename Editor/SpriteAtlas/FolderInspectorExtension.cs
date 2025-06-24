@@ -22,7 +22,7 @@ namespace VomitLib.Editor.SpriteAtlas
             // 初始化checkbox状态
             if (_isFolder)
             {
-                _generateSpriteAtlas = SpriteAtlasManager.HasSpriteAtlas(_folderPath);
+                _generateSpriteAtlas = SpriteAtlasTool.HasSpriteAtlas(_folderPath);
             }
         }
 
@@ -45,7 +45,7 @@ namespace VomitLib.Editor.SpriteAtlas
             EditorGUILayout.LabelField("SpriteAtlas 设置", EditorStyles.boldLabel);
 
             // 更新checkbox状态
-            bool currentState = SpriteAtlasManager.HasSpriteAtlas(_folderPath);
+            bool currentState = SpriteAtlasTool.HasSpriteAtlas(_folderPath);
             
             EditorGUI.BeginChangeCheck();
             bool newState = EditorGUILayout.Toggle("生成 SpriteAtlas", currentState);
@@ -55,12 +55,12 @@ namespace VomitLib.Editor.SpriteAtlas
                 if (newState)
                 {
                     // 创建SpriteAtlas
-                    SpriteAtlasManager.CreateSpriteAtlas(_folderPath);
+                    SpriteAtlasTool.CreateSpriteAtlas(_folderPath);
                 }
                 else
                 {
                     // 删除SpriteAtlas
-                    SpriteAtlasManager.RemoveSpriteAtlas(_folderPath);
+                    SpriteAtlasTool.RemoveSpriteAtlas(_folderPath);
                 }
                 
                 _generateSpriteAtlas = newState;
@@ -69,7 +69,7 @@ namespace VomitLib.Editor.SpriteAtlas
             // 如果已有图集，显示信息
             if (currentState)
             {
-                var atlasInfo = SpriteAtlasManager.GetAtlasInfo(_folderPath);
+                var atlasInfo = SpriteAtlasTool.GetAtlasInfo(_folderPath);
                 if (atlasInfo != null)
                 {
                     EditorGUILayout.Space();
