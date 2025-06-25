@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using QFramework;
@@ -112,12 +113,12 @@ public partial class {selectName} : ViewLogic
 {{
     public override void OnOpened(ViewParameterBase param)
     {{
-        return UniTask.CompletedTask;
+        
     }}
 
     public override void OnClose(ViewParameterBase param = null)
     {{
-        return UniTask.CompletedTask;
+        
     }}
 
 }}";
@@ -134,52 +135,43 @@ public partial class {selectName}
 ";
             File.WriteAllText(designerFilePath, content, Encoding.UTF8);
 
-            PlayerPrefs.SetInt("__AUTO_BIND_VIEW_SCRIPTS__", 1);
-            
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+            
+            EditorPrefs.SetInt("__AUTO_BIND_VIEW_SCRIPTS__", 1);
         }
 
         [UnityEditor.Callbacks.DidReloadScripts]
         public static void BindScript()
         {
-            if (PlayerPrefs.GetInt("__AUTO_BIND_VIEW_SCRIPTS__", 0) != 1)
+            Debug.LogError("BindScript");
+
+            if (EditorPrefs.GetInt("__AUTO_BIND_VIEW_SCRIPTS__", 0) != 1)
             {
                 return;
             }
-            PlayerPrefs.SetInt("__AUTO_BIND_VIEW_SCRIPTS__", 0); 
-            var selectCount = Selection.count;
-            var selectName = Selection.activeObject.name;
-            var instantiatePrefab = PrefabUtility.InstantiatePrefab(Selection.activeObject) as GameObject;
-            Type bindType = null;
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            
+            EditorPrefs.SetInt("__AUTO_BIND_VIEW_SCRIPTS__", 0); 
+            
+            if (Selection.activeObject == null || !Selection.activeObject.name.StartsWith("View"))
             {
-                foreach (var type in assembly.GetTypes())
-                {
-                    if (type.Name == selectName)
-                    {
-                        bindType = type;
-                        break;
-                    }
-                }
-
-                if (bindType != null)
-                {
-                    break;
-                }
-            }
-
-            if (bindType != null)
-            {
-                instantiatePrefab!.AddComponent(bindType);
-                PrefabUtility.ApplyAddedComponent(instantiatePrefab.GetComponent(bindType),
-                    AssetDatabase.GetAssetPath(Selection.activeInstanceID), InteractionMode.AutomatedAction);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
+                return;
             }
             
-            Object.DestroyImmediate(instantiatePrefab);
-           
+            var selectName = Selection.activeObject.name;
+            
+            // 用Linq实现
+            Type bindType = AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly => assembly.GetTypes()).FirstOrDefault(type => type.Name == selectName);
+            
+            if (bindType != null)
+            {
+                var prefabPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+                var prefabContents = PrefabUtility.LoadPrefabContents(prefabPath);
+                prefabContents.AddComponent(bindType);
+                PrefabUtility.SaveAsPrefabAsset(prefabContents, prefabPath);
+                PrefabUtility.UnloadPrefabContents(prefabContents);
+                AssetDatabase.SaveAssets();
+            }
         }
         
         
