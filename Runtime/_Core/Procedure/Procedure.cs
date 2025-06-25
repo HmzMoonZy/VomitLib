@@ -95,7 +95,7 @@ namespace Twenty2.VomitLib.Procedure
         {
             _fsm.ChangeState(id, context);
             
-            Vomit.Interface.SendEvent<EProcedure.Changed>();
+            Vomit.Interface.SendEvent<EvtProcedure.Changed>();
         }
     }
 

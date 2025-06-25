@@ -14,15 +14,6 @@ namespace Twenty2.VomitLib.Procedure
         /// </summary>
         private List<IUnRegister> _registers = new();
         
-        
-        /// <summary>
-        /// 状态机切换条件, 满足条件才能够执行ChangeState
-        /// </summary>
-        public virtual bool Condition()
-        {
-            return true;
-        }
-        
         /// <summary>
         /// 进入状态回调
         /// </summary>

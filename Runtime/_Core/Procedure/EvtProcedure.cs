@@ -1,6 +1,6 @@
 using QFramework;
 
-public abstract class EProcedure
+public abstract class EvtProcedure
 {
     public struct Changed
     {

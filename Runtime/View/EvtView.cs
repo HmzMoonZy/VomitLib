@@ -1,6 +1,6 @@
 ﻿namespace Twenty2.VomitLib.View
 {
-    public interface EView
+    public interface EvtView
     {
         public struct Create
         {
