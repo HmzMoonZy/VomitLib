@@ -22,10 +22,10 @@ namespace Twenty2.VomitLib
         /// <param name="logger">日志管理器</param>
         public static void Init(
             IArchitecture architecture, 
-            Twenty2.VomitLib.Procedure.IProcedure procedure = null,
-            Twenty2.VomitLib.ILogHelper logger = null)
+            Procedure.IProcedure procedure = null,
+            ILogHelper logger = null)
         {
-            LogKit.SetLogHelper(logger ?? new DefaultLogHelper());
+            Log.SetLogHelper(logger ?? new DefaultLogHelper());
 
             Interface = architecture;
 

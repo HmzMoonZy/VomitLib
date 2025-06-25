@@ -49,8 +49,8 @@ namespace Twenty2.VomitLib.LubanSupport
             }
             catch (Exception e)
             {
-                LogKit.Error("ClientDB Init Error!");
-                LogKit.Error(e.Message);
+                Log.Error("ClientDB Init Error!");
+                Log.Error(e.Message);
                 throw;
             }
             
@@ -58,7 +58,7 @@ namespace Twenty2.VomitLib.LubanSupport
             ByteBuf BinLoader(string sourceName)
             {
                 var source = loader?.Invoke(sourceName);
-                LogKit.Info($"读取{sourceName}");
+                Log.Info($"读取{sourceName}");
                 if (source == null)
                 {
                     return null;
@@ -74,10 +74,10 @@ namespace Twenty2.VomitLib.LubanSupport
             JArray JsonLoader(string sourceName)
             {
                 var source = loader?.Invoke(sourceName);
-                LogKit.Info($"读取{sourceName}");
+                Log.Info($"读取{sourceName}");
                 if (source == null)
                 {
-                    LogKit.Error($"JsonLoader: source is null {sourceName}");
+                    Log.Error($"JsonLoader: source is null {sourceName}");
                     return null;
                 }
                 

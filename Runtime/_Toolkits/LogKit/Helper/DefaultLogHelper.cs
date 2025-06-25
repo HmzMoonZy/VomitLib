@@ -40,6 +40,10 @@ namespace Twenty2.VomitLib
                     Debug.LogError(message.ToString());
                     break;
 
+                case LogLevel.Fatal:
+                    Debug.LogError(message.ToString());
+                    break;
+
                 default:
                     throw new Exception(message.ToString());
             }

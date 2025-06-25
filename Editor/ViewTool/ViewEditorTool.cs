@@ -144,8 +144,6 @@ public partial class {selectName}
         [UnityEditor.Callbacks.DidReloadScripts]
         public static void BindScript()
         {
-            Debug.LogError("BindScript");
-
             if (EditorPrefs.GetInt("__AUTO_BIND_VIEW_SCRIPTS__", 0) != 1)
             {
                 return;

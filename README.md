@@ -102,7 +102,7 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
 
         public override void Exit()
         {
-            LogKit.I("启动流程结束!");
+            Log.I("启动流程结束!");
         }
     }
     
@@ -125,7 +125,7 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
         public override void Exit()
         {
             View.Close<ViewHome>();                 // 关闭主页UI
-            LogKit.I("主页流程结束!");
+            Log.I("主页流程结束!");
         }
     }
     
@@ -203,7 +203,7 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
         async UniTask Delay(string str)
         {
             await UniTask.WaitForSeconds(2);    // 延迟 2s.
-            LogKit.I($"{str} With Async Call");
+            Log.I($"{str} With Async Call");
         }
         
         async void Start()
@@ -217,7 +217,7 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
             // 也可以注册同步任务
             this.RegisterAliveEvent<TestEvent>(e =>
             {
-                LogKit.I(e.Str);
+                Log.I(e.Str);
             });
             
             // 异步任务完成回调事件, 通常多个controller层会监听同一个异步事件,但不一定都提供异步方法.
@@ -225,7 +225,7 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
             {
                 e.Done(() =>
                 {
-                    LogKit.I("I know this event done!");
+                    Log.I("I know this event done!");
                 });
             });
             
@@ -233,7 +233,7 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
             await this.SendAsyncEvent(new TestEvent() {Str = "Hi"});
             
             // 所有事件回调执行完毕后调用
-            LogKit.I("Finish!");
+            Log.I("Finish!");
             
             // > Hi
             // > Hi With AsyncCall
@@ -287,7 +287,7 @@ public class ViewSwordDetail : ViewLogic
     // 运行时自动绑定 UnityEditor 中的 BtnLogin,无需额外步骤
     private void __OnClick_BtnLogin()
     {
-        LogKit.I("Click BtnLogin");
+        Log.I("Click BtnLogin");
     }
 }
 
