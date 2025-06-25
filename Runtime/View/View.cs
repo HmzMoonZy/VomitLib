@@ -64,6 +64,12 @@ namespace Twenty2.VomitLib.View
         private static IViewRecorder _recorder;
         private static IViewLocker _locker;
         
+        /// <summary>
+        /// Update循环管理
+        /// </summary>
+        private static ViewUpdateManager _updateManager;
+        private static bool _isUpdateManagerRunning = false;
+        
         public static void Init(IViewLoader loader = null, IViewBinder binder = null, IViewMasker masker = null, IViewLocalizer localizer = null, IViewRecorder recorder = null, IViewLocker locker = null)
         {
             _loader = loader ?? new ViewLoaderAddressable(viewName => $"View/{viewName}.prefab");
@@ -72,6 +78,10 @@ namespace Twenty2.VomitLib.View
             _localizer = localizer ?? new ViewLocalizer();
             _recorder = recorder ?? new ViewRecorder();
             _locker = locker ?? new ViewLocker();
+            
+            // 初始化Update管理器
+            _updateManager = new ViewUpdateManager();
+            StartUpdateManager();
             
             // 预加载带有ViewPreloadAttribute的View
             PreloadViews();
@@ -191,6 +201,9 @@ namespace Twenty2.VomitLib.View
             
             OpenLogic(logic, param);
             
+            // 注册到Update管理器
+            _updateManager?.RegisterView(logic);
+            
             return logic;
         }
 
@@ -261,6 +274,9 @@ namespace Twenty2.VomitLib.View
             
             // 取消监听器
             logic.Cancel();
+            
+            // 从Update管理器中移除
+            _updateManager?.UnregisterView(logic);
             
             var isCache = logic.Config.IsCache;
             
@@ -462,6 +478,46 @@ namespace Twenty2.VomitLib.View
         public static void UnFreeze<T>() where T : ViewLogic
         {
             UnFreeze(typeof(T).Name);
+        }
+        
+        /// <summary>
+        /// 启动Update管理器
+        /// </summary>
+        private static void StartUpdateManager()
+        {
+            if (_isUpdateManagerRunning) return;
+            
+            _isUpdateManagerRunning = true;
+            UpdateManagerLoop().Forget();
+        }
+        
+        /// <summary>
+        /// Update管理器主循环
+        /// </summary>
+        private static async UniTaskVoid UpdateManagerLoop()
+        {
+            while (Application.isPlaying && _isUpdateManagerRunning)
+            {
+                try
+                {
+                    _updateManager?.Update(Time.deltaTime, Time.unscaledDeltaTime);
+                    await UniTask.Yield(PlayerLoopTiming.Update);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"ViewUpdateManager update failed: {ex.Message}");
+                    await UniTask.Yield();
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 停止Update管理器
+        /// </summary>
+        public static void StopUpdateManager()
+        {
+            _isUpdateManagerRunning = false;
+            _updateManager?.Clear();
         }
     }
 }
