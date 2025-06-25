@@ -106,16 +106,6 @@ namespace Twenty2.VomitLib.View
         /// 当 ViewInfo 被展示后调用.
         /// </summary>
         public abstract void OnOpened(ViewParameterBase param);
-        
-        public virtual UniTask OpenEffect()
-        {
-            return UniTask.CompletedTask;
-        }
-        
-        public virtual void OnOpenEffectDone()
-        {
-            
-        }
 
         /// <summary>
         /// 关闭时调用.

@@ -51,25 +51,24 @@ namespace Twenty2.VomitLib.View
         /// 所有被激活的面板
         /// </summary>
         private static Dictionary<string, ViewLogic> _visibleViewMap = new Dictionary<string, ViewLogic>();
-        
+
         /// <summary>
         /// 所有隐藏的面板
         /// </summary>
         private static Dictionary<string, ViewLogic> _hiddenViewMap = new Dictionary<string, ViewLogic>();
-        
+
         private static IViewLoader _loader;
         private static IViewBinder _binder;
         private static IViewMasker _masker;
         private static IViewLocalizer _localizer;
         private static IViewRecorder _recorder;
         private static IViewLocker _locker;
-        
+
         /// <summary>
         /// Update循环管理
         /// </summary>
         private static ViewUpdateManager _updateManager;
-        private static bool _isUpdateManagerRunning = false;
-        
+
         public static void Init(IViewLoader loader = null, IViewBinder binder = null, IViewMasker masker = null, IViewLocalizer localizer = null, IViewRecorder recorder = null, IViewLocker locker = null)
         {
             _loader = loader ?? new ViewLoaderAddressable(viewName => $"View/{viewName}.prefab");
@@ -78,17 +77,17 @@ namespace Twenty2.VomitLib.View
             _localizer = localizer ?? new ViewLocalizer();
             _recorder = recorder ?? new ViewRecorder();
             _locker = locker ?? new ViewLocker();
-            
+
             // 初始化Update管理器
             _updateManager = new ViewUpdateManager();
-            StartUpdateManager();
-            
-            // 预加载带有ViewPreloadAttribute的View
+            _updateManager.StartUpdateManager().Forget();
+
+            // 预加载
             PreloadViews();
-            
+
             Log.Debug("View 初始化完成");
 
-            void PreloadViews()
+            static void PreloadViews()
             {
                 Log.Debug("开始扫描和预加载View");
 
@@ -153,15 +152,12 @@ namespace Twenty2.VomitLib.View
         /// <summary>
         /// 打开一个View
         /// </summary>
-        /// <example>
-        /// 注意 : 开启一个View永远是异步的.
-        /// </example>
-        public static void Open<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
+        public static void Open<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
             OpenAsync<T>(param).Forget();
         }
 
-        public async static UniTask<T> OpenAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
+        public async static UniTask<T> OpenAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
             return (T)await OpenAsync(typeof(T).Name, param);
         }
@@ -173,7 +169,7 @@ namespace Twenty2.VomitLib.View
                 Log.Warning($"Try to open an already showed the View : {viewName}");
                 return logic;
             }
-            
+
             _hiddenViewMap.Remove(viewName, out logic);     // 移除隐藏列表
 
             // 进入加载流程
@@ -198,12 +194,12 @@ namespace Twenty2.VomitLib.View
 
                 CreateLogic(viewName, logic);
             }
-            
+
             OpenLogic(logic, param);
-            
+
             // 注册到Update管理器
             _updateManager?.RegisterView(logic);
-            
+
             return logic;
         }
 
@@ -215,12 +211,12 @@ namespace Twenty2.VomitLib.View
             {
                 _binder?.Bind(logic);
             }
-                
+
             if (logic.Config.EnableLocalization)    // 本地化
             {
                 _localizer?.Localize(logic);
             }
-                
+
             logic.OnCreated();
 
             Vomit.Interface?.SendEvent(new EvtView.Create
@@ -233,71 +229,56 @@ namespace Twenty2.VomitLib.View
         {
             // 展示逻辑
             _visibleViewMap[logic.ID] = logic;
-            
+
             if (logic.Config.EnableAutoMask)        // 遮罩
             {
                 _masker?.Mask(logic);
             }
-            
+
             logic.transform.SetParent(Root.transform, false);
             logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
             logic.ViewCanvas.worldCamera = Root.ViewCamera;
-            logic.ViewCanvas.sortingLayerID = (int) logic.Config.Layer;
+            logic.ViewCanvas.sortingLayerID = (int)logic.Config.Layer;
             logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
-            
+
             logic.OnOpened(param);
-            
-            if (logic.Config.RecordOpen)
-            {
-                _recorder?.RecordOpen(logic.ID);
-            }
-            
+
             Vomit.Interface?.SendEvent(new EvtView.Open
             {
                 ViewLogic = logic,
             });
 
-            UniTask.Create(async () =>
+            if (logic.Config.RecordOpen)
             {
-                await logic.OpenEffect();
-                logic.OnOpenEffectDone();
-            });
+                _recorder?.RecordOpen(logic.ID);
+            }
         }
-        
+
         public static void Close(string viewName, ViewParameterBase param = null)
         {
-            if(!_visibleViewMap.Remove(viewName, out var logic))
+            if (!_visibleViewMap.Remove(viewName, out var logic))
             {
                 Log.Debug($"Try closing a non-existent View : {viewName}");
                 return;
             }
-            
+
             // 取消监听器
             logic.Cancel();
-            
+
             // 从Update管理器中移除
             _updateManager?.UnregisterView(logic);
-            
-            var isCache = logic.Config.IsCache;
-            
+
             logic.OnClose(param);
-            
-            if (isCache)
+
+            if (logic.Config.IsCache)
             {
-                logic.Parent(Root.HiddenCanvas);
-                _hiddenViewMap.Add(viewName, logic);
-                if (logic.Config.EnableAutoMask)
-                {
-                    _masker?.Unmask(logic);
-                }
-                _locker?.UnLock(logic);
+                CacheLogic(logic);
             }
             else
             {
-                Object.Destroy(logic.gameObject);
-                _loader?.ReleaseView(logic.gameObject);
+                DestroyLogic(logic);
             }
-            
+
             Vomit.Interface?.SendEvent(new EvtView.Close()
             {
                 ViewName = viewName,
@@ -309,15 +290,32 @@ namespace Twenty2.VomitLib.View
         {
             Close(typeof(T).Name);
         }
-        
+
+        private static void CacheLogic(ViewLogic logic)
+        {
+            logic.Parent(Root.HiddenCanvas);
+            _hiddenViewMap.Add(logic.ID, logic);
+            if (logic.Config.EnableAutoMask)
+            {
+                _masker?.Unmask(logic);
+            }
+            _locker?.UnLock(logic);            
+        }
+
+        private static void DestroyLogic(ViewLogic logic)
+        {
+            Object.Destroy(logic.gameObject);
+            _loader?.ReleaseView(logic.gameObject);
+        }
+
         /// <summary>
         /// 打开一个View并等待它关闭
         /// </summary>
-        public static async UniTask OpenAndWaitClose<T>(ViewParameterBase param = null)  where T : ViewLogic, new ()
+        public static async UniTask OpenAndWaitClose<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
             await (await OpenAsync<T>(param)).WaitClose();
         }
-        
+
         /// <summary>
         /// 获取 T 类型的 ViewLogic.
         /// 只要它在缓存中,就能被获取到.
@@ -328,12 +326,12 @@ namespace Twenty2.VomitLib.View
             {
                 return (T)info;
             }
-            
+
             if (findHidden && _hiddenViewMap.TryGetValue(typeof(T).Name, out info))
             {
                 return (T)info;
             }
-            
+
             return null;
         }
 
@@ -351,7 +349,7 @@ namespace Twenty2.VomitLib.View
 
             return null;
         }
-        
+
         /// <summary>
         /// 获取最顶层的 View
         /// </summary>
@@ -404,7 +402,7 @@ namespace Twenty2.VomitLib.View
 
                 return false;
             });
-            
+
         }
 
         /// <summary>
@@ -414,7 +412,7 @@ namespace Twenty2.VomitLib.View
         {
             return _visibleViewMap.ContainsKey(typeof(T).Name);
         }
-        
+
         public static bool IsHitView(Vector3 position)
         {
             PointerEventData ed = new(Root.GetComponent<EventSystem>())
@@ -424,12 +422,12 @@ namespace Twenty2.VomitLib.View
             };
 
             var list = new List<RaycastResult>();
-            
+
             foreach (var (_, view) in _visibleViewMap)
             {
                 var rr = view.transform.GetComponent<GraphicRaycaster>();
                 if (rr == null) continue;
-                
+
                 rr.Raycast(ed, list);
 
                 if (list.Count > 0) return true;
@@ -442,20 +440,20 @@ namespace Twenty2.VomitLib.View
         {
             if (_recorder == null)
             {
-                throw  new Exception("请先初始化 ViewRecorder");
+                throw new Exception("请先初始化 ViewRecorder");
             }
-            
+
             return _recorder.IsFirstOpen(typeof(T).Name);
         }
 
         public static void Freeze(string viewName)
         {
             var view = GetView(viewName);
-            
+
             if (view != null)
             {
-                Debug.Log($"Freeze { viewName}");
-                _locker?.Lock(view); 
+                Debug.Log($"Freeze {viewName}");
+                _locker?.Lock(view);
             }
         }
 
@@ -470,54 +468,14 @@ namespace Twenty2.VomitLib.View
 
             if (view != null)
             {
-                Debug.Log($"UnFreeze { viewName}");
-                _locker?.UnLock(view); 
+                Debug.Log($"UnFreeze {viewName}");
+                _locker?.UnLock(view);
             }
         }
 
         public static void UnFreeze<T>() where T : ViewLogic
         {
             UnFreeze(typeof(T).Name);
-        }
-        
-        /// <summary>
-        /// 启动Update管理器
-        /// </summary>
-        private static void StartUpdateManager()
-        {
-            if (_isUpdateManagerRunning) return;
-            
-            _isUpdateManagerRunning = true;
-            UpdateManagerLoop().Forget();
-        }
-        
-        /// <summary>
-        /// Update管理器主循环
-        /// </summary>
-        private static async UniTaskVoid UpdateManagerLoop()
-        {
-            while (Application.isPlaying && _isUpdateManagerRunning)
-            {
-                try
-                {
-                    _updateManager?.Update(Time.deltaTime, Time.unscaledDeltaTime);
-                    await UniTask.Yield(PlayerLoopTiming.Update);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"ViewUpdateManager update failed: {ex.Message}");
-                    await UniTask.Yield();
-                }
-            }
-        }
-        
-        /// <summary>
-        /// 停止Update管理器
-        /// </summary>
-        public static void StopUpdateManager()
-        {
-            _isUpdateManagerRunning = false;
-            _updateManager?.Clear();
         }
     }
 }
