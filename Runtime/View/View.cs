@@ -41,6 +41,11 @@ namespace Twenty2.VomitLib.View
                 return _root;
             }
         }
+
+        /// <summary>
+        /// 预加载的View
+        /// </summary>
+        private static Dictionary<string, GameObject> _preLoadMap = new();
         
         /// <summary>
         /// 所有被激活的面板
@@ -72,97 +77,90 @@ namespace Twenty2.VomitLib.View
             PreloadViews();
             
             Log.Debug("View 初始化完成");
+
+            void PreloadViews()
+            {
+                Log.Debug("开始扫描和预加载View");
+
+                var preloadableViews = new List<(string viewName, string resourcePath, int priority)>();
+
+                // 获取当前域中的所有程序集
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    try
+                    {
+                        // 查找继承自ViewLogic的类
+                        var viewTypes = assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(ViewLogic)) && !type.IsAbstract);
+                        foreach (var viewType in viewTypes)
+                        {
+                            // 检查是否有ViewPreloadAttribute
+                            var preloadAttr = viewType.GetCustomAttribute<ViewPreloadAttribute>();
+                            if (preloadAttr != null)
+                            {
+                                preloadableViews.Add((viewType.Name, preloadAttr.ResourcePath, preloadAttr.Priority));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // 跳过无法加载的程序集
+                        Log.Warning($"跳过程序集 {assembly.FullName}: {ex.Message}");
+                    }
+                }
+
+                // 按优先级排序（数字越小优先级越高）
+                preloadableViews.Sort((a, b) => a.priority.CompareTo(b.priority));
+
+                Log.Debug($"找到 {preloadableViews.Count} 个需要预加载的View");
+
+                // 预加载所有View资源
+                foreach (var (viewName, resourcePath, priority) in preloadableViews)
+                {
+                    try
+                    {
+                        var prefab = Resources.Load<GameObject>(resourcePath);
+                        if (prefab != null)
+                        {
+                            var view = Object.Instantiate(prefab, Root.HiddenCanvas);
+                            _preLoadMap.Add(viewName, view);
+                            Log.Debug($"预加载成功: {viewName}, 路径: {resourcePath}, 优先级: {priority}");
+                        }
+                        else
+                        {
+                            Log.Warning($"预加载失败: {viewName}, 未找到资源: {resourcePath}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"预加载失败: {viewName}, 错误: {ex.Message}");
+                    }
+                }
+
+                Log.Debug("预加载完成");
+            }
         }
-        
+
         /// <summary>
-        /// 扫描并预加载所有带ViewPreloadAttribute的View
+        /// 打开一个View
         /// </summary>
-        private static void PreloadViews()
+        /// <example>
+        /// 注意 : 开启一个View永远是异步的.
+        /// </example>
+        public static void Open<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
         {
-            Log.Debug("开始扫描和预加载View");
-            
-            var preloadableViews = new List<(string viewName, string resourcePath, int priority)>();
-            
-            // 获取当前域中的所有程序集
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            
-            foreach (var assembly in assemblies)
-            {
-                try
-                {
-                    // 查找继承自ViewLogic的类
-                    var viewTypes = assembly.GetTypes()
-                        .Where(type => type.IsSubclassOf(typeof(ViewLogic)) && !type.IsAbstract);
-                    
-                    foreach (var viewType in viewTypes)
-                    {
-                        // 检查是否有ViewPreloadAttribute
-                        var preloadAttr = viewType.GetCustomAttribute<ViewPreloadAttribute>();
-                        if (preloadAttr != null)
-                        {
-                            preloadableViews.Add((viewType.Name, preloadAttr.ResourcePath, preloadAttr.Priority));
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // 跳过无法加载的程序集
-                    Log.Warning($"跳过程序集 {assembly.FullName}: {ex.Message}");
-                }
-            }
-            
-            // 按优先级排序（数字越小优先级越高）
-            preloadableViews.Sort((a, b) => a.priority.CompareTo(b.priority));
-            
-            Log.Debug($"找到 {preloadableViews.Count} 个需要预加载的View");
-            
-            // 预加载所有View资源
-            foreach (var (viewName, resourcePath, priority) in preloadableViews)
-            {
-                try
-                {
-                    var prefab = Resources.Load<GameObject>(resourcePath);
-                    if (prefab != null)
-                    {
-                        var view = Object.Instantiate(prefab, Root.transform);
-                        var logic = view.GetComponent<ViewLogic>();
-                        if (logic == null)
-                        {
-                            Object.Destroy(view.gameObject);
-                            Log.Error($"预加载失败: {viewName}, 未找到逻辑组件: ViewLogic");
-                            continue;
-                        }
-                        CreateLogic(viewName, logic);
-                        OpenLogic(logic, null);
-                        Close(viewName);
-                        Log.Debug($"预加载成功: {viewName}, 路径: {resourcePath}, 优先级: {priority}");
-                    }
-                    else
-                    {
-                        Log.Warning($"预加载失败: {viewName}, 未找到资源: {resourcePath}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"预加载失败: {viewName}, 错误: {ex.Message}");
-                }
-            }
-            
-            Log.Debug("预加载完成");
+            OpenAsync<T>(param).Forget();
         }
 
-        public static T Open<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
+        public async static UniTask<T> OpenAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new ()
         {
-            return (T)Open(typeof(T).Name);
-   
+            return (T)await OpenAsync(typeof(T).Name, param);
         }
 
-        public static ViewLogic Open(string viewName, ViewParameterBase param = null)
+        public async static UniTask<ViewLogic> OpenAsync(string viewName, ViewParameterBase param = null)
         {
-                     
             if (_visibleViewMap.TryGetValue(viewName, out var logic))
             {
-                Log.Debug($"Try to open an already showed the View : {viewName}");
+                Log.Warning($"Try to open an already showed the View : {viewName}");
                 return logic;
             }
             
@@ -171,13 +169,21 @@ namespace Twenty2.VomitLib.View
             // 进入加载流程
             if (logic == null)
             {
-                var viewObject = _loader.CreateView(viewName, Root.transform);
+                if (_preLoadMap.TryGetValue(viewName, out var viewObject))
+                {
+                    viewObject.transform.SetParent(Root.transform, false);
+                }
+                else
+                {
+                    viewObject = await _loader.CreateView(viewName, Root.transform);
+                }
 
                 logic = viewObject.GetComponent<ViewLogic>();
 
                 if (logic == null)
                 {
-                    throw new Exception($"ViewLogic : {viewName} is not found!");
+                    Log.Error($"ViewLogic : {viewName} is not found!");
+                    return null;
                 }
 
                 CreateLogic(viewName, logic);
@@ -293,7 +299,7 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         public static async UniTask OpenAndWaitClose<T>(ViewParameterBase param = null)  where T : ViewLogic, new ()
         {
-            await Open<T>(param).WaitClose();
+            await (await OpenAsync<T>(param)).WaitClose();
         }
         
         /// <summary>
