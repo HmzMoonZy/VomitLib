@@ -12,12 +12,17 @@ namespace Twenty2.VomitLib.Procedure
     public class ProcedureMonitor : MonoBehaviour
     {
         [Header("Procedure系统监控")]
-        [Tooltip("要监控的状态机泛型类型\n格式：类名+枚举名，例如：Game+State 表示 ProcedureStateMachine<Game.State>")]
-        [SerializeField] private string _stateMachineGenericType = "Game+State";
+        [Tooltip("要监控的状态机泛型类型的完整类名\n例如：Game+State 或 GameState 或 ProjectName.GameState")]
+        [SerializeField] private string _genericTypeFullName = "Game+State";
+        
+        [Space(5)]
+        [Header("常用示例")]
+        [Tooltip("常见的类型格式示例")]
+        [SerializeField, TextArea(2, 3)] private string _examples = "嵌套枚举: Game+State\n独立枚举: GameState\n完整类名: MyProject.States.GameState";
         
         [Space(10)]
         [Header("运行时信息")]
-        [SerializeField, TextArea(3, 10)] private string _runtimeInfo = "请在Play模式下查看实时信息";
+        [SerializeField, TextArea(3, 12)] private string _runtimeInfo = "请在Play模式下查看实时信息";
         
         [Space(5)]
         [SerializeField] private bool _autoRefresh = true;
@@ -46,7 +51,7 @@ namespace Twenty2.VomitLib.Procedure
         #if UNITY_EDITOR
         private void Reset()
         {
-            _stateMachineGenericType = "Game+State";
+            _genericTypeFullName = "Game+State";
             _runtimeInfo = "在Play模式下会显示当前状态、运行时间等信息";
         }
         #endif
@@ -62,57 +67,29 @@ namespace Twenty2.VomitLib.Procedure
         {
             try
             {
-                if (string.IsNullOrEmpty(_stateMachineGenericType))
+                if (string.IsNullOrEmpty(_genericTypeFullName))
                 {
-                    _runtimeInfo = "错误：请指定状态机泛型类型";
+                    _runtimeInfo = "错误：请指定泛型类型的完整类名";
                     return;
                 }
                 
-                // 解析泛型类型，例如 "Game+State" 表示 ProcedureStateMachine<Game.State>
-                var parts = _stateMachineGenericType.Split('+');
-                if (parts.Length != 2)
+                // 查找类型
+                Type targetType = FindType(_genericTypeFullName);
+                
+                if (targetType == null)
                 {
-                    _runtimeInfo = "错误：泛型类型格式应为 '类名+枚举名'，例如：Game+State";
+                    _runtimeInfo = $"错误：未找到类型 '{_genericTypeFullName}'\n\n支持的格式：\n1. 嵌套枚举: Game+State\n2. 独立枚举: GameState\n3. 完整类名: MyProject.GameState";
                     return;
                 }
                 
-                var className = parts[0];
-                var enumName = parts[1];
-                
-                // 查找枚举类型
-                Type enumType = null;
-                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (var assembly in assemblies)
+                if (!targetType.IsEnum)
                 {
-                    try
-                    {
-                        // 先尝试作为嵌套类型
-                        var nestedType = assembly.GetType($"{className}+{enumName}");
-                        if (nestedType != null && nestedType.IsEnum)
-                        {
-                            enumType = nestedType;
-                            break;
-                        }
-                        
-                        // 再尝试作为独立类型
-                        var standaloneType = assembly.GetType(enumName);
-                        if (standaloneType != null && standaloneType.IsEnum)
-                        {
-                            enumType = standaloneType;
-                            break;
-                        }
-                    }
-                    catch { /* 忽略加载错误 */ }
-                }
-                
-                if (enumType == null)
-                {
-                    _runtimeInfo = $"错误：未找到枚举类型 {className}.{enumName}";
+                    _runtimeInfo = $"错误：类型 '{targetType.FullName}' 不是枚举类型";
                     return;
                 }
                 
                 // 构造ProcedureStateMachine<T>类型
-                var genericStateMachineType = typeof(ProcedureStateMachine<>).MakeGenericType(enumType);
+                var genericStateMachineType = typeof(ProcedureStateMachine<>).MakeGenericType(targetType);
                 _stateMachineType = genericStateMachineType;
                 
                 // 获取Instance属性
@@ -123,12 +100,12 @@ namespace Twenty2.VomitLib.Procedure
                     
                     if (_stateMachineInstance != null)
                     {
-                        _runtimeInfo = $"成功连接到状态机: ProcedureStateMachine<{enumType.Name}>";
+                        _runtimeInfo = $"✅ 成功连接到状态机\nProcedureStateMachine<{targetType.Name}>";
                         RefreshInfo();
                     }
                     else
                     {
-                        _runtimeInfo = "错误：状态机实例为空，可能尚未初始化";
+                        _runtimeInfo = "⚠️ 状态机实例为空，可能尚未初始化\n请确保游戏已启动并初始化了Procedure系统";
                     }
                 }
                 else
@@ -138,8 +115,72 @@ namespace Twenty2.VomitLib.Procedure
             }
             catch (Exception e)
             {
-                _runtimeInfo = $"初始化失败：{e.Message}";
+                _runtimeInfo = $"初始化失败：{e.Message}\n\n请检查类型名称是否正确";
             }
+        }
+        
+        /// <summary>
+        /// 查找类型，支持多种格式
+        /// </summary>
+        private Type FindType(string typeName)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            
+            foreach (var assembly in assemblies)
+            {
+                try
+                {
+                    // 1. 直接按完整类名查找
+                    var directType = assembly.GetType(typeName);
+                    if (directType != null && directType.IsEnum)
+                    {
+                        return directType;
+                    }
+                    
+                    // 2. 如果包含+号，按嵌套类型查找
+                    if (typeName.Contains("+"))
+                    {
+                        var nestedType = assembly.GetType(typeName);
+                        if (nestedType != null && nestedType.IsEnum)
+                        {
+                            return nestedType;
+                        }
+                    }
+                    
+                    // 3. 按简单名称在所有类型中搜索
+                    var types = assembly.GetTypes();
+                    foreach (var type in types)
+                    {
+                        if (type.IsEnum)
+                        {
+                            // 检查简单名称
+                            if (type.Name == typeName)
+                            {
+                                return type;
+                            }
+                            
+                            // 检查完整名称
+                            if (type.FullName == typeName)
+                            {
+                                return type;
+                            }
+                            
+                            // 检查嵌套类型的特殊格式
+                            if (type.FullName != null && type.FullName.Replace('+', '.').EndsWith($".{typeName}"))
+                            {
+                                return type;
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // 忽略加载错误，继续查找其他程序集
+                    continue;
+                }
+            }
+            
+            return null;
         }
         
         /// <summary>
@@ -239,6 +280,46 @@ namespace Twenty2.VomitLib.Procedure
         public void Reinitialize()
         {
             InitializeStateMachine();
+        }
+        
+        /// <summary>
+        /// 获取当前程序集中所有的枚举类型
+        /// </summary>
+        [ContextMenu("显示所有枚举类型")]
+        public void ShowAllEnumTypes()
+        {
+            var enumTypes = new System.Collections.Generic.List<string>();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            
+            foreach (var assembly in assemblies)
+            {
+                try
+                {
+                    // 只显示项目程序集的枚举，过滤Unity和系统程序集
+                    if (assembly.FullName.StartsWith("Unity") || 
+                        assembly.FullName.StartsWith("System") || 
+                        assembly.FullName.StartsWith("mscorlib") ||
+                        assembly.FullName.StartsWith("netstandard"))
+                        continue;
+                        
+                    var types = assembly.GetTypes();
+                    foreach (var type in types)
+                    {
+                        if (type.IsEnum)
+                        {
+                            enumTypes.Add(type.FullName);
+                        }
+                    }
+                }
+                catch { /* 忽略加载错误 */ }
+            }
+            
+            enumTypes.Sort();
+            var enumList = string.Join("\n", enumTypes);
+            
+            Debug.Log($"项目中所有可用的枚举类型（{enumTypes.Count}个）：\n{enumList}");
+            
+            _runtimeInfo = $"📄 所有可用枚举类型（{enumTypes.Count}个）：\n\n{enumList}\n\n请复制其中一个到上面的字段中";
         }
         
         #endregion
