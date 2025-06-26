@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using QFramework;
 using Twenty2.VomitLib;
-using Twenty2.VomitLib.Config;
 using UnityEngine;
 using UnityEngine.Serialization;
 

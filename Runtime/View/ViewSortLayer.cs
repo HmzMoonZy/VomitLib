@@ -1,4 +1,4 @@
-﻿namespace Twenty2.VomitLib.Config
+﻿namespace Twenty2.VomitLib.View
 {
     /// <summary>
     /// 修改它后请重新初始化。
