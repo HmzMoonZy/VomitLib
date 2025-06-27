@@ -4,6 +4,7 @@
     "references": [
         "Twenty2.VomitLib",
         "Twenty2.VomitLib.View",
+        "Twenty2.VomitLib.Monitor",
         "Luban.Runtime",
         "Twenty2.VomitLib.LubanSupport",
         "Twenty2.VomitLib.ToolKits"
