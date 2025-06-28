@@ -4,6 +4,7 @@ using Twenty2.VomitLib.Monitor;
 using UnityEditor;
 using UnityEngine;
 using System;
+using System.Reflection;
 
 namespace Twenty2.VomitLib.Editor.Monitor
 {
@@ -497,7 +498,14 @@ namespace Twenty2.VomitLib.Editor.Monitor
         {
             if (!canWrite)
             {
-                EditorGUILayout.LabelField(GetValueString(currentValue), _valueStyle);
+                if (IsComplexType(fieldType))
+                {
+                    DrawComplexTypeDisplay(currentValue, fieldType, false);
+                }
+                else
+                {
+                    EditorGUILayout.LabelField(GetValueString(currentValue), _valueStyle);
+                }
                 return currentValue;
             }
 
@@ -538,9 +546,14 @@ namespace Twenty2.VomitLib.Editor.Monitor
             {
                 return EditorGUILayout.EnumPopup((Enum)(currentValue ?? Enum.GetValues(fieldType).GetValue(0)));
             }
+            else if (IsComplexType(fieldType))
+            {
+                // 复杂类型展开显示和编辑
+                return DrawComplexTypeEditor(fieldKey, currentValue, fieldType);
+            }
             else
             {
-                // 复杂类型只显示，不可编辑
+                // 其他类型只显示，不可编辑
                 EditorGUILayout.LabelField(GetValueString(currentValue), _valueStyle);
                 return currentValue;
             }
@@ -562,6 +575,135 @@ namespace Twenty2.VomitLib.Editor.Monitor
         #region Helper Methods
 
         /// <summary>
+        /// 判断是否为复杂类型（可展开编辑的自定义类）
+        /// </summary>
+        private bool IsComplexType(Type type)
+        {
+            // 基础类型和Unity内置类型不算复杂类型
+            if (type.IsPrimitive || type == typeof(string) || type.IsEnum) return false;
+            if (type == typeof(Vector2) || type == typeof(Vector3) || type == typeof(Color)) return false;
+            if (type == typeof(Quaternion) || type == typeof(Vector4)) return false;
+            
+            // 系统类型不算复杂类型
+            if (type.Namespace?.StartsWith("System") == true) return false;
+            if (type.Namespace?.StartsWith("UnityEngine") == true) return false;
+            if (type.Namespace?.StartsWith("QFramework") == true) return false;
+            
+            // 自定义类型算复杂类型
+            return type.IsClass && !type.IsAbstract;
+        }
+
+        /// <summary>
+        /// 绘制复杂类型编辑器
+        /// </summary>
+        private object DrawComplexTypeEditor(string fieldKey, object currentValue, Type fieldType)
+        {
+            if (currentValue == null)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("null", _valueStyle);
+                if (GUILayout.Button("创建", _buttonStyle, GUILayout.Width(40)))
+                {
+                    currentValue = Activator.CreateInstance(fieldType);
+                }
+                EditorGUILayout.EndHorizontal();
+                return currentValue;
+            }
+
+            // 获取或创建折叠状态
+            var foldoutKey = $"{fieldKey}_foldout";
+            if (!_editingValues.ContainsKey(foldoutKey))
+                _editingValues[foldoutKey] = false;
+
+            var foldout = (bool)_editingValues[foldoutKey];
+            
+            EditorGUILayout.BeginVertical();
+            
+            // 类型头部（可折叠）
+            EditorGUILayout.BeginHorizontal();
+            foldout = EditorGUILayout.Foldout(foldout, $"📦 {fieldType.Name}", true);
+            _editingValues[foldoutKey] = foldout;
+            
+            if (GUILayout.Button("🗑️", _buttonStyle, GUILayout.Width(25)))
+            {
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndVertical();
+                return null;
+            }
+            EditorGUILayout.EndHorizontal();
+
+            // 展开显示字段
+            if (foldout)
+            {
+                EditorGUI.indentLevel++;
+                var fields = fieldType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+                
+                foreach (var field in fields)
+                {
+                    if (field.IsStatic) continue;
+                    
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField($"🔸 {field.Name}", _fieldStyle, GUILayout.Width(120));
+                    
+                    var fieldValue = field.GetValue(currentValue);
+                    var newValue = DrawValueEditor($"{fieldKey}.{field.Name}", field.FieldType, fieldValue, true);
+                    
+                    if (!Equals(newValue, fieldValue))
+                    {
+                        field.SetValue(currentValue, newValue);
+                    }
+                    
+                    EditorGUILayout.EndHorizontal();
+                }
+                
+                EditorGUI.indentLevel--;
+            }
+            
+            EditorGUILayout.EndVertical();
+            return currentValue;
+        }
+
+        /// <summary>
+        /// 绘制复杂类型显示（只读）
+        /// </summary>
+        private void DrawComplexTypeDisplay(object value, Type type, bool canExpand = true)
+        {
+            if (value == null)
+            {
+                EditorGUILayout.LabelField("null", _valueStyle);
+                return;
+            }
+
+            if (!canExpand)
+            {
+                EditorGUILayout.LabelField($"{type.Name} {{ ... }}", _valueStyle);
+                return;
+            }
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.LabelField($"📦 {type.Name}", EditorStyles.boldLabel);
+            
+            EditorGUI.indentLevel++;
+            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            
+            foreach (var field in fields)
+            {
+                if (field.IsStatic) continue;
+                
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"🔸 {field.Name}:", _fieldStyle, GUILayout.Width(120));
+                
+                var fieldValue = field.GetValue(value);
+                EditorGUILayout.LabelField(GetValueString(fieldValue), _valueStyle);
+                
+                EditorGUILayout.EndHorizontal();
+            }
+            
+            EditorGUI.indentLevel--;
+            EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>
         /// 获取简化的类型名
         /// </summary>
         private string GetSimpleTypeName(Type type)
@@ -575,6 +717,9 @@ namespace Twenty2.VomitLib.Editor.Monitor
             if (type == typeof(Vector3)) return "Vector3";
             if (type == typeof(Color)) return "Color";
             if (type.IsEnum) return "enum";
+            
+            // 复杂类型显示完整名称
+            if (IsComplexType(type)) return type.Name;
             
             return type.Name;
         }
