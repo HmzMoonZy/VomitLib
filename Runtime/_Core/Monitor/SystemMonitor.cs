@@ -152,13 +152,13 @@ namespace Twenty2.VomitLib.Monitor
                 return;
             }
 
-            Debug.Log("[SystemMonitor] 开始刷新System数据...");
+            // Debug.Log("[SystemMonitor] 开始刷新System数据...");
 
             try
             {
                 _systemInfos.Clear();
                 CollectSystemInfos();
-                Debug.Log($"[SystemMonitor] 刷新完成 - 找到 {_systemInfos.Count} 个System");
+                // Debug.Log($"[SystemMonitor] 刷新完成 - 找到 {_systemInfos.Count} 个System");
             }
             catch (System.Exception e)
             {
@@ -395,7 +395,7 @@ namespace Twenty2.VomitLib.Monitor
             try
             {
                 var architectureType = architecture.GetType();
-                Debug.Log($"[SystemMonitor] 架构类型: {architectureType.Name}");
+                // Debug.Log($"[SystemMonitor] 架构类型: {architectureType.Name}");
                 
                 // 尝试多种可能的容器字段名
                 string[] possibleContainerNames = { "mContainer", "_container", "container", "Container" };
@@ -405,7 +405,7 @@ namespace Twenty2.VomitLib.Monitor
                                         ?? architectureType.BaseType?.GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
                     if (_containerFieldCache != null)
                     {
-                        Debug.Log($"[SystemMonitor] 找到容器字段: {name}");
+                        // Debug.Log($"[SystemMonitor] 找到容器字段: {name}");
                         break;
                     }
                 }
@@ -415,7 +415,7 @@ namespace Twenty2.VomitLib.Monitor
                     BindingFlags.NonPublic | BindingFlags.Instance);
                 
                 _reflectionCacheInitialized = true;
-                Debug.Log("[SystemMonitor] 反射缓存初始化完成");
+                // Debug.Log("[SystemMonitor] 反射缓存初始化完成");
             }
             catch (System.Exception e)
             {
@@ -456,7 +456,7 @@ namespace Twenty2.VomitLib.Monitor
                 return;
             }
 
-            Debug.Log("[SystemMonitor] 开始收集System信息...");
+            // Debug.Log("[SystemMonitor] 开始收集System信息...");
 
             var container = _containerFieldCache?.GetValue(architecture) as QFramework.IOCContainer;
             if (container == null)
@@ -472,7 +472,7 @@ namespace Twenty2.VomitLib.Monitor
                 return;
             }
 
-            Debug.Log($"[SystemMonitor] IOC容器中有 {instances.Count} 个实例");
+            // Debug.Log($"[SystemMonitor] IOC容器中有 {instances.Count} 个实例");
 
             int systemCount = 0;
             foreach (System.Collections.DictionaryEntry entry in instances)
@@ -480,20 +480,20 @@ namespace Twenty2.VomitLib.Monitor
                 var instanceType = entry.Key as Type;
                 var instance = entry.Value;
                 
-                Debug.Log($"[SystemMonitor] 检查实例: {instanceType?.Name} - 是否为ISystem: {(instanceType != null && typeof(ISystem).IsAssignableFrom(instanceType))}");
+                // Debug.Log($"[SystemMonitor] 检查实例: {instanceType?.Name} - 是否为ISystem: {(instanceType != null && typeof(ISystem).IsAssignableFrom(instanceType))}");
                 
                 if (instanceType != null && instance != null && 
                     typeof(ISystem).IsAssignableFrom(instanceType))
                 {
                     systemCount++;
-                    Debug.Log($"[SystemMonitor] 找到System: {instanceType.Name}");
+                    // Debug.Log($"[SystemMonitor] 找到System: {instanceType.Name}");
 
                     // 性能优化：只监控指定的System
                     if (!_monitorAllSystems && !string.IsNullOrEmpty(_specificSystemTypeName))
                     {
                         if (!instanceType.Name.Contains(_specificSystemTypeName))
                         {
-                            Debug.Log($"[SystemMonitor] 跳过System: {instanceType.Name} (不匹配过滤条件: {_specificSystemTypeName})");
+                            // Debug.Log($"[SystemMonitor] 跳过System: {instanceType.Name} (不匹配过滤条件: {_specificSystemTypeName})");
                             continue;
                         }
                     }
@@ -514,11 +514,11 @@ namespace Twenty2.VomitLib.Monitor
                     };
                     
                     _systemInfos.Add(systemInfo);
-                    Debug.Log($"[SystemMonitor] 添加System: {systemInfo.Name}, 字段数: {systemInfo.FieldCount}, 方法数: {systemInfo.MethodCount}, 已初始化: {systemInfo.IsInitialized}");
+                    // Debug.Log($"[SystemMonitor] 添加System: {systemInfo.Name}, 字段数: {systemInfo.FieldCount}, 方法数: {systemInfo.MethodCount}, 已初始化: {systemInfo.IsInitialized}");
                 }
             }
 
-            Debug.Log($"[SystemMonitor] 收集完成 - 总实例数: {instances.Count}, System数: {systemCount}, 最终添加: {_systemInfos.Count}");
+            // Debug.Log($"[SystemMonitor] 收集完成 - 总实例数: {instances.Count}, System数: {systemCount}, 最终添加: {_systemInfos.Count}");
         }
 
         /// <summary>

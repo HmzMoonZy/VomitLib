@@ -136,14 +136,14 @@ namespace Twenty2.VomitLib.Monitor
                 return;
             }
 
-            Debug.Log("[CommandMonitor] 开始刷新Command数据...");
+            // Debug.Log("[CommandMonitor] 开始刷新Command数据...");
 
             try
             {
                 _commandInfos.Clear();
                 ScanForCommands();
                 _commandsCacheInitialized = true;
-                Debug.Log($"[CommandMonitor] 刷新完成 - 找到 {_commandInfos.Count} 个Command类型");
+                // Debug.Log($"[CommandMonitor] 刷新完成 - 找到 {_commandInfos.Count} 个Command类型");
             }
             catch (System.Exception e)
             {
@@ -192,33 +192,49 @@ namespace Twenty2.VomitLib.Monitor
                     if (commandInfo.HasReturnValue)
                     {
                         // 有返回值的Command
+                        Log.Debug($"[CommandMonitor] 执行Command[HasReturnValue]: {commandType.Name}");
                         var sendMethod = typeof(IArchitecture).GetMethod("SendCommand", new Type[] { commandInfo.CommandInterfaceType });
                         if (sendMethod != null)
                         {
                             result = sendMethod.Invoke(architecture, new object[] { commandInstance });
                         }
+                        else
+                        {
+                            Log.Error($"[CommandMonitor] 未找到有返回值的SendCommand方法: {commandInfo.CommandInterfaceType.Name}");
+                        }
                     }
                     else
                     {
                         // 无返回值的Command
+                        Log.Debug($"[CommandMonitor] 执行Command[NoReturnValue]: {commandType.Name}");
                         var sendMethod = typeof(IArchitecture).GetMethod("SendCommand", new Type[] { commandType });
-                        if (sendMethod == null)
-                        {
-                            // 尝试泛型版本
-                            sendMethod = typeof(IArchitecture).GetMethod("SendCommand").MakeGenericMethod(commandType);
-                        }
                         if (sendMethod != null)
                         {
                             sendMethod.Invoke(architecture, new object[] { commandInstance });
                         }
+                        else
+                        {
+                            // 尝试使用泛型方法
+                            var genericMethod = typeof(IArchitecture).GetMethods()
+                                .FirstOrDefault(m => m.Name == "SendCommand" && m.IsGenericMethod && m.GetParameters().Length == 1 && m.ReturnType == typeof(void));
+                            if (genericMethod != null)
+                            {
+                                var constructedMethod = genericMethod.MakeGenericMethod(commandType);
+                                constructedMethod.Invoke(architecture, new object[] { commandInstance });
+                            }
+                            else
+                            {
+                                Log.Error($"[CommandMonitor] 未找到无返回值的SendCommand方法: {commandType.Name}");
+                            }
+                        }
                     }
 
-                    Debug.Log($"[CommandMonitor] 成功执行Command: {commandType.Name}");
+                    // Debug.Log($"[CommandMonitor] 成功执行Command: {commandType.Name}");
                 }
                 catch (Exception e)
                 {
                     exception = e.InnerException ?? e;
-                    Debug.LogError($"[CommandMonitor] 执行Command失败: {commandType.Name}, 错误: {exception.Message}");
+                    Log.Error($"[CommandMonitor] 执行Command失败: {commandType.Name}, 错误: {exception.Message}");
                 }
 
                 // 记录执行结果
@@ -241,7 +257,7 @@ namespace Twenty2.VomitLib.Monitor
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"[CommandMonitor] 执行Command过程失败: {e.Message}");
+                Log.Error($"[CommandMonitor] 执行Command过程失败: {e.Message}");
             }
         }
 
@@ -313,7 +329,7 @@ namespace Twenty2.VomitLib.Monitor
         /// </summary>
         private void ScanForCommands()
         {
-            Debug.Log("[CommandMonitor] 开始扫描Command类型...");
+            // Debug.Log("[CommandMonitor] 开始扫描Command类型...");
 
             var assemblies = GetTargetAssemblies();
             int totalCommandCount = 0;
@@ -325,7 +341,7 @@ namespace Twenty2.VomitLib.Monitor
                     var types = assembly.GetTypes();
                     var commandTypes = types.Where(IsCommandType).ToList();
 
-                    Debug.Log($"[CommandMonitor] 在程序集 {assembly.GetName().Name} 中找到 {commandTypes.Count} 个Command");
+                    // Debug.Log($"[CommandMonitor] 在程序集 {assembly.GetName().Name} 中找到 {commandTypes.Count} 个Command");
 
                     foreach (var commandType in commandTypes)
                     {
@@ -339,11 +355,11 @@ namespace Twenty2.VomitLib.Monitor
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"[CommandMonitor] 扫描程序集 {assembly.GetName().Name} 失败: {e.Message}");
+                    Log.Warning($"[CommandMonitor] 扫描程序集 {assembly.GetName().Name} 失败: {e.Message}");
                 }
             }
 
-            Debug.Log($"[CommandMonitor] 扫描完成 - 总共找到 {totalCommandCount} 个Command类型");
+            // Log.Debug($"[CommandMonitor] 扫描完成 - 总共找到 {totalCommandCount} 个Command类型");
         }
 
         /// <summary>
@@ -441,7 +457,7 @@ namespace Twenty2.VomitLib.Monitor
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[CommandMonitor] 创建CommandInfo失败: {commandType.Name}, 错误: {e.Message}");
+                Log.Warning($"[CommandMonitor] 创建CommandInfo失败: {commandType.Name}, 错误: {e.Message}");
                 return null;
             }
         }
@@ -467,7 +483,7 @@ namespace Twenty2.VomitLib.Monitor
             }
             catch (Exception e)
             {
-                Debug.LogError($"[CommandMonitor] 创建Command实例失败: {commandType.Name}, 错误: {e.Message}");
+                Log.Error($"[CommandMonitor] 创建Command实例失败: {commandType.Name}, 错误: {e.Message}");
                 return null;
             }
         }

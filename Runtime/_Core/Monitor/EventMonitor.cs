@@ -138,14 +138,14 @@ namespace Twenty2.VomitLib.Monitor
                 return;
             }
 
-            Debug.Log("[EventMonitor] 开始刷新Event数据...");
+            // Debug.Log("[EventMonitor] 开始刷新Event数据...");
 
             try
             {
                 _eventInfos.Clear();
                 _eventListenerCounts.Clear();
                 CollectEventInfos();
-                Debug.Log($"[EventMonitor] 刷新完成 - 找到 {_eventInfos.Count} 个事件类型");
+                // Debug.Log($"[EventMonitor] 刷新完成 - 找到 {_eventInfos.Count} 个事件类型");
             }
             catch (System.Exception e)
             {
@@ -172,7 +172,7 @@ namespace Twenty2.VomitLib.Monitor
                     if (sendMethod != null)
                     {
                         sendMethod.Invoke(architecture, new object[] { eventInstance });
-                        Debug.Log($"[EventMonitor] 手动触发事件: {eventType.Name}");
+                        // Debug.Log($"[EventMonitor] 手动触发事件: {eventType.Name}");
                     }
                     else
                     {
@@ -182,7 +182,7 @@ namespace Twenty2.VomitLib.Monitor
                         {
                             var genericMethod = sendMethodGeneric.MakeGenericMethod(eventType);
                             genericMethod.Invoke(architecture, null);
-                            Debug.Log($"[EventMonitor] 手动触发事件 (无参): {eventType.Name}");
+                            // Debug.Log($"[EventMonitor] 手动触发事件 (无参): {eventType.Name}");
                         }
                     }
                 }
@@ -251,7 +251,7 @@ namespace Twenty2.VomitLib.Monitor
             try
             {
                 var architectureType = architecture.GetType();
-                Debug.Log($"[EventMonitor] 架构类型: {architectureType.Name}");
+                // Debug.Log($"[EventMonitor] 架构类型: {architectureType.Name}");
                 
                 // 获取TypeEventSystem字段
                 _typeEventSystemFieldCache = architectureType.GetField("mTypeEventSystem", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -268,7 +268,7 @@ namespace Twenty2.VomitLib.Monitor
                 _typeEventsFieldCache = typeof(EasyEvents).GetField("mTypeEvents", BindingFlags.NonPublic | BindingFlags.Instance);
                 
                 _reflectionCacheInitialized = true;
-                Debug.Log($"[EventMonitor] 反射缓存初始化完成 - TypeEventSystem: {(_typeEventSystemFieldCache != null ? "✓" : "✗")}, EasyEvents: {(_eventsFieldCache != null ? "✓" : "✗")}, Dictionary: {(_typeEventsFieldCache != null ? "✓" : "✗")}");
+                // Debug.Log($"[EventMonitor] 反射缓存初始化完成 - TypeEventSystem: {(_typeEventSystemFieldCache != null ? "✓" : "✗")}, EasyEvents: {(_eventsFieldCache != null ? "✓" : "✗")}, Dictionary: {(_typeEventsFieldCache != null ? "✓" : "✗")}");
             }
             catch (System.Exception e)
             {
@@ -309,7 +309,7 @@ namespace Twenty2.VomitLib.Monitor
                 return;
             }
 
-            Debug.Log("[EventMonitor] 开始收集Event信息...");
+            // Debug.Log("[EventMonitor] 开始收集Event信息...");
 
             var typeEventSystem = _typeEventSystemFieldCache?.GetValue(architecture) as TypeEventSystem;
             if (typeEventSystem == null)
@@ -337,7 +337,7 @@ namespace Twenty2.VomitLib.Monitor
                 return;
             }
 
-            Debug.Log($"[EventMonitor] 事件系统中有 {typeEvents.Count} 个事件类型");
+            // Debug.Log($"[EventMonitor] 事件系统中有 {typeEvents.Count} 个事件类型");
 
             foreach (System.Collections.DictionaryEntry entry in typeEvents)
             {
@@ -379,7 +379,7 @@ namespace Twenty2.VomitLib.Monitor
                         };
                         
                         _eventInfos.Add(eventInfo);
-                        Debug.Log($"[EventMonitor] 添加事件: {eventInfo.EventTypeName}, 监听器数: {eventInfo.ListenerCount}");
+                        // Debug.Log($"[EventMonitor] 添加事件: {eventInfo.EventTypeName}, 监听器数: {eventInfo.ListenerCount}");
                     }
                     else
                     {
@@ -388,7 +388,7 @@ namespace Twenty2.VomitLib.Monitor
                 }
             }
 
-            Debug.Log($"[EventMonitor] 收集完成 - 事件类型数: {typeEvents.Count}, 最终添加: {_eventInfos.Count}");
+            // Debug.Log($"[EventMonitor] 收集完成 - 事件类型数: {typeEvents.Count}, 最终添加: {_eventInfos.Count}");
         }
 
         /// <summary>

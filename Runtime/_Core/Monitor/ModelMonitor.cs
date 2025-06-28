@@ -151,13 +151,13 @@ namespace Twenty2.VomitLib.Monitor
                 return;
             }
 
-            Debug.Log("[ModelMonitor] 开始刷新Model数据...");
+            // Debug.Log("[ModelMonitor] 开始刷新Model数据...");
 
             try
             {
                 _modelInfos.Clear();
                 CollectModelInfos();
-                Debug.Log($"[ModelMonitor] 刷新完成 - 找到 {_modelInfos.Count} 个Model");
+                // Debug.Log($"[ModelMonitor] 刷新完成 - 找到 {_modelInfos.Count} 个Model");
             }
             catch (System.Exception e)
             {
@@ -332,26 +332,26 @@ namespace Twenty2.VomitLib.Monitor
             try
             {
                 var architectureType = architecture.GetType();
-                Debug.Log($"[ModelMonitor] 架构类型: {architectureType.Name}");
-                Debug.Log($"[ModelMonitor] 架构完整类型: {architectureType.FullName}");
-                Debug.Log($"[ModelMonitor] 架构基类: {architectureType.BaseType?.FullName}");
+                // Debug.Log($"[ModelMonitor] 架构类型: {architectureType.Name}");
+                // Debug.Log($"[ModelMonitor] 架构完整类型: {architectureType.FullName}");
+                // Debug.Log($"[ModelMonitor] 架构基类: {architectureType.BaseType?.FullName}");
                 
                 // 打印所有私有字段来找到正确的容器字段
                 var allFields = architectureType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);
-                Debug.Log($"[ModelMonitor] 所有字段数量: {allFields.Length}");
+                // Debug.Log($"[ModelMonitor] 所有字段数量: {allFields.Length}");
                 foreach (var field in allFields)
                 {
-                    Debug.Log($"[ModelMonitor] 字段: {field.Name} - 类型: {field.FieldType.Name}");
+                    // Debug.Log($"[ModelMonitor] 字段: {field.Name} - 类型: {field.FieldType.Name}");
                 }
                 
                 // 包括基类字段
                 var baseFields = architectureType.BaseType?.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);
                 if (baseFields != null)
                 {
-                    Debug.Log($"[ModelMonitor] 基类字段数量: {baseFields.Length}");
+                    // Debug.Log($"[ModelMonitor] 基类字段数量: {baseFields.Length}");
                     foreach (var field in baseFields)
                     {
-                        Debug.Log($"[ModelMonitor] 基类字段: {field.Name} - 类型: {field.FieldType.Name}");
+                        // Debug.Log($"[ModelMonitor] 基类字段: {field.Name} - 类型: {field.FieldType.Name}");
                     }
                 }
                 
@@ -363,20 +363,20 @@ namespace Twenty2.VomitLib.Monitor
                                         ?? architectureType.BaseType?.GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
                     if (_containerFieldCache != null)
                     {
-                        Debug.Log($"[ModelMonitor] 找到容器字段: {name}");
+                        // Debug.Log($"[ModelMonitor] 找到容器字段: {name}");
                         break;
                     }
                 }
                 
-                Debug.Log($"[ModelMonitor] 容器字段找到: {_containerFieldCache?.Name ?? "未找到"}");
+                // Debug.Log($"[ModelMonitor] 容器字段找到: {_containerFieldCache?.Name ?? "未找到"}");
                 
                 // 缓存实例字典字段
                 _instancesFieldCache = typeof(QFramework.IOCContainer).GetField("mInstances", 
                     BindingFlags.NonPublic | BindingFlags.Instance);
-                Debug.Log($"[ModelMonitor] 实例字段找到: {_instancesFieldCache?.Name ?? "未找到"}");
+                // Debug.Log($"[ModelMonitor] 实例字段找到: {_instancesFieldCache?.Name ?? "未找到"}");
                 
                 _reflectionCacheInitialized = true;
-                Debug.Log("[ModelMonitor] 反射缓存初始化完成");
+                // Debug.Log("[ModelMonitor] 反射缓存初始化完成");
             }
             catch (System.Exception e)
             {
@@ -417,7 +417,7 @@ namespace Twenty2.VomitLib.Monitor
                 return;
             }
 
-            Debug.Log("[ModelMonitor] 开始收集Model信息...");
+            // Debug.Log("[ModelMonitor] 开始收集Model信息...");
 
             var container = _containerFieldCache?.GetValue(architecture) as QFramework.IOCContainer;
             if (container == null)
@@ -426,7 +426,7 @@ namespace Twenty2.VomitLib.Monitor
                 return;
             }
 
-            Debug.Log("[ModelMonitor] IOC容器获取成功");
+            // Debug.Log("[ModelMonitor] IOC容器获取成功");
 
             var instances = _instancesFieldCache?.GetValue(container) as System.Collections.IDictionary;
             if (instances == null)
@@ -435,7 +435,7 @@ namespace Twenty2.VomitLib.Monitor
                 return;
             }
 
-            Debug.Log($"[ModelMonitor] IOC容器中有 {instances.Count} 个实例");
+            // Debug.Log($"[ModelMonitor] IOC容器中有 {instances.Count} 个实例");
 
             int modelCount = 0;
             foreach (System.Collections.DictionaryEntry entry in instances)
@@ -443,20 +443,20 @@ namespace Twenty2.VomitLib.Monitor
                 var instanceType = entry.Key as Type;
                 var instance = entry.Value;
                 
-                Debug.Log($"[ModelMonitor] 检查实例: {instanceType?.Name} - 是否为IModel: {(instanceType != null && typeof(IModel).IsAssignableFrom(instanceType))}");
+                // Debug.Log($"[ModelMonitor] 检查实例: {instanceType?.Name} - 是否为IModel: {(instanceType != null && typeof(IModel).IsAssignableFrom(instanceType))}");
                 
                 if (instanceType != null && instance != null && 
                     typeof(IModel).IsAssignableFrom(instanceType))
                 {
                     modelCount++;
-                    Debug.Log($"[ModelMonitor] 找到Model: {instanceType.Name}");
+                    // Debug.Log($"[ModelMonitor] 找到Model: {instanceType.Name}");
 
                     // 性能优化：只监控指定的Model
                     if (!_monitorAllModels && !string.IsNullOrEmpty(_specificModelTypeName))
                     {
                         if (!instanceType.Name.Contains(_specificModelTypeName))
                         {
-                            Debug.Log($"[ModelMonitor] 跳过Model: {instanceType.Name} (不匹配过滤条件: {_specificModelTypeName})");
+                            // Debug.Log($"[ModelMonitor] 跳过Model: {instanceType.Name} (不匹配过滤条件: {_specificModelTypeName})");
                             continue;
                         }
                     }
@@ -475,11 +475,11 @@ namespace Twenty2.VomitLib.Monitor
                     };
                     
                     _modelInfos.Add(modelInfo);
-                    Debug.Log($"[ModelMonitor] 添加Model: {modelInfo.Name}, 字段数: {modelInfo.FieldCount}, 已初始化: {modelInfo.IsInitialized}");
+                    // Debug.Log($"[ModelMonitor] 添加Model: {modelInfo.Name}, 字段数: {modelInfo.FieldCount}, 已初始化: {modelInfo.IsInitialized}");
                 }
             }
 
-            Debug.Log($"[ModelMonitor] 收集完成 - 总实例数: {instances.Count}, Model数: {modelCount}, 最终添加: {_modelInfos.Count}");
+            // Debug.Log($"[ModelMonitor] 收集完成 - 总实例数: {instances.Count}, Model数: {modelCount}, 最终添加: {_modelInfos.Count}");
         }
 
         /// <summary>
