@@ -690,6 +690,9 @@ namespace Twenty2.VomitLib.Editor.Monitor
             if (type == typeof(Vector2) || type == typeof(Vector3) || type == typeof(Color)) return false;
             if (type == typeof(Quaternion) || type == typeof(Vector4)) return false;
             
+            // 集合类型特殊处理
+            if (IsCollectionType(type)) return true;
+            
             // 系统类型不算复杂类型
             if (type.Namespace?.StartsWith("System") == true) return false;
             if (type.Namespace?.StartsWith("UnityEngine") == true) return false;
@@ -700,10 +703,34 @@ namespace Twenty2.VomitLib.Editor.Monitor
         }
 
         /// <summary>
+        /// 判断是否为集合类型
+        /// </summary>
+        private bool IsCollectionType(Type type)
+        {
+            if (type.IsGenericType)
+            {
+                var genericType = type.GetGenericTypeDefinition();
+                return genericType == typeof(List<>) || 
+                       genericType == typeof(Dictionary<,>) ||
+                       genericType == typeof(HashSet<>) ||
+                       genericType == typeof(Queue<>) ||
+                       genericType == typeof(Stack<>);
+            }
+            
+            return type.IsArray;
+        }
+
+        /// <summary>
         /// 绘制复杂类型编辑器
         /// </summary>
         private object DrawComplexTypeEditor(string fieldKey, object currentValue, Type fieldType)
         {
+            // 集合类型特殊处理
+            if (IsCollectionType(fieldType))
+            {
+                return DrawCollectionEditor(fieldKey, currentValue, fieldType);
+            }
+
             if (currentValue == null)
             {
                 EditorGUILayout.BeginHorizontal();
@@ -767,6 +794,390 @@ namespace Twenty2.VomitLib.Editor.Monitor
             
             EditorGUILayout.EndVertical();
             return currentValue;
+        }
+
+        /// <summary>
+        /// 绘制集合类型编辑器
+        /// </summary>
+        private object DrawCollectionEditor(string fieldKey, object currentValue, Type fieldType)
+        {
+            if (currentValue == null)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("null", _valueStyle);
+                if (GUILayout.Button("创建", _buttonStyle, GUILayout.Width(40)))
+                {
+                    currentValue = Activator.CreateInstance(fieldType);
+                }
+                EditorGUILayout.EndHorizontal();
+                return currentValue;
+            }
+
+            // 获取折叠状态
+            var foldoutKey = $"{fieldKey}_collection_foldout";
+            if (!_editingValues.ContainsKey(foldoutKey))
+                _editingValues[foldoutKey] = false;
+
+            var foldout = (bool)_editingValues[foldoutKey];
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            // 集合头部信息
+            EditorGUILayout.BeginHorizontal();
+            
+            if (fieldType.IsGenericType)
+            {
+                var genericType = fieldType.GetGenericTypeDefinition();
+                string collectionIcon = "📋";
+                if (genericType == typeof(List<>)) collectionIcon = "📋";
+                else if (genericType == typeof(Dictionary<,>)) collectionIcon = "📚";
+                else if (genericType == typeof(HashSet<>)) collectionIcon = "🎯";
+                else if (genericType == typeof(Queue<>)) collectionIcon = "⏭️";
+                else if (genericType == typeof(Stack<>)) collectionIcon = "📚";
+
+                var count = GetCollectionCount(currentValue);
+                foldout = EditorGUILayout.Foldout(foldout, $"{collectionIcon} {GetCollectionTypeName(fieldType)} [{count}]", true);
+                _editingValues[foldoutKey] = foldout;
+            }
+            else if (fieldType.IsArray)
+            {
+                var array = currentValue as Array;
+                foldout = EditorGUILayout.Foldout(foldout, $"📋 {fieldType.GetElementType().Name}[] [{array?.Length ?? 0}]", true);
+                _editingValues[foldoutKey] = foldout;
+            }
+
+            GUILayout.FlexibleSpace();
+
+            // 操作按钮
+            if (GUILayout.Button("🗑️", _buttonStyle, GUILayout.Width(25)))
+            {
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndVertical();
+                return null;
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            // 展开显示内容
+            if (foldout)
+            {
+                EditorGUI.indentLevel++;
+                
+                if (fieldType.IsGenericType)
+                {
+                    var genericType = fieldType.GetGenericTypeDefinition();
+                    
+                    if (genericType == typeof(List<>))
+                    {
+                        DrawListEditor(fieldKey, currentValue, fieldType);
+                    }
+                    else if (genericType == typeof(Dictionary<,>))
+                    {
+                        DrawDictionaryEditor(fieldKey, currentValue, fieldType);
+                    }
+                    else
+                    {
+                        DrawGenericCollectionDisplay(currentValue, fieldType);
+                    }
+                }
+                else if (fieldType.IsArray)
+                {
+                    DrawArrayEditor(fieldKey, currentValue, fieldType);
+                }
+                
+                EditorGUI.indentLevel--;
+            }
+
+            EditorGUILayout.EndVertical();
+            return currentValue;
+        }
+
+        /// <summary>
+        /// 绘制List编辑器
+        /// </summary>
+        private void DrawListEditor(string fieldKey, object listObj, Type listType)
+        {
+            var elementType = listType.GetGenericArguments()[0];
+            var listInterface = typeof(System.Collections.IList);
+            var list = listObj as System.Collections.IList;
+            
+            if (list == null) return;
+
+            // 添加新元素按钮
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField($"元素类型: {GetSimpleTypeName(elementType)}", _fieldStyle);
+            if (GUILayout.Button("➕ 添加", _buttonStyle, GUILayout.Width(60)))
+            {
+                var defaultValue = GetDefaultValue(elementType);
+                list.Add(defaultValue);
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(2);
+
+            // 显示列表元素
+            for (int i = 0; i < list.Count; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                
+                EditorGUILayout.LabelField($"[{i}]", GUILayout.Width(30));
+                
+                var currentValue = list[i];
+                var newValue = DrawValueEditor($"{fieldKey}[{i}]", elementType, currentValue, true);
+                
+                if (!Equals(newValue, currentValue))
+                {
+                    list[i] = newValue;
+                }
+                
+                if (GUILayout.Button("❌", _buttonStyle, GUILayout.Width(25)))
+                {
+                    list.RemoveAt(i);
+                    break; // 避免索引越界
+                }
+                
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+
+        /// <summary>
+        /// 绘制Dictionary编辑器
+        /// </summary>
+        private void DrawDictionaryEditor(string fieldKey, object dictObj, Type dictType)
+        {
+            var genericArgs = dictType.GetGenericArguments();
+            var keyType = genericArgs[0];
+            var valueType = genericArgs[1];
+            
+            var dict = dictObj as System.Collections.IDictionary;
+            if (dict == null) return;
+
+            // 新Key输入区域
+            var newKeyFieldKey = $"{fieldKey}_newKey";
+            var newValueFieldKey = $"{fieldKey}_newValue";
+            
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.LabelField($"添加新键值对 - Key: {GetSimpleTypeName(keyType)}, Value: {GetSimpleTypeName(valueType)}", _fieldStyle);
+            
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Key:", GUILayout.Width(30));
+            
+            // Key编辑器
+            if (!_editingValues.ContainsKey(newKeyFieldKey))
+                _editingValues[newKeyFieldKey] = GetDefaultValue(keyType);
+                
+            var newKey = DrawValueEditor(newKeyFieldKey, keyType, _editingValues[newKeyFieldKey], true);
+            _editingValues[newKeyFieldKey] = newKey;
+            
+            EditorGUILayout.LabelField("Value:", GUILayout.Width(40));
+            
+            // Value编辑器
+            if (!_editingValues.ContainsKey(newValueFieldKey))
+                _editingValues[newValueFieldKey] = GetDefaultValue(valueType);
+                
+            var newValue = DrawValueEditor(newValueFieldKey, valueType, _editingValues[newValueFieldKey], true);
+            _editingValues[newValueFieldKey] = newValue;
+            
+            if (GUILayout.Button("添加", _buttonStyle, GUILayout.Width(50)))
+            {
+                if (newKey != null && !dict.Contains(newKey))
+                {
+                    dict.Add(newKey, newValue);
+                    // 重置输入
+                    _editingValues[newKeyFieldKey] = GetDefaultValue(keyType);
+                    _editingValues[newValueFieldKey] = GetDefaultValue(valueType);
+                }
+                else
+                {
+                    Debug.LogWarning($"[SystemMonitor] Key已存在或为null: {newKey}");
+                }
+            }
+            
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
+
+            EditorGUILayout.Space(2);
+
+            // 显示字典元素
+            var keysToRemove = new List<object>();
+            var keysToUpdate = new Dictionary<object, object>();
+            
+            foreach (System.Collections.DictionaryEntry entry in dict)
+            {
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                
+                EditorGUILayout.BeginHorizontal();
+                
+                // Key编辑
+                EditorGUILayout.LabelField("Key:", GUILayout.Width(30));
+                var keyFieldKey = $"{fieldKey}_key_{entry.Key}";
+                var currentKey = entry.Key;
+                var newEditedKey = DrawValueEditor(keyFieldKey, keyType, currentKey, true);
+                
+                // 检查Key是否需要更新
+                if (!Equals(newEditedKey, currentKey) && newEditedKey != null)
+                {
+                    if (!dict.Contains(newEditedKey))
+                    {
+                        keysToUpdate[currentKey] = newEditedKey;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[SystemMonitor] Key已存在，无法修改: {newEditedKey}");
+                    }
+                }
+                
+                EditorGUILayout.LabelField("Value:", GUILayout.Width(40));
+                
+                // Value编辑
+                var editedValue = DrawValueEditor($"{fieldKey}[{entry.Key}]", valueType, entry.Value, true);
+                
+                if (!Equals(editedValue, entry.Value))
+                {
+                    dict[entry.Key] = editedValue;
+                }
+                
+                if (GUILayout.Button("删除", _buttonStyle, GUILayout.Width(50)))
+                {
+                    keysToRemove.Add(entry.Key);
+                }
+                
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndVertical();
+            }
+            
+            // 处理Key更新（需要先删除旧Key，再添加新Key）
+            foreach (var kvp in keysToUpdate)
+            {
+                var oldKey = kvp.Key;
+                var updatedKey = kvp.Value;
+                var value = dict[oldKey];
+                dict.Remove(oldKey);
+                dict.Add(updatedKey, value);
+            }
+            
+            // 删除标记的键
+            foreach (var key in keysToRemove)
+            {
+                dict.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// 绘制数组编辑器
+        /// </summary>
+        private void DrawArrayEditor(string fieldKey, object arrayObj, Type arrayType)
+        {
+            var array = arrayObj as Array;
+            if (array == null) return;
+
+            var elementType = arrayType.GetElementType();
+            
+            EditorGUILayout.LabelField($"数组长度: {array.Length} (类型: {GetSimpleTypeName(elementType)})", _fieldStyle);
+            
+            for (int i = 0; i < array.Length; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                
+                EditorGUILayout.LabelField($"[{i}]", GUILayout.Width(30));
+                
+                var currentValue = array.GetValue(i);
+                var newValue = DrawValueEditor($"{fieldKey}[{i}]", elementType, currentValue, true);
+                
+                if (!Equals(newValue, currentValue))
+                {
+                    array.SetValue(newValue, i);
+                }
+                
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+
+        /// <summary>
+        /// 绘制通用集合显示
+        /// </summary>
+        private void DrawGenericCollectionDisplay(object collection, Type collectionType)
+        {
+            var enumerable = collection as System.Collections.IEnumerable;
+            if (enumerable == null) return;
+
+            var count = GetCollectionCount(collection);
+            EditorGUILayout.LabelField($"元素数量: {count}", _fieldStyle);
+            
+            int index = 0;
+            foreach (var item in enumerable)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"[{index++}]", GUILayout.Width(30));
+                EditorGUILayout.LabelField(GetValueString(item), _valueStyle);
+                EditorGUILayout.EndHorizontal();
+                
+                if (index > 20) // 限制显示数量
+                {
+                    EditorGUILayout.LabelField("...(超过20个元素，已截断显示)", EditorStyles.miniLabel);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取集合元素数量
+        /// </summary>
+        private int GetCollectionCount(object collection)
+        {
+            if (collection == null) return 0;
+            
+            if (collection is System.Collections.ICollection coll)
+                return coll.Count;
+                
+            if (collection is Array array)
+                return array.Length;
+                
+            if (collection is System.Collections.IEnumerable enumerable)
+            {
+                int count = 0;
+                foreach (var _ in enumerable) count++;
+                return count;
+            }
+            
+            return 0;
+        }
+
+        /// <summary>
+        /// 获取集合类型名称
+        /// </summary>
+        private string GetCollectionTypeName(Type collectionType)
+        {
+            if (!collectionType.IsGenericType) return collectionType.Name;
+            
+            var genericType = collectionType.GetGenericTypeDefinition();
+            var genericArgs = collectionType.GetGenericArguments();
+            
+            if (genericType == typeof(List<>))
+                return $"List<{GetSimpleTypeName(genericArgs[0])}>";
+            else if (genericType == typeof(Dictionary<,>))
+                return $"Dictionary<{GetSimpleTypeName(genericArgs[0])}, {GetSimpleTypeName(genericArgs[1])}>";
+            else if (genericType == typeof(HashSet<>))
+                return $"HashSet<{GetSimpleTypeName(genericArgs[0])}>";
+            else if (genericType == typeof(Queue<>))
+                return $"Queue<{GetSimpleTypeName(genericArgs[0])}>";
+            else if (genericType == typeof(Stack<>))
+                return $"Stack<{GetSimpleTypeName(genericArgs[0])}>";
+                
+            return collectionType.Name;
+        }
+
+        /// <summary>
+        /// 获取类型的默认值
+        /// </summary>
+        private object GetDefaultValue(Type type)
+        {
+            if (type.IsValueType)
+                return Activator.CreateInstance(type);
+            else if (type == typeof(string))
+                return "";
+            else
+                return null;
         }
 
         /// <summary>
