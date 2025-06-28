@@ -32,6 +32,7 @@ namespace Twenty2.VomitLib.Monitor
         // Runtime数据（仅Editor可见）
         [System.NonSerialized] private List<CommandInfo> _commandInfos = new List<CommandInfo>();
         [System.NonSerialized] private Dictionary<Type, CommandExecutionResult> _executionResults = new Dictionary<Type, CommandExecutionResult>();
+        [System.NonSerialized] private Dictionary<Type, List<CommandInfo>> _interfaceCommandMap = new Dictionary<Type, List<CommandInfo>>();
         [System.NonSerialized] private double _lastRefreshTime;
 
         // 反射缓存
@@ -141,7 +142,9 @@ namespace Twenty2.VomitLib.Monitor
             try
             {
                 _commandInfos.Clear();
+                _interfaceCommandMap.Clear();
                 ScanForCommands();
+                BuildInterfaceCommandMap();
                 _commandsCacheInitialized = true;
                 // Debug.Log($"[CommandMonitor] 刷新完成 - 找到 {_commandInfos.Count} 个Command类型");
             }
@@ -188,19 +191,52 @@ namespace Twenty2.VomitLib.Monitor
 
                 try
                 {
+                    Log.Debug($"[CommandMonitor] 开始执行Command: {commandType.Name}, HasReturnValue: {commandInfo.HasReturnValue}");
+                    
                     // 执行Command
                     if (commandInfo.HasReturnValue)
                     {
-                        // 有返回值的Command
-                        Log.Debug($"[CommandMonitor] 执行Command[HasReturnValue]: {commandType.Name}");
-                        var sendMethod = typeof(IArchitecture).GetMethod("SendCommand", new Type[] { commandInfo.CommandInterfaceType });
-                        if (sendMethod != null)
+                        // 有返回值的Command - 使用泛型方法 TResult SendCommand<TResult>(ICommand<TResult> command)
+                        Log.Debug($"[CommandMonitor] 执行Command[HasReturnValue]: {commandType.Name}, ReturnType: {commandInfo.ReturnType.Name}");
+                        Log.Debug($"[CommandMonitor] CommandInterfaceType: {commandInfo.CommandInterfaceType.Name}");
+                        
+                        // 查找泛型SendCommand方法
+                        var allMethods = typeof(IArchitecture).GetMethods();
+                        Log.Debug($"[CommandMonitor] IArchitecture的所有方法数量: {allMethods.Length}");
+                        
+                        foreach (var method in allMethods.Where(m => m.Name == "SendCommand"))
                         {
-                            result = sendMethod.Invoke(architecture, new object[] { commandInstance });
+                            Log.Debug($"[CommandMonitor] SendCommand方法: {method}, IsGeneric: {method.IsGenericMethod}, ParamCount: {method.GetParameters().Length}");
+                            if (method.GetParameters().Length > 0)
+                            {
+                                var paramType = method.GetParameters()[0].ParameterType;
+                                Log.Debug($"[CommandMonitor] 参数类型: {paramType}, IsGeneric: {paramType.IsGenericType}");
+                                if (paramType.IsGenericType)
+                                {
+                                    Log.Debug($"[CommandMonitor] 泛型定义: {paramType.GetGenericTypeDefinition()}");
+                                }
+                            }
+                        }
+                        
+                        var genericMethod = typeof(IArchitecture).GetMethods()
+                            .FirstOrDefault(m => m.Name == "SendCommand" && 
+                                          m.IsGenericMethod && 
+                                          m.GetParameters().Length == 1 &&
+                                          m.GetParameters()[0].ParameterType.IsGenericType &&
+                                          m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ICommand<>));
+                        
+                        if (genericMethod != null)
+                        {
+                            Log.Debug($"[CommandMonitor] 找到泛型方法: {genericMethod}");
+                            // 构造具体的泛型方法
+                            var constructedMethod = genericMethod.MakeGenericMethod(commandInfo.ReturnType);
+                            Log.Debug($"[CommandMonitor] 构造的方法: {constructedMethod}");
+                            result = constructedMethod.Invoke(architecture, new object[] { commandInstance });
+                            Log.Debug($"[CommandMonitor] 成功执行有返回值Command: {commandType.Name}, 结果: {result}");
                         }
                         else
                         {
-                            Log.Error($"[CommandMonitor] 未找到有返回值的SendCommand方法: {commandInfo.CommandInterfaceType.Name}");
+                            Log.Error($"[CommandMonitor] 未找到有返回值的SendCommand泛型方法");
                         }
                     }
                     else
@@ -214,22 +250,27 @@ namespace Twenty2.VomitLib.Monitor
                         }
                         else
                         {
-                            // 尝试使用泛型方法
+                            // 尝试使用泛型方法 void SendCommand<T>(T command) where T : ICommand
                             var genericMethod = typeof(IArchitecture).GetMethods()
-                                .FirstOrDefault(m => m.Name == "SendCommand" && m.IsGenericMethod && m.GetParameters().Length == 1 && m.ReturnType == typeof(void));
+                                .FirstOrDefault(m => m.Name == "SendCommand" && 
+                                              m.IsGenericMethod && 
+                                              m.GetParameters().Length == 1 && 
+                                              m.ReturnType == typeof(void) &&
+                                              m.GetGenericArguments().Length == 1);
                             if (genericMethod != null)
                             {
                                 var constructedMethod = genericMethod.MakeGenericMethod(commandType);
                                 constructedMethod.Invoke(architecture, new object[] { commandInstance });
+                                Log.Debug($"[CommandMonitor] 成功执行无返回值Command: {commandType.Name}");
                             }
                             else
                             {
-                                Log.Error($"[CommandMonitor] 未找到无返回值的SendCommand方法: {commandType.Name}");
+                                Log.Error($"[CommandMonitor] 未找到无返回值的SendCommand泛型方法: {commandType.Name}");
                             }
                         }
                     }
 
-                    // Debug.Log($"[CommandMonitor] 成功执行Command: {commandType.Name}");
+                    Log.Debug($"[CommandMonitor] 成功执行Command: {commandType.Name}");
                 }
                 catch (Exception e)
                 {
@@ -269,6 +310,11 @@ namespace Twenty2.VomitLib.Monitor
             _executionResults.Clear();
         }
 
+        /// <summary>
+        /// 获取接口分组的Command映射
+        /// </summary>
+        public Dictionary<Type, List<CommandInfo>> GetInterfaceCommandMap() => _interfaceCommandMap ?? new Dictionary<Type, List<CommandInfo>>();
+
         #endregion
 
         #region Data Access Interface (for Editor)
@@ -292,6 +338,7 @@ namespace Twenty2.VomitLib.Monitor
         {
             _commandInfos.Clear();
             _executionResults.Clear();
+            _interfaceCommandMap.Clear();
             _commandsCacheInitialized = false;
         }
 
@@ -435,7 +482,9 @@ namespace Twenty2.VomitLib.Monitor
                     HasReturnValue = false,
                     ReturnType = null,
                     CommandInterfaceType = null,
-                    CanInstantiate = CanInstantiateType(commandType)
+                    CanInstantiate = CanInstantiateType(commandType),
+                    ParentInterfaceType = GetParentInterfaceType(commandType),
+                    IsNestedInInterface = commandType.IsNested && commandType.DeclaringType?.IsInterface == true
                 };
 
                 // 检查是否有返回值
@@ -488,6 +537,38 @@ namespace Twenty2.VomitLib.Monitor
             }
         }
 
+        /// <summary>
+        /// 构建接口-Command映射表
+        /// </summary>
+        private void BuildInterfaceCommandMap()
+        {
+            _interfaceCommandMap.Clear();
+            
+            foreach (var commandInfo in _commandInfos)
+            {
+                if (commandInfo.IsNestedInInterface && commandInfo.ParentInterfaceType != null)
+                {
+                    if (!_interfaceCommandMap.ContainsKey(commandInfo.ParentInterfaceType))
+                    {
+                        _interfaceCommandMap[commandInfo.ParentInterfaceType] = new List<CommandInfo>();
+                    }
+                    _interfaceCommandMap[commandInfo.ParentInterfaceType].Add(commandInfo);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取Command的父接口类型
+        /// </summary>
+        private Type GetParentInterfaceType(Type commandType)
+        {
+            if (commandType.IsNested && commandType.DeclaringType?.IsInterface == true)
+            {
+                return commandType.DeclaringType;
+            }
+            return null;
+        }
+
         #endregion
     }
 
@@ -507,6 +588,8 @@ namespace Twenty2.VomitLib.Monitor
         public Type ReturnType;
         public Type CommandInterfaceType;
         public bool CanInstantiate;
+        public Type ParentInterfaceType;
+        public bool IsNestedInInterface;
     }
 
     /// <summary>
