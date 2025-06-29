@@ -22,11 +22,14 @@ namespace Twenty2.VomitLib.Editor.Monitor
         // 界面状态
         private bool _showSettings = false;
         private Dictionary<Type, bool> _commandFoldoutStates = new Dictionary<Type, bool>();
+        private Dictionary<Type, bool> _interfaceFoldoutStates = new Dictionary<Type, bool>();
 
         // 过滤和搜索
         private string _commandSearchFilter = "";
         private bool _showOnlyExecutable = false;
         private bool _showOnlyWithResults = false;
+        private bool _groupByInterface = true;
+        private bool _showStandaloneCommands = true;
         
         // Command选择
         private string[] _availableCommandNames = new string[0];
@@ -209,6 +212,14 @@ namespace Twenty2.VomitLib.Editor.Monitor
             _showOnlyExecutable = EditorGUILayout.Toggle("仅显示可执行Command", _showOnlyExecutable);
             _showOnlyWithResults = EditorGUILayout.Toggle("仅显示有执行结果", _showOnlyWithResults);
             EditorGUILayout.EndHorizontal();
+            
+            EditorGUILayout.BeginHorizontal();
+            _groupByInterface = EditorGUILayout.Toggle("按接口分组显示", _groupByInterface);
+            if (_groupByInterface)
+            {
+                _showStandaloneCommands = EditorGUILayout.Toggle("显示独立Command", _showStandaloneCommands);
+            }
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(2);
 
@@ -255,11 +266,18 @@ namespace Twenty2.VomitLib.Editor.Monitor
 
             // Command列表滚动区域
             _commandScrollPosition = EditorGUILayout.BeginScrollView(_commandScrollPosition, 
-                GUILayout.Height(Mathf.Min(500, filteredCommands.Count * 40 + 50)));
+                GUILayout.Height(Mathf.Min(500, CalculateScrollViewHeight(filteredCommands))));
 
-            foreach (var commandInfo in filteredCommands.OrderBy(c => c.CommandTypeName))
+            if (_groupByInterface)
             {
-                DrawCommandInfo(commandInfo, executionResults.GetValueOrDefault(commandInfo.CommandType));
+                DrawCommandsByInterface(filteredCommands, executionResults);
+            }
+            else
+            {
+                foreach (var commandInfo in filteredCommands.OrderBy(c => c.CommandTypeName))
+                {
+                    DrawCommandInfo(commandInfo, executionResults.GetValueOrDefault(commandInfo.CommandType));
+                }
             }
 
             EditorGUILayout.EndScrollView();
@@ -466,6 +484,112 @@ namespace Twenty2.VomitLib.Editor.Monitor
                     _needsRefresh = true;
                 }
             }
+        }
+
+        /// <summary>
+        /// 按接口分组绘制Commands
+        /// </summary>
+        private void DrawCommandsByInterface(List<CommandInfo> filteredCommands, Dictionary<Type, CommandExecutionResult> executionResults)
+        {
+            var interfaceCommandMap = _monitor.GetInterfaceCommandMap();
+            
+            // 先绘制按接口分组的Commands
+            foreach (var kvp in interfaceCommandMap.OrderBy(kv => kv.Key.Name))
+            {
+                var interfaceType = kvp.Key;
+                var interfaceCommands = kvp.Value.Where(c => filteredCommands.Contains(c)).ToList();
+                
+                if (interfaceCommands.Count == 0) continue;
+                
+                DrawInterfaceGroup(interfaceType, interfaceCommands, executionResults);
+            }
+            
+            // 然后绘制不属于任何接口的独立Commands
+            if (_showStandaloneCommands)
+            {
+                var standaloneCommands = filteredCommands.Where(c => !c.IsNestedInInterface).ToList();
+                if (standaloneCommands.Count > 0)
+                {
+                    DrawStandaloneCommands(standaloneCommands, executionResults);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 绘制接口分组
+        /// </summary>
+        private void DrawInterfaceGroup(Type interfaceType, List<CommandInfo> interfaceCommands, Dictionary<Type, CommandExecutionResult> executionResults)
+        {
+            if (!_interfaceFoldoutStates.ContainsKey(interfaceType))
+            {
+                _interfaceFoldoutStates[interfaceType] = true;
+            }
+            
+            var executableCount = interfaceCommands.Count(c => c.CanInstantiate);
+            var groupTitle = $"{interfaceType.Name} ({interfaceCommands.Count} Commands, {executableCount} 可执行)";
+            
+            var rect = EditorGUILayout.GetControlRect(false, 25);
+            var interfaceColor = new Color(0.6f, 0.8f, 1f, 0.4f);
+            EditorGUI.DrawRect(rect, interfaceColor);
+            
+            var foldoutRect = new Rect(rect.x + 5, rect.y + 2, rect.width - 10, 20);
+            _interfaceFoldoutStates[interfaceType] = EditorGUI.Foldout(foldoutRect, _interfaceFoldoutStates[interfaceType], groupTitle, true, _subHeaderStyle);
+            
+            if (_interfaceFoldoutStates[interfaceType])
+            {
+                EditorGUI.indentLevel++;
+                foreach (var commandInfo in interfaceCommands.OrderBy(c => c.CommandType.Name))
+                {
+                    DrawCommandInfo(commandInfo, executionResults.GetValueOrDefault(commandInfo.CommandType));
+                }
+                EditorGUI.indentLevel--;
+                
+                EditorGUILayout.Space(2);
+            }
+        }
+        
+        /// <summary>
+        /// 绘制独立Commands
+        /// </summary>
+        private void DrawStandaloneCommands(List<CommandInfo> standaloneCommands, Dictionary<Type, CommandExecutionResult> executionResults)
+        {
+            var executableCount = standaloneCommands.Count(c => c.CanInstantiate);
+            var groupTitle = $"独立Commands ({standaloneCommands.Count} Commands, {executableCount} 可执行)";
+            
+            var rect = EditorGUILayout.GetControlRect(false, 25);
+            var standaloneColor = new Color(0.8f, 0.8f, 0.6f, 0.4f);
+            EditorGUI.DrawRect(rect, standaloneColor);
+            
+            var foldoutRect = new Rect(rect.x + 5, rect.y + 2, rect.width - 10, 20);
+            var showStandalone = EditorGUI.Foldout(foldoutRect, true, groupTitle, true, _subHeaderStyle);
+            
+            if (showStandalone)
+            {
+                EditorGUI.indentLevel++;
+                foreach (var commandInfo in standaloneCommands.OrderBy(c => c.CommandTypeName))
+                {
+                    DrawCommandInfo(commandInfo, executionResults.GetValueOrDefault(commandInfo.CommandType));
+                }
+                EditorGUI.indentLevel--;
+            }
+        }
+        
+        /// <summary>
+        /// 计算滚动视图高度
+        /// </summary>
+        private float CalculateScrollViewHeight(List<CommandInfo> filteredCommands)
+        {
+            if (!_groupByInterface)
+            {
+                return Mathf.Min(500, filteredCommands.Count * 40 + 50);
+            }
+            
+            var interfaceCommandMap = _monitor.GetInterfaceCommandMap();
+            var visibleInterfaceCount = interfaceCommandMap.Count(kvp => kvp.Value.Any(c => filteredCommands.Contains(c)));
+            var standaloneCount = _showStandaloneCommands ? filteredCommands.Count(c => !c.IsNestedInInterface) : 0;
+            
+            var estimatedHeight = visibleInterfaceCount * 30 + filteredCommands.Count * 40 + (standaloneCount > 0 ? 30 : 0) + 100;
+            return Mathf.Min(500, estimatedHeight);
         }
 
         #endregion
