@@ -20,34 +20,13 @@ namespace FluentAPI
         #region GameObject Extensions
 
         /// <summary>
-        /// 为GameObject添加EditorOnly组件并设置标签
-        /// </summary>
-        public static EditorOnly AddEditorLabel(this GameObject selfObj, string label = "Editor Only")
-        {
-#if UNITY_EDITOR
-            var editorOnly = selfObj.GetComponent<EditorOnly>();
-            if (editorOnly == null)
-            {
-                editorOnly = selfObj.AddComponent<EditorOnly>();
-            }
-            editorOnly.SetLabel(label);
-            return editorOnly;
-#else
-            return null;
-#endif
-        }
-
-        /// <summary>
         /// 设置GameObject的EditorOnly标签文本
         /// </summary>
         public static GameObject EditorLabel(this GameObject selfObj, string label)
         {
 #if UNITY_EDITOR
-            var editorOnly = selfObj.GetComponent<EditorOnly>();
-            if (editorOnly != null)
-            {
-                editorOnly.SetLabel(label);
-            }
+            var editorOnly = selfObj.GetOrAddComponent<EditorOnly>();
+            editorOnly.SetLabel(label);
 #endif
             return selfObj;
         }
@@ -58,11 +37,8 @@ namespace FluentAPI
         public static GameObject EditorLabelColor(this GameObject selfObj, Color color)
         {
 #if UNITY_EDITOR
-            var editorOnly = selfObj.GetComponent<EditorOnly>();
-            if (editorOnly != null)
-            {
-                editorOnly.SetLabelColor(color);
-            }
+            var editorOnly = selfObj.GetOrAddComponent<EditorOnly>();
+            editorOnly.SetLabelColor(color);
 #endif
             return selfObj;
         }
@@ -73,11 +49,8 @@ namespace FluentAPI
         public static GameObject EditorLabelOffset(this GameObject selfObj, Vector3 offset)
         {
 #if UNITY_EDITOR
-            var editorOnly = selfObj.GetComponent<EditorOnly>();
-            if (editorOnly != null)
-            {
-                editorOnly.SetLabelOffset(offset);
-            }
+            var editorOnly = selfObj.GetOrAddComponent<EditorOnly>();
+            editorOnly.SetLabelOffset(offset);
 #endif
             return selfObj;
         }
@@ -88,11 +61,8 @@ namespace FluentAPI
         public static GameObject EditorBackground(this GameObject selfObj, Color backgroundColor)
         {
 #if UNITY_EDITOR
-            var editorOnly = selfObj.GetComponent<EditorOnly>();
-            if (editorOnly != null)
-            {
-                editorOnly.SetBackgroundColor(backgroundColor);
-            }
+            var editorOnly = selfObj.GetOrAddComponent<EditorOnly>();
+            editorOnly.SetBackgroundColor(backgroundColor);
 #endif
             return selfObj;
         }
@@ -103,11 +73,8 @@ namespace FluentAPI
         public static GameObject EditorShowBackground(this GameObject selfObj, bool show)
         {
 #if UNITY_EDITOR
-            var editorOnly = selfObj.GetComponent<EditorOnly>();
-            if (editorOnly != null)
-            {
-                editorOnly.SetShowBackground(show);
-            }
+            var editorOnly = selfObj.GetOrAddComponent<EditorOnly>();
+            editorOnly.SetShowBackground(show);
 #endif
             return selfObj;
         }
@@ -115,17 +82,6 @@ namespace FluentAPI
         #endregion
 
         #region Component Extensions
-
-        /// <summary>
-        /// 为Component的GameObject添加EditorOnly组件并设置标签
-        /// </summary>
-        public static T AddEditorLabel<T>(this T selfComponent, string label = "Editor Only") where T : Component
-        {
-#if UNITY_EDITOR
-            selfComponent.gameObject.AddEditorLabel(label);
-#endif
-            return selfComponent;
-        }
 
         /// <summary>
         /// 设置Component的GameObject的EditorOnly标签文本
@@ -184,92 +140,5 @@ namespace FluentAPI
 
         #endregion
 
-        #region EditorOnly Direct Extensions
-
-        /// <summary>
-        /// 设置EditorOnly标签文本（链式调用）
-        /// </summary>
-        public static EditorOnly Label(this EditorOnly selfEditorOnly, string label)
-        {
-#if UNITY_EDITOR
-            if (selfEditorOnly != null)
-            {
-                selfEditorOnly.SetLabel(label);
-            }
-#endif
-            return selfEditorOnly;
-        }
-
-        /// <summary>
-        /// 设置EditorOnly标签颜色（链式调用）
-        /// </summary>
-        public static EditorOnly LabelColor(this EditorOnly selfEditorOnly, Color color)
-        {
-#if UNITY_EDITOR
-            if (selfEditorOnly != null)
-            {
-                selfEditorOnly.SetLabelColor(color);
-            }
-#endif
-            return selfEditorOnly;
-        }
-
-        /// <summary>
-        /// 设置EditorOnly标签偏移（链式调用）
-        /// </summary>
-        public static EditorOnly LabelOffset(this EditorOnly selfEditorOnly, Vector3 offset)
-        {
-#if UNITY_EDITOR
-            if (selfEditorOnly != null)
-            {
-                selfEditorOnly.SetLabelOffset(offset);
-            }
-#endif
-            return selfEditorOnly;
-        }
-
-        /// <summary>
-        /// 设置EditorOnly背景颜色（链式调用）
-        /// </summary>
-        public static EditorOnly BackgroundColor(this EditorOnly selfEditorOnly, Color backgroundColor)
-        {
-#if UNITY_EDITOR
-            if (selfEditorOnly != null)
-            {
-                selfEditorOnly.SetBackgroundColor(backgroundColor);
-            }
-#endif
-            return selfEditorOnly;
-        }
-
-        /// <summary>
-        /// 设置EditorOnly背景显示状态（链式调用）
-        /// </summary>
-        public static EditorOnly ShowBackground(this EditorOnly selfEditorOnly, bool show)
-        {
-#if UNITY_EDITOR
-            if (selfEditorOnly != null)
-            {
-                selfEditorOnly.SetShowBackground(show);
-            }
-#endif
-            return selfEditorOnly;
-        }
-
-        /// <summary>
-        /// 设置EditorOnly背景内边距（链式调用）
-        /// </summary>
-        public static EditorOnly BackgroundPadding(this EditorOnly selfEditorOnly, Vector2 padding)
-        {
-#if UNITY_EDITOR
-            if (selfEditorOnly != null)
-            {
-                selfEditorOnly.SetBackgroundPadding(padding);
-            }
-#endif
-            return selfEditorOnly;
-        }
-
-        #endregion
     }
 }
