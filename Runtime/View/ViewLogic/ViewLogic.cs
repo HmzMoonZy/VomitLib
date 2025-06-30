@@ -74,14 +74,17 @@ namespace Twenty2.VomitLib.View
         }
         
 
-        private RectTransform _rectView;
+        [SerializeField] private RectTransform _rectView;
         /// <summary>
-        /// 面板下命名为'View'的子节点
+        /// 面板下命名为'#View'的子节点
         /// </summary>
-        protected RectTransform RectView => _rectView ??= transform.Find("View").GetComponent<RectTransform>();
+        protected RectTransform RectView => _rectView ??= transform.Find("#View").GetComponent<RectTransform>();
 
+        /// <summary>
+        /// 面板下命名为'#AutoHide'的子节点
+        /// </summary>
+        [SerializeField] private RectTransform _autoHide;
 
-        
         /// <summary>
         /// View 在该 Layer 下的层级.
         /// </summary>
@@ -89,6 +92,12 @@ namespace Twenty2.VomitLib.View
         {
             get => ViewCanvas.sortingOrder;
             set => ViewCanvas.sortingOrder = value;
+        }
+
+        private void Awake()
+        {
+            _autoHide ??= transform.Find("#AutoHide").GetComponent<RectTransform>();
+            _autoHide?.gameObject.SetActive(false);
         }
         
         #region 生命周期
@@ -99,7 +108,7 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         public virtual void OnCreated()
         {
-           
+            
         }
 
         /// <summary>
