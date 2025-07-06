@@ -96,8 +96,8 @@ namespace Twenty2.VomitLib.View
 
         private void Awake()
         {
-            _autoHide ??= transform.Find("#AutoHide").GetComponent<RectTransform>();
-            _autoHide?.gameObject.SetActive(false);
+            _autoHide ??= transform.Find("#AutoHide")?.GetComponent<RectTransform>();
+            _autoHide?.gameObject?.SetActive(false);
         }
         
         #region 生命周期
