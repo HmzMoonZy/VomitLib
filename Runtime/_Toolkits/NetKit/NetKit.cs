@@ -4,22 +4,25 @@ namespace  Twenty2.VomitLib.Tools
 {
     public static class NetKit
     {
-// #if UNITY_IPHONE && !UNITY_EDITOR
-//         [DllImport("__Internal")]
-//         private static extern string getIPv6(string mHost, string mPort);
-// #endif
+#if UNITY_IPHONE && !UNITY_EDITOR
+        [DllImport("__Internal")]
+        private static extern string getIPv6(string mHost, string mPort);
+#endif
 
-        //"192.168.1.1&&ipv4"
-        static string GetIPv6(string mHost, string mPort)
+        /// <summary>
+        /// 返回形如[192.168.1.1&&ipv4]的字符串
+        /// </summary>
+        /// <param name="mHost"></param>
+        /// <param name="mPort"></param>
+        /// <returns></returns>
+        public static string GetIPv6(string mHost, string mPort)
         {
+#if UNITY_IPHONE && !UNITY_EDITOR
+		    string mIPv6 = getIPv6(mHost, mPort);
+		    return mIPv6;
+#else
             return mHost + "&&ipv4";
-            
-// #if UNITY_IPHONE && !UNITY_EDITOR
-// 		    string mIPv6 = getIPv6(mHost, mPort);
-// 		    return mIPv6;
-// #else
-//             return mHost + "&&ipv4";
-// #endif
+#endif
         }
 
         public static (AddressFamily, string) GetIPv6Address(string host, int port)

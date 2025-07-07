@@ -5,11 +5,10 @@ using System.Net.Sockets;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
-using QFramework;
+using Twenty2.VomitLib;
 using Debug = UnityEngine.Debug;
 
-namespace Twenty2.VomitLib.Net
+namespace Twenty2.Vomit.Net
 {
     public class NetChannel
     {
@@ -17,7 +16,7 @@ namespace Twenty2.VomitLib.Net
         protected Action _onClose;
         protected Pipe _recvPipe;
         protected TcpClient _socket;
-        protected CancellationTokenSource _closeSrc = new CancellationTokenSource();
+        protected CancellationTokenSource _cts = new();
 
         public NetChannel(TcpClient socket, Action<Message> onMessage = null, Action onClose = null)
         {
@@ -25,19 +24,27 @@ namespace Twenty2.VomitLib.Net
             this._onMessage = onMessage;
             this._onClose = onClose;
             _recvPipe = new Pipe();
-
-            _ = StartAsync();
         }
 
-        private async Task StartAsync()
+        public virtual void Close()
+        {
+            _cts.Cancel();
+        }
+
+        public virtual bool IsClose()
+        {
+            return _cts.IsCancellationRequested;
+        }
+
+        public async Task StartAsync()
         {
             try
             {
-                _ = ReadSocketTask();
-                
-                while (!IsClose())
+                _ = RecvNetData();
+                var cancelToken = _cts.Token;
+                while (!cancelToken.IsCancellationRequested)
                 {
-                    var result = await _recvPipe.Reader.ReadAsync(_closeSrc.Token);
+                    var result = await _recvPipe.Reader.ReadAsync(cancelToken);
                     var buffer = result.Buffer;
                     if (buffer.Length > 0)
                     {
@@ -55,29 +62,25 @@ namespace Twenty2.VomitLib.Net
             }
             catch (Exception e)
             {
-                Debug.LogError(e.Message);
+                Log.Error(e.Message);
             }
 
             Close();
             _onClose?.Invoke();
         }
-        
-        /// <summary>
-        /// 接收数据任务，异步读取套接字流中的数据并写入接收管道
-        /// </summary>
-        private async Task ReadSocketTask()
+
+        private async Task RecvNetData()
         {
-            var readBuffer = new byte[2048];
-            var writer = _recvPipe.Writer;
-            while (!IsClose())
+            byte[] readBuffer = new byte[2048];
+            var dataPipeWriter = _recvPipe.Writer;
+            var cancelToken = _cts.Token;
+            while (!cancelToken.IsCancellationRequested)
             {
-                // 从套接字流中异步读取数据
-                var length = await _socket.GetStream().ReadAsync(readBuffer, 0, readBuffer.Length, _closeSrc.Token);
+                var length = await _socket.GetStream().ReadAsync(readBuffer, 0, readBuffer.Length, cancelToken);
                 if (length > 0)
                 {
-                    // 将读取到的数据写入接收管道
-                    writer.Write(readBuffer.AsSpan().Slice(0, length));
-                    var flushTask = writer.FlushAsync();
+                    dataPipeWriter.Write(readBuffer.AsSpan().Slice(0, length));
+                    var flushTask = dataPipeWriter.FlushAsync();
                     if (!flushTask.IsCompleted)
                     {
                         await flushTask.ConfigureAwait(false);
@@ -90,19 +93,9 @@ namespace Twenty2.VomitLib.Net
             }
         }
 
-        public virtual void Close()
-        {
-            _closeSrc.Cancel();
-        }
-
-        public virtual bool IsClose()
-        {
-            return _closeSrc.IsCancellationRequested;
-        }
-
         protected virtual bool TryParseMessage(ref ReadOnlySequence<byte> input)
         {
-            var reader = new MessagePack.SequenceReader<byte>(input);
+            var reader = new System.Buffers.SequenceReader<byte>(input);
 
             if (!reader.TryReadBigEndian(out int length) || reader.Remaining < length - 4)
             {
@@ -111,26 +104,19 @@ namespace Twenty2.VomitLib.Net
 
             var payload = input.Slice(reader.Position, length - 4);
             if (payload.Length < 4)
-            {
                 throw new Exception("消息长度不够");
-            }
-            
             //消息id
             reader.TryReadBigEndian(out int msgId);
 
             var message = MessagePackSerializer.Deserialize<Message>(payload.Slice(4));
-#if UNITY_EDITOR
             Log.Debug("收到消息:" + MessagePackSerializer.SerializeToJson(message));
-#endif
             if (message.MsgId != msgId)
             {
                 throw new Exception($"解析消息错误，注册消息id和消息无法对应.real:{message.MsgId}, register:{msgId}");
             }
 
             _onMessage(message);
-            
             input = input.Slice(input.GetPosition(length));
-            
             return true;
         }
 
@@ -140,19 +126,14 @@ namespace Twenty2.VomitLib.Net
         public void Write(Message msg)
         {
             if (IsClose())
-            {
                 return;
-            }
 
-#if UNITY_EDITOR
             Log.Debug("发送消息:" + MessagePackSerializer.SerializeToJson(msg));
-#endif
             var bytes = MessagePackSerializer.Serialize(msg);
             int len = 4 + 8 + 4 + 4 + bytes.Length;
             var buffer = ArrayPool<byte>.Shared.Rent(len);
 
-            count++;
-            int magic = Magic + count;
+            int magic = Magic + ++count;
             magic ^= Magic << 8;
             magic ^= len;
 
