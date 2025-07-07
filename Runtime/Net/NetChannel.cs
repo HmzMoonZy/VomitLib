@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Twenty2.VomitLib;
 using Debug = UnityEngine.Debug;
 
-namespace Twenty2.Vomit.Net
+namespace Twenty2.VomitLib.Net
 {
     public class NetChannel
     {

@@ -1,5 +1,4 @@
-﻿
-namespace Twenty2.Vomit.Net
+﻿namespace Twenty2.VomitLib.Net
 {
     public abstract class EvtNet
     {

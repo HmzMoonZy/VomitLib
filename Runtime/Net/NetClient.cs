@@ -8,7 +8,7 @@ using Twenty2.VomitLib;
 using Twenty2.VomitLib.Tools;
 using UnityEngine;
 
-namespace Twenty2.Vomit.Net
+namespace Twenty2.VomitLib.Net
 {
     public class NetClient
     {
