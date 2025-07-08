@@ -57,15 +57,6 @@ namespace Twenty2.VomitLib.Net
             _ignoreCodeSet.Add(msgId);
         }
         
-        private NetClient()
-        {
-            UniTask.Create(async () =>
-            {
-                await UniTask.Yield(PlayerLoopTiming.Update);
-                Update();
-            });
-        }
-        
         public int Port { private set; get; }
         public string Host { private set; get; }
         
@@ -163,12 +154,7 @@ namespace Twenty2.VomitLib.Net
                 Log.Debug($"开始处理网络事件 {msg.MsgId} [{msg.GetType().FullName}]");
                 try
                 {
-                    // TODO 测试直接转发
-                    VomitLib.Vomit.Interface.SendEvent(new EvtNet.RecvMsg()
-                    {
-                        MsgId = msg.MsgId,
-                        Msg = msg,
-                    });
+                    AbstractNetSystem.RecvMsg(msg);
                 }
                 catch (Exception e)
                 {
