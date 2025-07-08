@@ -39,7 +39,7 @@ public abstract class AbstractNetSystem : QFramework.AbstractSystem
     public static async UniTask<bool> Init(MessagePack.IFormatterResolver resolver, string host, int port, int errRespMsgId, [NotNull]Func<Message, bool> onErrCodeResp)
     {
         _onErrCodeResp = onErrCodeResp;
-
+        _errRespMsgId = errRespMsgId;
         try
         {
             // GeekServer 的 MessagePack 解析器

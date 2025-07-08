@@ -25,23 +25,23 @@ namespace Twenty2.VomitLib
             switch (level)
             {
                 case LogLevel.Debug:
-                    Debug.Log(string.Format("<color=#888888>{0}</color>", message));
+                    Debug.Log(string.Format("[Debug] <color=#888888>{0}</color>", message));
                     break;
 
                 case LogLevel.Info:
-                    Debug.Log(message.ToString());
+                    Debug.Log(string.Format("[Info] {0}", message));
                     break;
 
                 case LogLevel.Warning:
-                    Debug.LogWarning(message.ToString());
+                    Debug.LogWarning(string.Format("[Warning] {0}", message));
                     break;
 
                 case LogLevel.Error:
-                    Debug.LogError(message.ToString());
+                    Debug.LogError(string.Format("[Error] {0}", message));
                     break;
 
                 case LogLevel.Fatal:
-                    Debug.LogError(message.ToString());
+                    Debug.LogError(string.Format("[Fatal] {0}", message));
                     break;
 
                 default:

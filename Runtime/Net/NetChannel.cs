@@ -128,7 +128,7 @@ namespace Twenty2.VomitLib.Net
             if (IsClose())
                 return;
 
-            Log.Debug("发送消息:" + MessagePackSerializer.SerializeToJson(msg));
+            Log.Debug($"发送消息:{MessagePackSerializer.SerializeToJson(msg)}");
             var bytes = MessagePackSerializer.Serialize(msg);
             int len = 4 + 8 + 4 + 4 + bytes.Length;
             var buffer = ArrayPool<byte>.Shared.Rent(len);
