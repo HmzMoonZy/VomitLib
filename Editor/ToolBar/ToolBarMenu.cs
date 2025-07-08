@@ -1,5 +1,8 @@
+using System.Diagnostics;
+using System.IO;
 using LubanSupport.Editor;
 using Twenty2.VomitLib.Config;
+using Twenty2.VomitLib.Editor.MessagePack;
 using UnityEditor;
 using UnityEngine;
 
@@ -30,7 +33,12 @@ namespace Twenty2.VomitLib.Editor
         
             if (GUILayout.Button("生成数据",  GUILayout.Width(80)))
             {
-                LubanTool.GenerateData();
+                LubanTool.GenerateClientData();
+            }
+
+            if(GUILayout.Button("生成协议",  GUILayout.Width(80)))
+            {
+                MessagePackTool.GenerateMessagePackProtocol();
             }
             
             if (GUILayout.Button("配置文件",  GUILayout.Width(80)))

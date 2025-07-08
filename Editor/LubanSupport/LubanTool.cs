@@ -15,7 +15,7 @@ using Debug = UnityEngine.Debug;
 
 namespace LubanSupport.Editor
 {
-    // TODO 支持 luban 特性
+    // TODO 支持Group配置
     public class LubanTool : UnityEditor.Editor
     {
         public static LubanConfig Config
@@ -78,8 +78,8 @@ namespace LubanSupport.Editor
         }
         
         
-        [MenuItem("VomitLib/ClientDB/生成客户端数据")]
-        public static async void GenerateData()
+        [MenuItem("VomitLib/LubanSupport/生成客户端数据")]
+        public static async void GenerateClientData()
         {
             try
             {
@@ -90,8 +90,6 @@ namespace LubanSupport.Editor
                 EditorUtility.DisplayDialog("生成客户端数据", "生成客户端数据成功", "确定");
                 AssetDatabase.Refresh();
                 AssetDatabase.SaveAssets();
-                
-                
             }
             catch (Exception e)
             {
@@ -99,29 +97,25 @@ namespace LubanSupport.Editor
             }
         }
 
-        [MenuItem("VomitLib/ClientDB/生成客户端数据(Clean)")]
-        public static void ClearAndGenerateData()
+        [MenuItem("VomitLib/LubanSupport/生成服务器数据")]
+        public static async void GenerateServerData()
         {
-            var config = Config;
-            
-            DirectoryInfo dir = new DirectoryInfo(config.GenDataPath);
-        
-            foreach (var fileInfo in dir.GetFiles())
+            try
             {
-                File.Delete(fileInfo.FullName);
-            }
+                var config = Config;
 
-            GenerateData();
+                string cmd = GenerateCmd(config.GenServerCodePath, config.GenServerDataPath, !string.IsNullOrEmpty(config.LocalizationPath), config.NoneStyle, config.Format);
+                await RunCmd(cmd);
+                EditorUtility.DisplayDialog("生成服务器数据", "生成服务器数据成功", "确定");
+                AssetDatabase.Refresh();
+                AssetDatabase.SaveAssets();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+            }
         }
-        
-        // [MenuItem("VomitLib/ClientDB/生成服务器数据")]
-        // private static void ClearAndGenerateServerData()
-        // {
-        //     var config = VomitEditor.Config.NetConfig;
-        //     string cmd = GenerateCmd(config.ServerScriptPath, config.ServerDataPath, true, config.Format);
-        //     RunCmd(cmd);
-        // }
-        
+
         private static string GenerateCmd(string outputCodeDir, string outputDataDir, bool enableL10N, bool useNoneStyle, LubanFormat format)
         {
             var config = Config;

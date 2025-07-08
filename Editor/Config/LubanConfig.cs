@@ -24,7 +24,13 @@ namespace Twenty2.VomitLib.Config
         [Tooltip("Luban 生成代码路径")]
         public string GenCodePath;
 
-        [Tooltip("Luban 代码更格式化类型")]
+        [Tooltip("Luban 生成服务器数据路径")]
+        public string GenServerDataPath;
+
+        [Tooltip("Luban 生成服务器代码路径")]
+        public string GenServerCodePath;
+
+        [Tooltip("Luban 代码格式化类型")]
         public LubanFormat Format;
 
         [Tooltip("Luban 是否风格化代码")]
