@@ -100,17 +100,6 @@ public abstract class AbstractNetSystem : QFramework.AbstractSystem
     }
 
     /// <summary>
-    /// 发送消息
-    /// </summary>
-    /// <param name="uri">请求地址</param>
-    /// <returns>是否成功</returns>
-    protected UniTask<bool> SendMsg(Uri uri)
-    {
-        // TODO 暂未实现
-        return UniTask.FromResult(true);
-    }
-
-    /// <summary>
     /// 获取当前消息
     /// </summary>
     /// <typeparam name="T">消息类型</typeparam>
