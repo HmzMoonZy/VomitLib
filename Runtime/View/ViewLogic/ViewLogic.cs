@@ -74,7 +74,7 @@ namespace Twenty2.VomitLib.View
         }
         
 
-        [SerializeField] private RectTransform _rectView;
+        private RectTransform _rectView;
         /// <summary>
         /// 面板下命名为'#View'的子节点
         /// </summary>
@@ -83,7 +83,7 @@ namespace Twenty2.VomitLib.View
         /// <summary>
         /// 面板下命名为'#AutoHide'的子节点
         /// </summary>
-        [SerializeField] private RectTransform _autoHide;
+        private RectTransform _autoHide;
 
         /// <summary>
         /// View 在该 Layer 下的层级.

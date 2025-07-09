@@ -10,17 +10,16 @@ using UnityEngine;
 /// <summary>
 /// 网络系统基类
 /// </summary>
-public abstract class AbstractNetSystem : QFramework.AbstractSystem
+public static class NetSystem
 {
-    /// <summary>
-    /// 消息ID
-    /// </summary>
-    private static int UniId { set; get; } = 200;
+    public static int UniId { get; private set; } = 200;
 
     /// <summary>
     /// 消息注册
     /// </summary>
     private static Dictionary<int, Action<Message>> _msgRegisters = new();
+
+    private static Dictionary<int, Action<Message>> _msgOnceRegisters = new();
 
     private static Func<Message, bool> _onErrCodeResp;
 
@@ -67,6 +66,14 @@ public abstract class AbstractNetSystem : QFramework.AbstractSystem
         }
     }
 
+    public static UniTask Send(Message msg)
+    {
+        msg.UniId = UniId++;
+        NetClient.Instance.Send(msg);
+        Log.Debug("开始等待消息:" + msg.UniId);
+        return MsgWaiter.StartWait(msg.UniId);
+    }
+
     /// <summary>
     /// 收到消息
     /// </summary>
@@ -87,27 +94,11 @@ public abstract class AbstractNetSystem : QFramework.AbstractSystem
         {
             onMsg?.Invoke(msg);
         }
-    }
-
-    /// <summary>
-    /// 发送消息
-    protected UniTask<bool> SendMsg(Message msg)
-    {
-        msg.UniId = UniId++;
-        NetClient.Instance.Send(msg);
-        Log.Debug("开始等待消息:" + msg.UniId);
-        return MsgWaiter.StartWait(msg.UniId);
-    }
-
-    /// <summary>
-    /// 获取当前消息
-    /// </summary>
-    /// <typeparam name="T">消息类型</typeparam>
-    /// <param name="msg">消息</param>
-    /// <returns></returns>
-    protected T GetCurMsg<T>(object msg) where T : Message, new()
-    {
-        return msg as T;
+        if (_msgOnceRegisters.TryGetValue(msg.MsgId, out var onOnceMsg))
+        {
+            onOnceMsg?.Invoke(msg);
+            _msgOnceRegisters.Remove(msg.MsgId);
+        }
     }
 
     /// <summary>
@@ -115,11 +106,11 @@ public abstract class AbstractNetSystem : QFramework.AbstractSystem
     /// </summary>
     /// <param name="msgId">消息ID</param>
     /// <param name="onMsg">消息回调</param>
-    protected void RegisterMsg(int msgId, Action<Message> onMsg)
+    public static void RegisterMsg(int msgId, Action<Message> onMsg)
     {
         if(_msgRegisters.ContainsKey(msgId))
         {
-            Log.Warning($"消息ID {msgId} 已注册");
+            Log.Warning($"消息ID {msgId} 已注册, 覆盖旧回调");
             _msgRegisters[msgId] = onMsg;
         }
         else
@@ -128,8 +119,26 @@ public abstract class AbstractNetSystem : QFramework.AbstractSystem
         }
     }
 
-    protected void UnRegisterMsg(int msgId)
+    public static void RegisterOnceMsg(int msgId, Action<Message> onMsg)
+    {
+        if(_msgOnceRegisters.ContainsKey(msgId))
+        {
+            Log.Warning($"消息ID {msgId} 已注册, 覆盖旧回调");
+            _msgOnceRegisters[msgId] = onMsg;
+        }
+        else
+        {
+            _msgOnceRegisters.Add(msgId, onMsg);
+        }
+    }
+
+    public static void UnRegisterMsg(int msgId)
     {
         _msgRegisters.Remove(msgId);
+    }
+
+    public static void UnRegisterOnceMsg(int msgId)
+    {
+        _msgOnceRegisters.Remove(msgId);
     }
 }

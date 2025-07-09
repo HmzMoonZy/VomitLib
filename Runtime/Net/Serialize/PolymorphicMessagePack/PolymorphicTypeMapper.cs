@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Twenty2.VomitLib;
 using Twenty2.VomitLib.Tools;
 
 namespace PolymorphicMessagePack
@@ -65,7 +66,7 @@ namespace PolymorphicMessagePack
             {
                 if (t.FullName != type.FullName)
                 {
-                    Logger.Error($"typemapper注册错误,不同类型,id相同{t.FullName}  {type.FullName}");
+                    Log.Error($"typemapper注册错误,不同类型,id相同{t.FullName}  {type.FullName}");
                 }
             }
 
