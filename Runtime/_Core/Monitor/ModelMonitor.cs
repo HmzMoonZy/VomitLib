@@ -17,6 +17,8 @@ namespace Twenty2.VomitLib.Monitor
     [System.Serializable]
     public class ModelMonitor : MonoBehaviour
     {
+
+#if UNITY_EDITOR
         #region Fields
 
         [Header("Model监控设置")]
@@ -246,8 +248,6 @@ namespace Twenty2.VomitLib.Monitor
 
         #region Data Access Interface (for Editor)
 
-#if UNITY_EDITOR
-
         /// <summary>
         /// 获取Model信息列表（仅Editor访问）
         /// </summary>
@@ -308,8 +308,6 @@ namespace Twenty2.VomitLib.Monitor
         {
             _modelFieldsCache.Clear();
         }
-
-#endif
 
         #endregion
 
@@ -505,6 +503,7 @@ namespace Twenty2.VomitLib.Monitor
         }
 
         #endregion
+#endif
     }
 
     #region Data Classes

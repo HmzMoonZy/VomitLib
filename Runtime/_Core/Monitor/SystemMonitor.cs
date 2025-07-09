@@ -17,6 +17,7 @@ namespace Twenty2.VomitLib.Monitor
     [System.Serializable]
     public class SystemMonitor : MonoBehaviour
     {
+#if UNITY_EDITOR
         #region Fields
 
         [Header("System监控设置")]
@@ -283,8 +284,6 @@ namespace Twenty2.VomitLib.Monitor
 
         #region Data Access Interface (for Editor)
 
-#if UNITY_EDITOR
-
         /// <summary>
         /// 获取System信息列表（仅Editor访问）
         /// </summary>
@@ -371,9 +370,6 @@ namespace Twenty2.VomitLib.Monitor
             _systemFieldsCache.Clear();
             _systemMethodsCache.Clear();
         }
-
-#endif
-
         #endregion
 
         #region Private Methods
@@ -429,13 +425,11 @@ namespace Twenty2.VomitLib.Monitor
         /// </summary>
         private void UpdateMonitoringData()
         {
-#if UNITY_EDITOR
             if (_autoRefresh && EditorApplication.timeSinceStartup - _lastRefreshTime > _refreshInterval)
             {
                 _lastRefreshTime = EditorApplication.timeSinceStartup;
                 RefreshSystemData();
             }
-#endif
         }
 
         /// <summary>
@@ -544,6 +538,7 @@ namespace Twenty2.VomitLib.Monitor
         }
 
         #endregion
+#endif
     }
 
     #region Data Classes
