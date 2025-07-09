@@ -30,7 +30,7 @@ namespace VomitLib.Net.Http
         /// 初始化HTTP客户端
         /// </summary>
         /// <param name="config">HTTP配置</param>
-        public static void Initialize(HttpConfig config)
+        public static void Init(HttpConfig config)
         {
             lock (_lock)
             {
