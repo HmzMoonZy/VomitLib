@@ -35,7 +35,7 @@ public static class NetSystem
     /// <param name="port">服务器端口</param>
     /// <param name="onErrCodeResp">错误码消息回调</param>
     /// <returns>是否链接成功</returns>
-    public static async UniTask<bool> Init(MessagePack.IFormatterResolver resolver, string host, int port, int errRespMsgId, [NotNull]Func<Message, bool> onErrCodeResp)
+    public static async UniTask<bool> Init(MessagePack.IFormatterResolver resolver, string host, int port, int errRespMsgId, [NotNull]Func<Message, bool> onErrCodeResp, [NotNull]Action onDisConnected)
     {
         _onErrCodeResp = onErrCodeResp;
         _errRespMsgId = errRespMsgId;
@@ -57,7 +57,7 @@ public static class NetSystem
             }).Forget();
 
             // 连接服务器
-            return await NetClient.Instance.Connect(host, port);
+            return await NetClient.Instance.Connect(host, port, onDisConnected);
         }
         catch (System.Exception e)
         {

@@ -60,7 +60,7 @@ namespace Twenty2.VomitLib.Net
         public int Port { private set; get; }
         public string Host { private set; get; }
         
-        public async Task<bool> Connect(string host, int port, int timeOut = 5000)
+        public async Task<bool> Connect(string host, int port, Action onDisConnected, int timeOut = 5000)
         {
             Host = host;
             Port = port;
@@ -88,7 +88,7 @@ namespace Twenty2.VomitLib.Net
                 
                 Log.Debug($"connected success....");
 
-                _channel = new NetChannel(socket, OnReceive, OnDisConnected);
+                _channel = new NetChannel(socket, OnReceive, onDisConnected);
                 
                 _ = _channel.StartAsync();
                 
@@ -101,16 +101,9 @@ namespace Twenty2.VomitLib.Net
             }
         }
         
-        
         public void Send(Message msg)
         {
             _channel?.Write(msg);
-        }
-
-        private void OnDisConnected()
-        {
-            // TODO 兼容离线消息
-            // _msgQueue.Enqueue(new NetDisConnectMessage());
         }
 
         private void OnReceive(Message msg)
