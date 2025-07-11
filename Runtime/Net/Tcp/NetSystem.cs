@@ -108,8 +108,9 @@ public static class NetSystem
     /// </summary>
     /// <param name="msgId">消息ID</param>
     /// <param name="onMsg">消息回调</param>
-    public static void RegisterMsg(int msgId, Action<Message> onMsg)
+    public static void RegisterMsg<T>(Action<Message> onMsg) where T : Message, new()
     {
+        var msgId = new T().MsgId;              // TODO MsgFactory 有办法映射,未来添加支持.
         if(_msgRegisters.ContainsKey(msgId))
         {
             Log.Warning($"消息ID {msgId} 已注册, 覆盖旧回调");
