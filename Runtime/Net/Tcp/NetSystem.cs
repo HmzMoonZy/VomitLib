@@ -54,6 +54,8 @@ public static class NetSystem
                     await UniTask.Yield(PlayerLoopTiming.Update);
                     NetClient.Instance.Update();
                 }
+
+                NetClient.Instance.Close();
             }).Forget();
 
             // 连接服务器

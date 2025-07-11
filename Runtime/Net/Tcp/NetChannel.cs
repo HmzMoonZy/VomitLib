@@ -56,9 +56,13 @@ namespace Twenty2.VomitLib.Net
                         break;
                     }
                 }
+
+                // 断开连接
+                _socket.Close();
             }
             catch (OperationCanceledException)
             {
+                _socket.Close();
             }
             catch (Exception e)
             {
