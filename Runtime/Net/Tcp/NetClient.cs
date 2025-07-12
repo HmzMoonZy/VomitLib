@@ -147,7 +147,7 @@ namespace Twenty2.VomitLib.Net
                 Log.Debug($"开始处理网络事件 {msg.MsgId} [{msg.GetType().FullName}]");
                 try
                 {
-                    NetSystem.RecvMsg(msg);
+                    NetSystem.ProcessMsg(msg);
                 }
                 catch (Exception e)
                 {

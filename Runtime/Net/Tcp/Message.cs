@@ -11,4 +11,12 @@ public class Message
     public virtual int MsgId { get; }
 }
 
+public static class MessageExtensions
+{
+    public static T GetMessage<T>(this Message msg) where T : Message
+    {
+        return msg as T;
+    }
+}
+
 

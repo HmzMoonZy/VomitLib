@@ -12,11 +12,8 @@ using UnityEngine;
 /// </summary>
 public static class NetSystem
 {
-    public static int UniId { get; private set; } = 200;
-
-    /// <summary>
-    /// 消息注册
-    /// </summary>
+    private static int UniId { get; set; } = 200;
+    
     private static Dictionary<int, Action<Message>> _msgRegisters = new();
 
     private static Dictionary<int, Action<Message>> _msgOnceRegisters = new();
@@ -76,11 +73,17 @@ public static class NetSystem
         return MsgWaiter.StartWait(msg.UniId);
     }
 
+    public static UniTask Send<T>() where T : Message, new()
+    {
+        var msg = new T();
+        return Send(msg);
+    }
+
     /// <summary>
     /// 收到消息
     /// </summary>
     /// <param name="msg">消息</param>
-    public static void RecvMsg(Message msg)
+    public static void ProcessMsg(Message msg)
     {
         // 双消息机制
         if(msg.MsgId == _errRespMsgId)
@@ -111,6 +114,11 @@ public static class NetSystem
     public static void RegisterMsg<T>(Action<Message> onMsg) where T : Message, new()
     {
         var msgId = new T().MsgId;              // TODO MsgFactory 有办法映射,未来添加支持.
+        RegisterMsg(msgId, onMsg);
+    }
+
+    public static void RegisterMsg(int msgId, Action<Message> onMsg)
+    {
         if(_msgRegisters.ContainsKey(msgId))
         {
             Log.Warning($"消息ID {msgId} 已注册, 覆盖旧回调");
@@ -122,6 +130,21 @@ public static class NetSystem
         }
     }
 
+    /// <summary>
+    /// 注册一次性消息
+    /// </summary>
+    /// <param name="onMsg">消息回调</param>
+    public static void RegisterOnceMsg<T>(Action<Message> onMsg) where T : Message, new()
+    {
+        var msgId = new T().MsgId;
+        RegisterOnceMsg(msgId, onMsg);
+    }
+
+    /// <summary>
+    /// 注册一次性消息
+    /// </summary>
+    /// <param name="msgId">消息ID</param>
+    /// <param name="onMsg">消息回调</param>
     public static void RegisterOnceMsg(int msgId, Action<Message> onMsg)
     {
         if(_msgOnceRegisters.ContainsKey(msgId))
@@ -135,13 +158,39 @@ public static class NetSystem
         }
     }
 
+    /// <summary>
+    /// 取消注册消息
+    /// </summary>
+    /// <param name="msgId">消息ID</param>
     public static void UnRegisterMsg(int msgId)
     {
         _msgRegisters.Remove(msgId);
     }
 
+    /// <summary>
+    /// 取消注册消息
+    /// </summary>
+    public static void UnRegisterMsg<T>() where T : Message, new()
+    {
+        var msgId = new T().MsgId;
+        UnRegisterMsg(msgId);
+    }
+
+    /// <summary>
+    /// 取消注册一次性消息
+    /// </summary>
+    /// <param name="msgId">消息ID</param>
     public static void UnRegisterOnceMsg(int msgId)
     {
         _msgOnceRegisters.Remove(msgId);
+    }
+
+    /// <summary>
+    /// 取消注册一次性消息
+    /// </summary>
+    public static void UnRegisterOnceMsg<T>() where T : Message, new()
+    {
+        var msgId = new T().MsgId;
+        UnRegisterOnceMsg(msgId);
     }
 }

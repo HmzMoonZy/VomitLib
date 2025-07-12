@@ -123,7 +123,7 @@ namespace Twenty2.VomitLib.Net
                 // 如果所有等待的消息都完成了，通知WaitAllBack
                 if (_waitDic.Count == 0 && _allTcs != null)
                 {
-                    _allTcs.TrySetResult(true);
+                    _allTcs?.TrySetResult(true);
                     _allTcs = null;
                 }
             }
