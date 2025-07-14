@@ -10,19 +10,13 @@ namespace Twenty2.VomitLib.View
         /// </summary>                                                                           
         public int Priority { get; } = 0;
 
-        /// <summary>
-        /// 加载路径
-        /// </summary>
-        public string ResourcePath;
-        
-        public ViewPreloadAttribute(string resourcePath)
+        public ViewPreloadAttribute()
         {
-            ResourcePath = resourcePath;
+            
         }
 
-        public ViewPreloadAttribute(string resourcePath, int priority)
+        public ViewPreloadAttribute(int priority)
         {
-            ResourcePath = resourcePath;
             Priority = priority;
         }
 

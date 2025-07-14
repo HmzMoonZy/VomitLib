@@ -69,7 +69,7 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         private static ViewUpdateManager _updateManager;
 
-        public static void Init(IViewLoader loader = null, IViewBinder binder = null, IViewMasker masker = null, IViewLocalizer localizer = null, IViewRecorder recorder = null, IViewLocker locker = null)
+        public static async UniTask Init(IViewLoader loader = null, IViewBinder binder = null, IViewMasker masker = null, IViewLocalizer localizer = null, IViewRecorder recorder = null, IViewLocker locker = null)
         {
             _loader = loader ?? new ViewLoaderAddressable(viewName => $"View/{viewName}.prefab");
             _binder = binder ?? new ViewBinder(null);
@@ -83,15 +83,15 @@ namespace Twenty2.VomitLib.View
             _updateManager.StartUpdateManager().Forget();
 
             // 预加载
-            PreloadViews();
+            await PreloadViews();
 
             Log.Debug("View 初始化完成");
 
-            static void PreloadViews()
+            async static UniTask PreloadViews()
             {
                 Log.Debug("开始扫描和预加载View");
 
-                var preloadableViews = new List<(string viewName, string resourcePath, int priority)>();
+                var preloadableViews = new List<(string viewName, int priority)>();
 
                 // 获取当前域中的所有程序集
                 foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
@@ -106,7 +106,7 @@ namespace Twenty2.VomitLib.View
                             var preloadAttr = viewType.GetCustomAttribute<ViewPreloadAttribute>();
                             if (preloadAttr != null)
                             {
-                                preloadableViews.Add((viewType.Name, preloadAttr.ResourcePath, preloadAttr.Priority));
+                                preloadableViews.Add((viewType.Name, preloadAttr.Priority));
                             }
                         }
                     }
@@ -123,21 +123,13 @@ namespace Twenty2.VomitLib.View
                 Log.Debug($"找到 {preloadableViews.Count} 个需要预加载的View");
 
                 // 预加载所有View资源
-                foreach (var (viewName, resourcePath, priority) in preloadableViews)
+                foreach (var (viewName, priority) in preloadableViews)
                 {
                     try
                     {
-                        var prefab = Resources.Load<GameObject>(resourcePath);
-                        if (prefab != null)
-                        {
-                            var view = Object.Instantiate(prefab, Root.HiddenCanvas);
-                            _preLoadMap.Add(viewName, view);
-                            Log.Debug($"预加载成功: {viewName}, 路径: {resourcePath}, 优先级: {priority}");
-                        }
-                        else
-                        {
-                            Log.Warning($"预加载失败: {viewName}, 未找到资源: {resourcePath}");
-                        }
+                        var prefab = await _loader.CreateView(viewName, Root.HiddenCanvas);
+                        _preLoadMap.Add(viewName, prefab);
+                        Log.Debug($"预加载成功: {viewName}, 优先级: {priority}");
                     }
                     catch (Exception ex)
                     {
