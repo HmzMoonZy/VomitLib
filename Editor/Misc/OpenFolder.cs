@@ -31,6 +31,16 @@ namespace Twenty2.VomitLib.Editor
                 Execute(directoryInfo.FullName);
             }
         }
+
+        [MenuItem("VomitLib/Open Folder/Server Path", false, 10)]
+        public static void OpenFolderServer()
+        {
+            var directoryInfo = new FileInfo(VomitEditor.Config.NetConfig.ServerPath).Directory;
+            if (directoryInfo != null)
+            {
+                Execute(directoryInfo.FullName);
+            }
+        }
         
         /// <summary>
         /// 打开 Data Path 文件夹。

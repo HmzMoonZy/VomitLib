@@ -15,5 +15,8 @@ namespace Twenty2.VomitLib.Config
         
         [Header("SpriteAtlas 配置")] 
         public SpriteAtlasConfig SpriteAtlasConfig;
+        
+        [Header("Net 配置")] 
+        public NetConfig NetConfig;
     }
 }
