@@ -37,7 +37,7 @@ namespace Twenty2.VomitLib.Net
         }
 
         private static UniTaskCompletionSource<bool> _allTcs;
-        
+
         /// <summary>
         /// 等待所有消息回来
         /// </summary>
@@ -84,7 +84,7 @@ namespace Twenty2.VomitLib.Net
 
             var waiter = new MsgWaiter();
             _waitDic.Add(uniId, waiter);
-            
+
             try
             {
                 using var cts = new CancellationTokenSource(timeoutMs);
@@ -110,16 +110,15 @@ namespace Twenty2.VomitLib.Net
         public static void EndWait(int uniId, bool result = true)
         {
             Log.Debug($"结束等待消息: {uniId}");
-            if (!result) 
+            if (!result)
             {
                 Log.Error($"消息处理失败：{uniId}");
             }
 
             if (_waitDic.TryGetValue(uniId, out var waiter))
             {
-                waiter.Complete(result);
                 _waitDic.Remove(uniId);
-                
+
                 // 如果所有等待的消息都完成了，通知WaitAllBack
                 if (_waitDic.Count == 0 && _allTcs != null)
                 {
@@ -127,10 +126,15 @@ namespace Twenty2.VomitLib.Net
                     _allTcs = null;
                 }
             }
-            else if (uniId > 0)
+            else
             {
-                Log.Error($"找不到等待中的消息：{uniId}，当前等待消息数量：{_waitDic.Count}");
+                if (uniId > 0)
+                {
+                    Log.Error($"没有等待中的消息, 但是收到了[{uniId}]的消息, 当前等待消息数量：{_waitDic.Count}");
+                }
             }
+
+            waiter?.Complete(result);
         }
 
         /// <summary>
