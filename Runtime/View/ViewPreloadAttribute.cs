@@ -10,16 +10,12 @@ namespace Twenty2.VomitLib.View
         /// </summary>                                                                           
         public int Priority { get; } = 0;
 
-        public ViewPreloadAttribute()
+        public bool AlwaysDisplay { get; private set; } = false;
+
+        public ViewPreloadAttribute(int priority = 0, bool alwaysDisplay = false)
         {
-            
+            AlwaysDisplay = alwaysDisplay;
+            Priority = 0;
         }
-
-        public ViewPreloadAttribute(int priority)
-        {
-            Priority = priority;
-        }
-
-
     }
 }

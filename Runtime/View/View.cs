@@ -91,7 +91,7 @@ namespace Twenty2.VomitLib.View
             {
                 Log.Debug("开始扫描和预加载View");
 
-                var preloadableViews = new List<(string viewName, int priority)>();
+                var preloadableViews = new List<(string viewName, int priority, bool alwaysDisplay)>();
 
                 // 获取当前域中的所有程序集
                 foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
@@ -106,7 +106,7 @@ namespace Twenty2.VomitLib.View
                             var preloadAttr = viewType.GetCustomAttribute<ViewPreloadAttribute>();
                             if (preloadAttr != null)
                             {
-                                preloadableViews.Add((viewType.Name, preloadAttr.Priority));
+                                preloadableViews.Add((viewType.Name, preloadAttr.Priority, preloadAttr.AlwaysDisplay));
                             }
                         }
                     }
@@ -123,13 +123,19 @@ namespace Twenty2.VomitLib.View
                 Log.Debug($"找到 {preloadableViews.Count} 个需要预加载的View");
 
                 // 预加载所有View资源
-                foreach (var (viewName, priority) in preloadableViews)
+                foreach (var (viewName, priority, alwaysDisplay) in preloadableViews)
                 {
                     try
                     {
                         var prefab = await _loader.CreateView(viewName, Root.HiddenCanvas);
                         _preLoadMap.Add(viewName, prefab);
                         Log.Debug($"预加载成功: {viewName}, 优先级: {priority}");
+                        
+                        if (alwaysDisplay)
+                        {
+                            // 显示预加载的View
+                            await OpenAsync(viewName);
+                        }
                     }
                     catch (Exception ex)
                     {
