@@ -3,9 +3,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAPI;
 using Luban;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Twenty2.VomitLib;
 using Twenty2.VomitLib.Config;
 using Twenty2.VomitLib.Editor;
 using Twenty2.VomitLib.LubanSupport;
@@ -103,6 +105,12 @@ namespace LubanSupport.Editor
             try
             {
                 var config = Config;
+
+                if (config.GenServerCodePath.IsTrimNullOrEmpty() || config.GenServerDataPath.IsTrimNullOrEmpty())
+                {
+                    Log.Debug("服务器代码目录或数据目录为空, 不生成.");
+                    return;
+                }
 
                 string cmd = GenerateCmd(config.GenServerCodePath, config.GenServerDataPath, !string.IsNullOrEmpty(config.LocalizationPath), config.NoneStyle, config.Format);
                 await RunCmd(cmd);
