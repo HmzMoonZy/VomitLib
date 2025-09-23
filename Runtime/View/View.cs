@@ -16,9 +16,10 @@ namespace Twenty2.VomitLib.View
     /// <summary>
     /// 基于 QFramework 的UI管理器.
     /// </summary>
-    public static partial class View
+    public static class View
     {
         private static ViewRoot _root;
+        
         /// <summary>
         /// View 根节点.
         /// </summary>
@@ -84,78 +85,78 @@ namespace Twenty2.VomitLib.View
 
             // 预加载
             await PreloadViews();
-
-            Log.Debug("View 初始化完成");
-
-            async static UniTask PreloadViews()
-            {
-                Log.Debug("开始扫描和预加载View");
-
-                var preloadableViews = new List<(string viewName, int priority, bool alwaysDisplay)>();
-
-                // 获取当前域中的所有程序集
-                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-                {
-                    try
-                    {
-                        // 查找继承自ViewLogic的类
-                        var viewTypes = assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(ViewLogic)) && !type.IsAbstract);
-                        foreach (var viewType in viewTypes)
-                        {
-                            // 检查是否有ViewPreloadAttribute
-                            var preloadAttr = viewType.GetCustomAttribute<ViewPreloadAttribute>();
-                            if (preloadAttr != null)
-                            {
-                                preloadableViews.Add((viewType.Name, preloadAttr.Priority, preloadAttr.AlwaysDisplay));
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // 跳过无法加载的程序集
-                        Log.Warning($"跳过程序集 {assembly.FullName}: {ex.Message}");
-                    }
-                }
-
-                // 按优先级排序（数字越小优先级越高）
-                preloadableViews.Sort((a, b) => a.priority.CompareTo(b.priority));
-
-                Log.Debug($"找到 {preloadableViews.Count} 个需要预加载的View");
-
-                // 预加载所有View资源
-                foreach (var (viewName, priority, alwaysDisplay) in preloadableViews)
-                {
-                    try
-                    {
-                        var prefab = await _loader.CreateView(viewName, Root.HiddenCanvas);
-                        _preLoadMap.Add(viewName, prefab);
-                        Log.Debug($"预加载成功: {viewName}, 优先级: {priority}");
-                        
-                        if (alwaysDisplay)
-                        {
-                            // 显示预加载的View
-                            await OpenAsync(viewName);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"预加载失败: {viewName}, 错误: {ex.Message}");
-                    }
-                }
-
-                Log.Debug("预加载完成");
-            }
         }
 
-        /// <summary>
-        /// 打开一个View
-        /// </summary>
+        private static async UniTask PreloadViews()
+        {
+            Log.Debug("开始扫描和预加载View");
+
+            var preloadableViews = new List<(string viewName, int priority, bool alwaysDisplay)>();
+
+            // 获取当前域中的所有程序集
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                try
+                {
+                    var searchType = typeof(ViewLogic);
+                    // 查找继承自ViewLogic的类
+                    foreach (var viewType in assembly.GetTypes().Where(type => type.IsSubclassOf(searchType) && !type.IsAbstract))
+                    {
+                        // 检查是否有ViewPreloadAttribute
+                        var preloadAttr = viewType.GetCustomAttribute<ViewPreloadAttribute>();
+                        if (preloadAttr != null)
+                        {
+                            preloadableViews.Add((viewType.Name, preloadAttr.Priority, preloadAttr.AlwaysDisplay));
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // 跳过无法加载的程序集
+                    Log.Warning($"跳过程序集 {assembly.FullName}: {ex.Message}");
+                }
+            }
+
+            // 按优先级排序（数字越小优先级越高）
+            preloadableViews.Sort((a, b) => a.priority.CompareTo(b.priority));
+
+            Log.Debug($"找到 {preloadableViews.Count} 个需要预加载的View");
+
+            // 预加载所有View资源
+            foreach (var (viewName, priority, alwaysDisplay) in preloadableViews)
+            {
+                try
+                {
+                    var prefab = await _loader.CreateView(viewName, Root.HiddenCanvas);
+                    _preLoadMap.Add(viewName, prefab);
+                    Log.Debug($"预加载成功: {viewName}, 优先级: {priority}");
+
+                    if (alwaysDisplay)
+                    {
+                        // 显示预加载的View
+                        Open(viewName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"预加载失败: {viewName}, 错误: {ex.Message}");
+                }
+            }
+
+            Log.Debug("预加载完成");
+        }
+
         public static void Open<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
             OpenAsync<T>(param).Forget();
         }
 
-        public async static UniTask<T> OpenAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new()
+        public static void Open(string viewName, ViewParameterBase param = null)
+        {
+            OpenAsync(viewName, param).Forget();
+        }
+
+        public static async UniTask<T> OpenAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
             return (T)await OpenAsync(typeof(T).Name, param);
         }

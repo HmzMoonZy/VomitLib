@@ -58,7 +58,7 @@ namespace Twenty2.VomitLib.LubanSupport
             ByteBuf BinLoader(string sourceName)
             {
                 var source = loader?.Invoke(sourceName);
-                Log.Info($"读取{sourceName}");
+                Log.Debug($"读取{sourceName}");
                 if (source == null)
                 {
                     return null;
@@ -74,7 +74,7 @@ namespace Twenty2.VomitLib.LubanSupport
             JArray JsonLoader(string sourceName)
             {
                 var source = loader?.Invoke(sourceName);
-                Log.Info($"读取{sourceName}");
+                Log.Debug($"读取{sourceName}");
                 if (source == null)
                 {
                     Log.Error($"JsonLoader: source is null {sourceName}");

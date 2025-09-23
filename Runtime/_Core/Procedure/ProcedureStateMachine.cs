@@ -99,7 +99,7 @@ namespace Twenty2.VomitLib.Procedure
             }
             
             _registeredStates[stateId] = state;
-            Log.Info($"注册流程状态: {stateId} -> {typeof(TState).Name}");
+            Log.Debug($"注册流程状态: {stateId} -> {typeof(TState).Name}");
         }
         
         /// <summary>
@@ -144,7 +144,7 @@ namespace Twenty2.VomitLib.Procedure
             // 启动状态机
             Start(initialStateId);
             
-            Log.Info($"状态机初始化完成，初始状态: {initialStateId}");
+            Log.Debug($"状态机初始化完成，初始状态: {initialStateId}");
         }
         
         /// <summary>
@@ -185,7 +185,7 @@ namespace Twenty2.VomitLib.Procedure
                 _currentState.Enter();
                 _isRunning = true;
                 
-                Log.Info($"状态机启动成功，初始状态: {initialStateId}");
+                Log.Debug($"状态机启动成功，初始状态: {initialStateId}");
                 
                 // 启动Update循环
                 StartUpdateLoop().Forget();
@@ -217,7 +217,7 @@ namespace Twenty2.VomitLib.Procedure
                 _isRunning = false;
                 _isInitialized = false;
                 _currentState = null;
-                Log.Info("状态机已停止");
+                Log.Debug("状态机已停止");
             }
         }
  
@@ -311,7 +311,7 @@ namespace Twenty2.VomitLib.Procedure
             
             try
             {
-                Log.Info($"状态切换: {_currentStateId} -> {newStateId}");
+                Log.Debug($"状态切换: {_currentStateId} -> {newStateId}");
                 
                 // 保存旧状态信息
                 var oldState = _currentState;
@@ -340,7 +340,7 @@ namespace Twenty2.VomitLib.Procedure
                     ToState = newState
                 });
                 
-                Log.Info($"状态切换完成: {oldStateId} -> {newStateId}");
+                Log.Debug($"状态切换完成: {oldStateId} -> {newStateId}");
                 return true;
             }
             catch (Exception e)
