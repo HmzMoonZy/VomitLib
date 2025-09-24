@@ -88,7 +88,7 @@ namespace Twenty2.VomitLib.View
         public void Update(float deltaTime, float unscaledDeltaTime)
         {
             if (_registeredViews.Count == 0) return;
-
+            
             _isUpdating = true;
 
             try

@@ -5,17 +5,13 @@ using QFramework;
 
 namespace Twenty2.VomitLib
 {
-    public static class Event
+    public static class EventWait
     {
         private static Dictionary<Type, IUnRegister> s_waitEventToken = new();
         
-        // TODO : UniTask.WhenAny 支持
         /// <summary>
         /// 等待下一次的事件T触发.
         /// </summary>
-        /// <code>
-        /// 相当于只监听一次事件,屏蔽掉了在回调中取消监听自己的麻烦写法.
-        /// </code>
         public static async UniTask<T> WaitEvent<T>() where T : struct
         {
             var key = typeof(T);
@@ -36,6 +32,9 @@ namespace Twenty2.VomitLib
             return result;
         }
 
+        /// <summary>
+        /// 等待下一次的事件T1或T2触发.
+        /// </summary>
         public static async UniTask<(int winArgumentIndex, T1 result1, T2 result2)> WaitEvent<T1, T2>() where T1 : struct where T2 : struct
         {
 
@@ -47,6 +46,9 @@ namespace Twenty2.VomitLib
             return result;
         }
         
+        /// <summary>
+        /// 等待下一次的事件T1或T2或T3触发.
+        /// </summary>
         public static async UniTask<(int winArgumentIndex, T1 result1, T2 result2, T3 result3)> WaitEvent<T1, T2, T3>() where T1 : struct where T2 : struct where T3 : struct
         {
 
@@ -76,7 +78,7 @@ namespace Twenty2.VomitLib
         /// 当你使用 WhenAny 之类的方式同时监听多个事件后, 你可能需要手动移除多余的监听.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        public static void BreakWaitEvent<T>()
+        private static void BreakWaitEvent<T>()
         {
             try
             {

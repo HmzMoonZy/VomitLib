@@ -54,10 +54,17 @@ namespace Twenty2.VomitLib.View
         private static Dictionary<string, ViewLogic> _visibleViewMap = new Dictionary<string, ViewLogic>();
 
         /// <summary>
+        /// 所有正在加载的View
+        /// </summary>
+        private static List<string> _loadingViews = new List<string>();
+
+        /// <summary>
         /// 所有隐藏的面板
         /// </summary>
         private static Dictionary<string, ViewLogic> _hiddenViewMap = new Dictionary<string, ViewLogic>();
 
+        private static Action<bool> _onLoadingView; 
+        
         private static IViewLoader _loader;
         private static IViewBinder _binder;
         private static IViewMasker _masker;
@@ -70,7 +77,14 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         private static ViewUpdateManager _updateManager;
 
-        public static async UniTask Init(IViewLoader loader = null, IViewBinder binder = null, IViewMasker masker = null, IViewLocalizer localizer = null, IViewRecorder recorder = null, IViewLocker locker = null)
+        public static async UniTask Init(
+            IViewLoader loader = null, 
+            IViewBinder binder = null, 
+            IViewMasker masker = null, 
+            IViewLocalizer localizer = null, 
+            IViewRecorder recorder = null, 
+            IViewLocker locker = null, 
+            Action<bool> onLoadingView = null)
         {
             _loader = loader ?? new ViewLoaderAddressable(viewName => $"View/{viewName}.prefab");
             _binder = binder ?? new ViewBinder(null);
@@ -78,13 +92,15 @@ namespace Twenty2.VomitLib.View
             _localizer = localizer ?? new ViewLocalizer();
             _recorder = recorder ?? new ViewRecorder();
             _locker = locker ?? new ViewLocker();
-
+            
+            _onLoadingView = onLoadingView;
+            
             // 初始化Update管理器
             _updateManager = new ViewUpdateManager();
             _updateManager.StartUpdateManager().Forget();
 
             // 预加载
-            await PreloadViews();
+            await PreloadViews();       // TODO  外抛进度
         }
 
         private static async UniTask PreloadViews()
@@ -160,7 +176,7 @@ namespace Twenty2.VomitLib.View
         {
             return (T)await OpenAsync(typeof(T).Name, param);
         }
-
+        
         public async static UniTask<ViewLogic> OpenAsync(string viewName, ViewParameterBase param = null)
         {
             if (_visibleViewMap.TryGetValue(viewName, out var logic))
@@ -169,18 +185,27 @@ namespace Twenty2.VomitLib.View
                 return logic;
             }
 
-            _hiddenViewMap.Remove(viewName, out logic);     // 移除隐藏列表
+            if (_loadingViews.Contains(viewName))
+            {
+                Log.Warning($"Try to open an already showed the View : {viewName}");
+                return null;
+            }
 
+            _hiddenViewMap.Remove(viewName, out logic);     // 移除隐藏列表
+            
             // 进入加载流程
             if (logic == null)
             {
+                _loadingViews.Add(viewName);
                 if (_preLoadMap.TryGetValue(viewName, out var viewObject))
                 {
                     viewObject.transform.SetParent(Root.transform, false);
                 }
                 else
                 {
+                    _onLoadingView?.Invoke(true);
                     viewObject = await _loader.CreateView(viewName, Root.transform);
+                    _onLoadingView?.Invoke(false);
                 }
 
                 logic = viewObject.GetComponent<ViewLogic>();
@@ -190,7 +215,7 @@ namespace Twenty2.VomitLib.View
                     Log.Error($"ViewLogic : {viewName} is not found!");
                     return null;
                 }
-
+                _loadingViews.Remove(viewName);
                 CreateLogic(viewName, logic);
             }
 
@@ -348,7 +373,7 @@ namespace Twenty2.VomitLib.View
 
             return null;
         }
-
+        
         /// <summary>
         /// 获取最顶层的 View
         /// </summary>
@@ -445,6 +470,8 @@ namespace Twenty2.VomitLib.View
             return _recorder.IsFirstOpen(typeof(T).Name);
         }
 
+        #region Freeze
+
         public static void Freeze(string viewName)
         {
             var view = GetView(viewName);
@@ -476,5 +503,9 @@ namespace Twenty2.VomitLib.View
         {
             UnFreeze(typeof(T).Name);
         }
+
+        #endregion
+        
+
     }
 }
