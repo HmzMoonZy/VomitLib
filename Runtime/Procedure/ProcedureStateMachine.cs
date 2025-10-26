@@ -10,7 +10,7 @@ namespace Twenty2.VomitLib.Procedure
     /// <summary>
     /// Procedure专用状态机 - 单例模式，一个游戏只有一个流程状态机
     /// </summary>
-    public class ProcedureStateMachine<T> where T : struct
+    public class ProcedureStateMachine<T> where T : struct, Enum
     {
         #region Singleton
         private ProcedureStateMachine()
@@ -295,7 +295,7 @@ namespace Twenty2.VomitLib.Procedure
         private void RunLoop()
         { 
             UniTask.Create(Update).Forget();
-            UniTask.Create(Factory).Forget();
+            UniTask.Create(FixedUpdate).Forget();
             return;
 
             // Update循环
@@ -322,7 +322,7 @@ namespace Twenty2.VomitLib.Procedure
             }
             
             // FixedUpdate循环
-            async UniTask Factory()
+            async UniTask FixedUpdate()
             {
                 while (_isRunning)
                 {
