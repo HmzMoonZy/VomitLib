@@ -10,7 +10,7 @@ namespace Twenty2.VomitLib.Procedure
     /// 现在只负责状态管理，不再强制继承所有QFramework接口
     /// 需要时通过Vomit.Interface手动获取
     /// </summary>
-    public abstract class ProcedureState<T> : IProcedureState where T : struct
+    public abstract class ProcedureState<T> : IProcedureState where T : struct, Enum
     {
         #region Fields
         
