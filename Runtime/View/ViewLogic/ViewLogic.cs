@@ -10,6 +10,10 @@ using UnityEngine.UI;
 
 namespace Twenty2.VomitLib.View
 {
+    /// <summary>
+    /// 自定义参数的View逻辑
+    /// </summary>
+    /// <typeparam name="TParam"></typeparam>
     public abstract class ViewLogic<TParam> : ViewLogic where TParam : ViewParameterBase
     {
         protected TParam Param;
@@ -23,67 +27,49 @@ namespace Twenty2.VomitLib.View
         }
     }
     
+    /// <summary>
+    /// View运行时逻辑
+    /// </summary>
     [DisallowMultipleComponent]
     public abstract class ViewLogic : MonoController
     {
         /// <summary>
-        /// UI 的名称, 必须是唯一标识.
-        /// 可以用作查找 Prefab 和 管理的 ID.
+        /// UI 的名称, 唯一标识.
         /// </summary>
-        public string ID { get; set; }
+        public string ID => GetType().Name; 
         
 
         private Canvas _viewCanvas;
         /// <summary>
-        /// 根据规范, UI 界面本身必须具有一个 Canvas 组件.
+        /// View 的 Canvas
         /// </summary>
-        public Canvas ViewCanvas
-        {
-            get
-            {
-                if (_viewCanvas == null)
-                {
-                    _viewCanvas = GetComponent<Canvas>();
-                }
+        public Canvas ViewCanvas => _viewCanvas ??= GetComponent<Canvas>();
 
-                return _viewCanvas;
-            }
-        }
-        
 
         private ViewConfig _config;
         /// <summary>
-        /// UI 面板通用属性
+        /// View 通用配置
         /// </summary>
-        /// <exception cref="NullReferenceException"></exception>
-        public ViewConfig Config
-        {
-            get
-            {
-                if (_config != null) return _config;
-
-                _config = GetComponent<ViewConfig>();
-
-                if (_config == null)
-                {
-                    throw new NullReferenceException($"{ID}没有对应的ViewConfig!");
-                }
-
-                return _config;
-            }
-        }
+        public ViewConfig Config => _config ??= GetComponent<ViewConfig>();
         
 
         private RectTransform _rectView;
         /// <summary>
         /// 面板下命名为'#View'的子节点
         /// </summary>
-        protected RectTransform RectView => _rectView ??= transform.Find("#View").GetComponent<RectTransform>();
+        protected RectTransform RectView => _rectView ??= transform.Find("#View")?.GetComponent<RectTransform>();
 
         /// <summary>
         /// 面板下命名为'#AutoHide'的子节点
         /// </summary>
-        private RectTransform _autoHide;
+        private RectTransform _autoHide => transform.Find("#AutoHide")?.GetComponent<RectTransform>();
+
+
+        /// <summary>
+        /// 动画组件
+        /// </summary>
+        private Animation _animation;
+        protected Animation Animation => _animation ??= GetComponent<Animation>();
 
         /// <summary>
         /// View 在该 Layer 下的层级.
@@ -96,16 +82,11 @@ namespace Twenty2.VomitLib.View
 
         private void Awake()
         {
-            var autoHide = transform.Find("#AutoHide");
-            if(autoHide != null)
-            {
-                _autoHide = autoHide.GetComponent<RectTransform>();
-                _autoHide.gameObject.SetActive(false);
-            }
+            _autoHide?.gameObject.SetActive(false);
         }
         
         #region 生命周期
-
+        
         /// <summary>
         /// 当 ViewInfo 被加载时调用.
         /// 如果这个面板不缓存, 每个UI实例都只会被调用一次
@@ -123,7 +104,6 @@ namespace Twenty2.VomitLib.View
         /// <summary>
         /// 关闭时调用.
         /// </summary>
-        /// <param name="isCache">是否缓存</param>
         /// <param name="param">关闭参数</param>
         /// <returns></returns>
         public virtual void OnClose(ViewParameterBase param = null)
@@ -198,23 +178,6 @@ namespace Twenty2.VomitLib.View
         protected void UnFreeze()
         {
             View.UnFreeze(ID);
-        }
-
-        /// <summary>
-        /// 销毁tran的所有子节点.
-        /// 当你不想用对象池管理一些生成的对象时非常有用.
-        /// </summary>
-        /// <param name="trans">遍历的根节点</param>
-        /// <param name="ignoreLayoutElement">是否忽略带有ignoreLayout的对象</param>
-        protected void DestroyAllChildren(Transform trans, bool ignoreLayoutElement = true)
-        {
-            if (!ignoreLayoutElement)
-            {
-                trans.DestroyChildren();
-                return;
-            }
-
-            trans.DestroyChildrenWithCondition(child => !child.TryGetComponent<LayoutElement>(out var element) || !element.ignoreLayout);
         }
     }
     

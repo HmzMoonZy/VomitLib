@@ -177,7 +177,7 @@ namespace Twenty2.VomitLib.View
             return (T)await OpenAsync(typeof(T).Name, param);
         }
         
-        public async static UniTask<ViewLogic> OpenAsync(string viewName, ViewParameterBase param = null)
+        public static async UniTask<ViewLogic> OpenAsync(string viewName, ViewParameterBase param = null)
         {
             if (_visibleViewMap.TryGetValue(viewName, out var logic))
             {
@@ -229,8 +229,6 @@ namespace Twenty2.VomitLib.View
 
         private static void CreateLogic(string viewName, ViewLogic logic)
         {
-            logic.ID = viewName;
-
             if (logic.Config.AutoBindButtons)       // 绑定组件
             {
                 _binder?.Bind(logic);
@@ -266,7 +264,7 @@ namespace Twenty2.VomitLib.View
             logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
 
             logic.OnOpened(param);
-
+            
             Vomit.Interface?.SendEvent(new EvtView.Open
             {
                 ViewLogic = logic,

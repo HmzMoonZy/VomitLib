@@ -714,6 +714,23 @@ namespace FluentAPI
 
             return selfComponent;
         }
+        
+        /// <summary>
+        /// 销毁tran的所有子节点.
+        /// 当你不想用对象池管理一些生成的对象时非常有用.
+        /// </summary>
+        /// <param name="trans">遍历的根节点</param>
+        /// <param name="ignoreLayoutElement">是否忽略带有ignoreLayout的对象</param>
+        public static void DestroyChildren(Transform trans, bool ignoreLayoutElement = true)
+        {
+            if (!ignoreLayoutElement)
+            {
+                trans.DestroyChildren();
+                return;
+            }
+
+            trans.DestroyChildrenWithCondition(child => !child.TryGetComponent<UnityEngine.UI.LayoutElement>(out var element) || !element.ignoreLayout);
+        }
 
 
         public static GameObject DestroyChildren(this GameObject selfGameObj)
