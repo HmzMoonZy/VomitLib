@@ -25,7 +25,6 @@ namespace Twenty2.VomitLib.Procedure
         
         #region Fields
         
-        private readonly Dictionary<T, IProcedureState> _states = new();
         private readonly Dictionary<T, IProcedureState> _registeredStates = new();
         private IProcedureState _currentState;
         private IProcedureState _previousState;
@@ -44,9 +43,14 @@ namespace Twenty2.VomitLib.Procedure
         #region Properties
         
         /// <summary>
-        /// 当前状态
+        /// 当前状态机器
         /// </summary>
         public IProcedureState CurrentState => _currentState;
+        
+        /// <summary>
+        /// 上一个状态机
+        /// </summary>
+        public IProcedureState PreviousState => _previousState;
         
         /// <summary>
         /// 当前状态ID
@@ -74,6 +78,11 @@ namespace Twenty2.VomitLib.Procedure
         public bool IsRunning => _isRunning;
         
         /// <summary>
+        /// 状态机是否正在切换
+        /// </summary>
+        public bool IsChanging => _isChanging;
+        
+        /// <summary>
         /// 是否已初始化
         /// </summary>
         public bool IsInitialized => _isInitialized;
@@ -83,7 +92,7 @@ namespace Twenty2.VomitLib.Procedure
         #region Public Methods
         
         /// <summary>
-        /// 注册状态 - 手动注册，不再使用反射
+        /// 注册流程
         /// </summary>
         public void RegisterState<TState>(T stateId, TState state) where TState : class, IProcedureState
         {
@@ -100,14 +109,6 @@ namespace Twenty2.VomitLib.Procedure
             
             _registeredStates[stateId] = state;
             Log.Debug($"注册流程状态: {stateId} -> {typeof(TState).Name}");
-        }
-        
-        /// <summary>
-        /// 注册状态 - 泛型版本，自动创建实例
-        /// </summary>
-        public void RegisterState<TState>(T stateId) where TState : class, IProcedureState, new()
-        {
-            RegisterState(stateId, new TState());
         }
         
         /// <summary>
@@ -133,68 +134,12 @@ namespace Twenty2.VomitLib.Procedure
                 return;
             }
             
-            // 将所有注册的状态添加到状态机
-            foreach (var kvp in _registeredStates)
-            {
-                _states[kvp.Key] = kvp.Value;
-            }
-            
             _isInitialized = true;
             
             // 启动状态机
-            Start(initialStateId);
+            Run(initialStateId);
             
             Log.Debug($"状态机初始化完成，初始状态: {initialStateId}");
-        }
-        
-        /// <summary>
-        /// 异步初始化 - 延迟一帧后启动
-        /// </summary>
-        public async UniTask InitializeAsync(T initialStateId)
-        {
-            await UniTask.NextFrame();
-            Initialize(initialStateId);
-        }
-        
-        /// <summary>
-        /// 内部启动方法
-        /// </summary>
-        private void Start(T initialStateId)
-        {
-            if (_isRunning)
-            {
-                Log.Error("状态机已经在运行中，不能重复启动");
-                return;
-            }
-            
-            if (!_states.TryGetValue(initialStateId, out var initialState))
-            {
-                Log.Error($"找不到初始状态: {initialStateId}");
-                return;
-            }
-            
-            _currentStateId = initialStateId;
-            _currentState = initialState;
-            _previousStateId = initialStateId;
-            _previousState = null;
-            
-            ResetStateTime();
-            
-            try
-            {
-                _currentState.Enter();
-                _isRunning = true;
-                
-                Log.Debug($"状态机启动成功，初始状态: {initialStateId}");
-                
-                // 启动Update循环
-                StartUpdateLoop().Forget();
-            }
-            catch (Exception e)
-            {
-                Log.Error($"状态机启动失败: {e.Message}");
-                _isRunning = false;
-            }
         }
         
         /// <summary>
@@ -217,6 +162,7 @@ namespace Twenty2.VomitLib.Procedure
                 _isRunning = false;
                 _isInitialized = false;
                 _currentState = null;
+                _previousState = null;
                 Log.Debug("状态机已停止");
             }
         }
@@ -244,7 +190,7 @@ namespace Twenty2.VomitLib.Procedure
                 return true;
             }
             
-            if (!_states.TryGetValue(newStateId, out var newState))
+            if (!_registeredStates.TryGetValue(newStateId, out var newState))
             {
                 Log.Error($"找不到目标状态: {newStateId}");
                 return false;
@@ -261,7 +207,7 @@ namespace Twenty2.VomitLib.Procedure
         }
         
         /// <summary>
-        /// 强制切换状态（跳过条件检查）
+        /// 强制切换状态
         /// </summary>
         public bool ForceChangeState(T newStateId)
         {
@@ -271,7 +217,7 @@ namespace Twenty2.VomitLib.Procedure
                 return false;
             }
             
-            if (!_states.TryGetValue(newStateId, out var newState))
+            if (!_registeredStates.TryGetValue(newStateId, out var newState))
             {
                 Log.Error($"找不到目标状态: {newStateId}");
                 return false;
@@ -302,6 +248,101 @@ namespace Twenty2.VomitLib.Procedure
 
         #region Private Methods
 
+        /// <summary>
+        /// 内部启动方法
+        /// </summary>
+        private void Run(T initialStateId)
+        {
+            if (_isRunning)
+            {
+                Log.Error("状态机已经在运行中，不能重复启动");
+                return;
+            }
+            
+            if (!_registeredStates.TryGetValue(initialStateId, out var initialState))
+            {
+                Log.Error($"找不到初始状态: {initialStateId}");
+                return;
+            }
+            
+            _currentStateId = initialStateId;
+            _currentState = initialState;
+            _previousStateId = initialStateId;
+            _previousState = null;
+            
+            ResetStateTime();
+            
+            try
+            {
+                _currentState.Enter();
+                _isRunning = true;
+                
+                Log.Debug($"状态机启动成功，初始状态: {initialStateId}");
+                
+                // 启动Update循环
+                RunLoop();
+            }
+            catch (Exception e)
+            {
+                Log.Error($"状态机启动失败: {e.Message}");
+                _isRunning = false;
+            }
+        }
+        
+        /// <summary>
+        /// 启动Update循环
+        /// </summary>
+        private void RunLoop()
+        { 
+            UniTask.Create(Update).Forget();
+            UniTask.Create(Factory).Forget();
+            return;
+
+            // Update循环
+            async UniTask Update()
+            {
+                while (_isRunning)
+                {
+                    try
+                    {
+                        if (_currentState != null && !_isChanging)
+                        {
+                            _currentState.Update(Time.deltaTime, Time.unscaledDeltaTime);
+                            _frameCount++;
+                            _stateTime += Time.deltaTime;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error($"状态Update异常: {e.Message}");
+                    }
+
+                    await UniTask.Yield(PlayerLoopTiming.Update);
+                }
+            }
+            
+            // FixedUpdate循环
+            async UniTask Factory()
+            {
+                while (_isRunning)
+                {
+                    try
+                    {
+                        if (_currentState != null && !_isChanging)
+                        {
+                            _currentState.FixedUpdate();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error($"状态FixedUpdate异常: {e.Message}");
+                    }
+
+                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
+                }
+            }
+        }
+        
         /// <summary>
         /// 内部状态切换逻辑
         /// </summary>
@@ -361,59 +402,6 @@ namespace Twenty2.VomitLib.Procedure
         {
             _frameCount = 0;
             _stateTime = 0f;
-        }
-        
-        /// <summary>
-        /// 启动Update循环
-        /// </summary>
-        private async UniTaskVoid StartUpdateLoop()
-        {
-            // Update循环
-            var updateTask = UniTask.Create(async () =>
-            {
-                while (_isRunning)
-                {
-                    try
-                    {
-                        if (_currentState != null && !_isChanging)
-                        {
-                            _currentState.Update(Time.deltaTime, Time.unscaledDeltaTime);
-                            _frameCount++;
-                            _stateTime += Time.deltaTime;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"状态Update异常: {e.Message}");
-                    }
-                    
-                    await UniTask.Yield(PlayerLoopTiming.Update);
-                }
-            });
-            
-            // FixedUpdate循环
-            var fixedUpdateTask = UniTask.Create(async () =>
-            {
-                while (_isRunning)
-                {
-                    try
-                    {
-                        if (_currentState != null && !_isChanging)
-                        {
-                            _currentState.FixedUpdate();
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"状态FixedUpdate异常: {e.Message}");
-                    }
-                    
-                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
-                }
-            });
-            
-            // 等待两个循环都结束
-            await UniTask.WhenAll(updateTask, fixedUpdateTask);
         }
         
         #endregion
