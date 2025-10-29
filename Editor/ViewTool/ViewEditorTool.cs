@@ -71,20 +71,6 @@ namespace Twenty2.VomitLib.Editor
             AssetDatabase.SaveAssets();
         }
         
-        [MenuItem("VomitLib/View/删除初次打开Token")]
-        public static void DeleteAllKeys()
-        {
-            var folderPath = Path.Combine(Application.dataPath[..^7], VomitEditor.Config.ViewConfig.ScriptGeneratePath);
-            DirectoryInfo dir = new(folderPath);
-
-            foreach (var fileInfo in dir.GetFiles("*.cs"))
-            {
-                var viewName = Path.GetFileNameWithoutExtension(fileInfo.Name);
-                
-                PlayerPrefs.DeleteKey($"__FIRST__{viewName}");
-            }
-        }
-
         [MenuItem("Assets/Create/VomitLib/View/ViewScript")]
         public static void GenerateViewScript()
         {
@@ -94,12 +80,21 @@ namespace Twenty2.VomitLib.Editor
             if (!selectName.StartsWith("View")) return;
             
             var folderPath = Path.Combine(Application.dataPath[..^7], VomitEditor.Config.ViewConfig.ScriptGeneratePath);
+            if (VomitEditor.Config.ViewConfig.IsGenerateFolder)
+            {
+                folderPath = Path.Combine(folderPath, selectName);
+            }
             var filePath = Path.Combine(folderPath, selectName + ".cs");
             var designerFilePath = Path.Combine(folderPath, selectName + ".Designer.cs");
             if (File.Exists(filePath) ||File.Exists(designerFilePath))
             {
                 Debug.LogError("请手动删除对应的脚本后重试.");
                 return;
+            }
+
+            if (VomitEditor.Config.ViewConfig.IsGenerateFolder)
+            {
+                Directory.CreateDirectory(folderPath);
             }
 
 
