@@ -53,8 +53,7 @@ namespace VomitLib.Editor.SpriteAtlas
             }
 
             // 生成图集名称和路径
-            string folderName = Path.GetFileName(folderPath);
-            string atlasName = $"{folderName}_Atlas";
+            string atlasName = $"{folderPath.Replace('/','_').Replace('\\', '_')}_Atlas";
             string atlasPath = Path.Combine(outputDir, $"{atlasName}.spriteatlas").Replace('\\', '/');
 
             // 如果已存在，先删除旧的
@@ -72,6 +71,13 @@ namespace VomitLib.Editor.SpriteAtlas
             {
                 spriteAtlas.Add(new Object[] { folderAsset });
             }
+            spriteAtlas.SetPackingSettings(new SpriteAtlasPackingSettings()
+            {
+                enableAlphaDilation = false,
+                enableRotation = false,
+                enableTightPacking = false,
+                padding = 2
+            });
 
             // 保存图集
             AssetDatabase.CreateAsset(spriteAtlas, atlasPath);
