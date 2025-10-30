@@ -721,7 +721,7 @@ namespace FluentAPI
         /// </summary>
         /// <param name="trans">遍历的根节点</param>
         /// <param name="ignoreLayoutElement">是否忽略带有ignoreLayout的对象</param>
-        public static void DestroyChildren(Transform trans, bool ignoreLayoutElement = true)
+        public static void DestroyChildren(this Transform trans, bool ignoreLayoutElement)
         {
             if (!ignoreLayoutElement)
             {
