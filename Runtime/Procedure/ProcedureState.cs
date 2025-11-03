@@ -72,7 +72,7 @@ namespace Twenty2.VomitLib.Procedure
             }
             catch (Exception e)
             {
-                Log.Error($"状态 {_stateName} Update异常: {e.Message}");
+                Log.Error($"状态 {_stateName} Update异常: {e.Message} \n{e.StackTrace}");
             }
         }
         
