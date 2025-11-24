@@ -1,12 +1,7 @@
 {
-    "name": "Twenty2.VomitLib",
+    "name": "Twenty2.VomitLib.FluentAPI",
     "rootNamespace": "",
-    "references": [
-        "GUID:f51ebe6a0ceec4240a699833d6309b23",
-        "GUID:5c01796d064528144a599661eaab93a6",
-        "GUID:7d5089f20972d52458978a2d1e8cf6ff",
-        "GUID:78a29803b62b70641a2a4700021f26ea"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
