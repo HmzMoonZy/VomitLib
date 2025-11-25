@@ -96,7 +96,7 @@ namespace Twenty2.VomitLib.Procedure
         
         #endregion
         
-        #region Abstract Methods - 子类必须实现
+        #region Abstract Methods
         
         /// <summary>
         /// 进入状态时调用
@@ -110,7 +110,7 @@ namespace Twenty2.VomitLib.Procedure
         
         #endregion
         
-        #region Virtual Methods - 子类可以重写
+        #region Virtual Methods
         
         /// <summary>
         /// 每帧更新，子类可以重写
@@ -235,10 +235,6 @@ namespace Twenty2.VomitLib.Procedure
             }
             _eventRegisters.Clear();
         }
-        
-        #endregion
-        
-        #region Debug
         
         public override string ToString()
         {
