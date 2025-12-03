@@ -1,102 +1,28 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using QFramework;
 
 namespace Twenty2.VomitLib.Procedure
 {
     /// <summary>
-    /// Procedure状态基类 - 简化版本，职责更清晰
-    /// 现在只负责状态管理，不再强制继承所有QFramework接口
-    /// 需要时通过Vomit.Interface手动获取
+    /// Procedure状态基类
     /// </summary>
-    public abstract class ProcedureState<T> : IProcedureState where T : struct, Enum
+    public abstract class AbstractProcedure<T> where T : struct, Enum
     {
         #region Fields
-        
+
         private readonly List<IUnRegister> _eventRegisters = new();
-        private readonly string _stateName;
-        
-        #endregion
-        
-        #region Constructor
-        
-        protected ProcedureState()
-        {
-            _stateName = GetType().Name;
-        }
-        
-        #endregion
-        
-        #region IProcedureState Implementation
-        
-        public string StateName => _stateName;
-        
-        public void Enter()
-        {
-            try
-            {
-                OnEnter();
-            }
-            catch (Exception e)
-            {
-                Log.Error($"进入状态 {_stateName} 时发生异常: {e.Message}");
-                throw;
-            }
-        }
-        
-        public void Exit()
-        {
-            try
-            {
-                // 先清理事件注册
-                CleanupEventRegisters();
-                
-                // 再执行退出逻辑
-                OnExit();
-            }
-            catch (Exception e)
-            {
-                Log.Error($"退出状态 {_stateName} 时发生异常: {e.Message}");
-                // 即使OnExit失败，也要确保事件被清理
-                CleanupEventRegisters();
-                throw;
-            }
-        }
-        
-        public void Update(float deltaTime, float unscaledDeltaTime)
-        {
-            try
-            {
-                OnUpdate(deltaTime, unscaledDeltaTime);
-            }
-            catch (Exception e)
-            {
-                Log.Error($"状态 {_stateName} Update异常: {e.Message} \n{e.StackTrace}");
-            }
-        }
-        
-        public void FixedUpdate()
-        {
-            try
-            {
-                OnFixedUpdate();
-            }
-            catch (Exception e)
-            {
-                Log.Error($"状态 {_stateName} FixedUpdate异常: {e.Message}");
-            }
-        }
-        
-        public virtual bool CanChangeFrom(IProcedureState fromState)
-        {
-            // 默认允许从任何状态切换，子类可以重写此方法添加条件
-            return true;
-        }
+
+        private CancellationTokenSource _procedureCts = null;
         
         #endregion
         
         #region Abstract Methods
+        
+        public abstract T ProcedureKey { get; }
         
         /// <summary>
         /// 进入状态时调用
@@ -109,13 +35,58 @@ namespace Twenty2.VomitLib.Procedure
         protected abstract void OnExit();
         
         #endregion
+
+        #region Public Methods
+
+        public void Enter()
+        {
+            try
+            {
+                OnEnter();
+                
+                _procedureCts ??= new CancellationTokenSource();
+                var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(Application.exitCancellationToken, _procedureCts.Token);
+
+                UniTask.WaitWhile(Tick, PlayerLoopTiming.Update, cancellationToken: tokenSource.Token).Forget();
+                UniTask.WaitWhile(FixedTick, PlayerLoopTiming.FixedUpdate, cancellationToken: tokenSource.Token).Forget();
+            }
+            catch (Exception e)
+            {
+                Log.Error($"进入状态 {ProcedureKey} 时发生异常: {e.Message} \n{e.StackTrace}");
+                throw;
+            }
+        }
+        
+        public void Exit()
+        {
+            try
+            {
+                // 先清理事件注册
+                ClearEventRegisters();
+                
+                _procedureCts?.Cancel();
+                _procedureCts?.Dispose();
+                _procedureCts = null;
+                
+                // 再执行退出逻辑
+                OnExit();
+            }
+            catch (Exception e)
+            {
+                Log.Error($"退出状态 {ProcedureKey} 时发生异常: {e.Message}");
+                ClearEventRegisters();
+                throw;
+            }
+        }
+
+        #endregion
         
         #region Virtual Methods
         
         /// <summary>
         /// 每帧更新，子类可以重写
         /// </summary>
-        protected virtual void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        protected virtual void OnTick(float deltaTime, float unscaledDeltaTime)
         {
             // 默认不做任何事
         }
@@ -123,7 +94,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 固定更新，子类可以重写
         /// </summary>
-        protected virtual void OnFixedUpdate()
+        protected virtual void OnFixedTick()
         {
             // 默认不做任何事
         }
@@ -137,15 +108,7 @@ namespace Twenty2.VomitLib.Procedure
         /// </summary>
         protected void ChangeState(T targetState)
         {
-            ProcedureStateMachine<T>.Instance.ChangeState(targetState);
-        }
-        
-        /// <summary>
-        /// 强制切换状态（跳过条件检查）
-        /// </summary>
-        protected void ForceChangeState(T targetState)
-        {
-            ProcedureStateMachine<T>.Instance.ForceChangeState(targetState);
+            ProcedureMgr<T>.Instance.ChangeState(targetState);
         }
         
         /// <summary>
@@ -217,10 +180,7 @@ namespace Twenty2.VomitLib.Procedure
         
         #region Private Methods
         
-        /// <summary>
-        /// 清理事件注册
-        /// </summary>
-        private void CleanupEventRegisters()
+        private void ClearEventRegisters()
         {
             foreach (var register in _eventRegisters)
             {
@@ -236,9 +196,34 @@ namespace Twenty2.VomitLib.Procedure
             _eventRegisters.Clear();
         }
         
-        public override string ToString()
+        private bool Tick()
         {
-            return _stateName;
+            var deltaTime = Time.deltaTime;
+            var unscaledDeltaTime = Time.unscaledDeltaTime;
+            
+            try
+            {
+                OnTick(deltaTime, unscaledDeltaTime);
+            }
+            catch (Exception e)
+            {
+                Log.Error($"状态 {ProcedureKey} Update异常: {e.Message} \n{e.StackTrace}");
+            }
+            
+            return true;
+        }
+        
+        private bool FixedTick()
+        {
+            try
+            {
+                OnFixedTick();
+            }
+            catch (Exception e)
+            {
+                Log.Error($"状态 {ProcedureKey} FixedUpdate异常: {e.Message}");
+            }
+            return true;
         }
         
         #endregion
