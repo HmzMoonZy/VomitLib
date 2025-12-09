@@ -18,5 +18,13 @@ namespace Twenty2.VomitLib.Config
         
         [Header("Net 配置")] 
         public NetConfig NetConfig;
+
+
+        [Header("工具栏")] 
+        public bool ShowDataDirButton;
+        public bool ShowGenerateDataButton;
+        public bool ShowGenerateMsgButton;
+        public bool ShowSlecteConfigButton = true;
+        public bool ShowServerDirButton;
     }
 }
