@@ -2,7 +2,7 @@
 {
     public interface EvtView
     {
-        public struct Create
+        public struct Created
         {
             public ViewLogic ViewLogic;
         }
