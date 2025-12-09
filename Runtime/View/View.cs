@@ -162,7 +162,7 @@ namespace Twenty2.VomitLib.View
                     if (alwaysDisplay)
                     {
                         // 显示预加载的View
-                        Open(viewName);
+                        await OpenAsync(viewName);
                     }
                 }
                 catch (Exception ex)
@@ -182,14 +182,24 @@ namespace Twenty2.VomitLib.View
         // 思路1 : 关闭View1后自然打开View1, View1在栈顶, View2在栈底, 代价是关闭View1, View2时, 少了一层View1.
         // 思路2 : 支持开启View1副本.
         
-        public static void Open<T>(ViewParameterBase param = null) where T : ViewLogic, new()
+        // TODO 真正的同步开启方法
+        
+        public static void OpenAsync<T>(ViewParameterBase param, Action<ViewLogic> callback) where T : ViewLogic, new()
         {
-            OpenAsync<T>(param).Forget();
+            UniTask.Create(async () =>
+            {
+                var logic = await OpenAsync<T>(param);
+                callback?.Invoke(logic);
+            });
         }
 
-        public static void Open(string viewName, ViewParameterBase param = null)
+        public static void OpenAsync(string viewName, ViewParameterBase param, Action<ViewLogic> callback)
         {
-            OpenAsync(viewName, param).Forget();
+            UniTask.Create(async () =>
+            {
+                var logic = await OpenAsync(viewName, param);
+                callback?.Invoke(logic);
+            });
         }
 
         public static async UniTask<T> OpenAsync<T>(ViewParameterBase param = null) where T : ViewLogic, new()

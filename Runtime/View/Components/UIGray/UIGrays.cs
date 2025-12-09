@@ -8,34 +8,20 @@ namespace Twenty2.VomitLib.View
     [DisallowMultipleComponent]
     public class UIGrays : MonoBehaviour
     {
-        [SerializeField] private Graphic[] m_targets;
-
-        [SerializeField] private Material m_grayMat;
-
+        private static Material s_grayMat;
+        
+        [SerializeField] private Graphic[] _targets;
+        
         public bool m_isGray = false;
 
-        /// <summary>
-        /// 创建置灰材质球
-        /// </summary>
-        /// <returns></returns>
-        private Material GetGrayMat()
+        private void Awake()
         {
-            if (m_grayMat == null)
+            if (_targets == null || _targets.Length <= 0)
             {
-                Shader shader = Shader.Find("VomitLib/UI/UIGray");
-                if (shader == null)
-                {
-                    Log.Debug("null");
-                    return null;
-                }
-
-                Material mat = new Material(shader);
-                m_grayMat = mat;
+                _targets = gameObject.GetComponentsInChildren<Graphic>();
             }
-
-            return m_grayMat;
         }
-
+        
         /// <summary>
         /// 图片置灰
         /// </summary>
@@ -43,10 +29,10 @@ namespace Twenty2.VomitLib.View
         public void SetUIGray()
         {
             m_isGray = true;
-            if (m_targets == null) return;
-            for (int i = 0; i < m_targets.Length; i++)
+            if (_targets == null) return;
+            for (int i = 0; i < _targets.Length; i++)
             {
-                var target = m_targets[i];
+                var target = _targets[i];
                 
                 if (target == null)
                 {
@@ -68,10 +54,10 @@ namespace Twenty2.VomitLib.View
         public void Recovery()
         {
             m_isGray = false;
-            if (m_targets == null) return;
-            for (int i = 0; i < m_targets.Length; i++)
+            if (_targets == null) return;
+            for (int i = 0; i < _targets.Length; i++)
             {
-                var target = m_targets[i];
+                var target = _targets[i];
                 
                 if (target == null)
                 {
@@ -84,13 +70,30 @@ namespace Twenty2.VomitLib.View
             }
         }
 
-        [ContextMenu("Find Graphic")]
+        [ContextMenu("收集Graphic")]
         public void FindGraphic()
         {
 #if UNITY_EDITOR
             Undo.RecordObject(this, "UIGrays.FindGraphic");
 #endif
-            m_targets = gameObject.GetComponentsInChildren<Graphic>();
+            _targets = gameObject.GetComponentsInChildren<Graphic>();
+        }
+        
+        private Material GetGrayMat()
+        {
+            if (s_grayMat == null)
+            {
+                var shader = Shader.Find("VomitLib/UI/UIGray");
+                if (shader == null)
+                {
+                    Log.Error("UIGrays.GetGrayMat() shader is null. Shader name : VomitLib/UI/UIGray");
+                    return null;
+                }
+                
+                s_grayMat = new Material(shader);
+            }
+
+            return s_grayMat;
         }
     }
 }
