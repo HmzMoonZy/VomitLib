@@ -11,27 +11,27 @@
         Lobby = 0,
 
         /// <summary>
-        /// 游戏层,通常是小地图或HUD.
+        /// 游戏层,通常是小地图
         /// </summary>
         GamePlay = 10,
 
         /// <summary>
-        /// 游戏操作层,比如聊天窗口.
+        /// 低于 Hud 的游戏操作层
         /// </summary>
         LowOperation = 20,
 
         /// <summary>
         /// 用于动静分离的层级,例如伤害显示.
         /// </summary>
-        Public = 30,
+        Hud = 30,
         
         /// <summary>
-        /// 高于 Public 的游戏操作层
+        /// 标准游戏操作层
         /// </summary>
         Operation = 40,
         
         /// <summary>
-        /// 低于 Loading 但高于 Public
+        /// 低于 Loading
         /// </summary>
         LowTip = 50,
 

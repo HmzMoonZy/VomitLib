@@ -178,7 +178,11 @@ namespace Twenty2.VomitLib.View
         
         #region Open View
 
-                public static void Open<T>(ViewParameterBase param = null) where T : ViewLogic, new()
+        // TODO 适配一个情况, View1 打开 View2, View2 打开 View1.
+        // 思路1 : 关闭View1后自然打开View1, View1在栈顶, View2在栈底, 代价是关闭View1, View2时, 少了一层View1.
+        // 思路2 : 支持开启View1副本.
+        
+        public static void Open<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
             OpenAsync<T>(param).Forget();
         }
@@ -332,7 +336,7 @@ namespace Twenty2.VomitLib.View
                 IsCache = logic.Config.IsCache,
             });
         }
-
+        
         private static void CacheLogic(ViewLogic logic)
         {
             logic.Parent(Root.HiddenCanvas);
