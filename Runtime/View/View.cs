@@ -11,6 +11,10 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
+// TODO 适配一个情况, View1 打开 View2, View2 打开 View1.
+// 思路1 : 关闭View1后自然打开View1, View1在栈顶, View2在栈底, 代价是关闭View1, View2时, 少了一层View1.
+// 思路2 : 支持开启View1副本.
+
 namespace Twenty2.VomitLib.View
 {
     /// <summary>
@@ -72,7 +76,6 @@ namespace Twenty2.VomitLib.View
         private static IViewBinder _binder;
         private static IViewMasker _masker;
         private static IViewLocalizer _localizer;
-        private static IViewRecorder _recorder;
         private static IViewLocker _locker;
 
         /// <summary>
@@ -87,7 +90,6 @@ namespace Twenty2.VomitLib.View
             IViewBinder binder = null, 
             IViewMasker masker = null, 
             IViewLocalizer localizer = null, 
-            IViewRecorder recorder = null, 
             IViewLocker locker = null, 
             Action<bool> onLoadingView = null)
         {
@@ -95,7 +97,6 @@ namespace Twenty2.VomitLib.View
             _binder = binder ?? new ViewBinder(null);
             _masker = masker ?? new ViewMasker(new Color(0, 0, 0, 0.5f));
             _localizer = localizer ?? new ViewLocalizer();
-            _recorder = recorder ?? new ViewRecorder();
             _locker = locker ?? new ViewLocker();
             
             _onLoadingView = onLoadingView;
@@ -177,11 +178,7 @@ namespace Twenty2.VomitLib.View
         #endregion
         
         #region Open View
-
-        // TODO 适配一个情况, View1 打开 View2, View2 打开 View1.
-        // 思路1 : 关闭View1后自然打开View1, View1在栈顶, View2在栈底, 代价是关闭View1, View2时, 少了一层View1.
-        // 思路2 : 支持开启View1副本.
-
+        
         #region Open
 
         public static T Open<T>(ViewParameterBase param = null) where T : ViewLogic, new()
@@ -359,11 +356,6 @@ namespace Twenty2.VomitLib.View
             logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
 
             logic.OnOpened(param);
-            
-            if (logic.Config.RecordOpen)
-            {
-                _recorder?.RecordOpen(logic.ID);
-            }
             
             Vomit.Interface?.SendEvent(new EvtView.Open
             {
@@ -548,27 +540,16 @@ namespace Twenty2.VomitLib.View
 
             foreach (var (_, view) in _visibleViewMap)
             {
-                var rr = view.transform.GetComponent<GraphicRaycaster>();
-                if (rr == null) continue;
+                var raycaster = view.transform.GetComponent<GraphicRaycaster>();
+                if (raycaster == null) continue;
 
-                rr.Raycast(ed, list);
+                raycaster.Raycast(ed, list);
 
                 if (list.Count > 0) return true;
             }
 
             return false;
         }
-
-        public static bool IsFirstOpen<T>() where T : ViewLogic
-        {
-            if (_recorder == null)
-            {
-                throw new Exception("请先初始化 ViewRecorder");
-            }
-
-            return _recorder.IsFirstOpen(typeof(T).Name);
-        }
-        
         
         #region Freeze
 

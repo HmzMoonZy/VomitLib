@@ -31,6 +31,7 @@ namespace Twenty2.VomitLib.View
     /// View运行时逻辑
     /// </summary>
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(ViewConfig))]
     public abstract class ViewLogic : MonoController
     {
         /// <summary>

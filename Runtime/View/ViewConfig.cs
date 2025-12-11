@@ -31,9 +31,6 @@ namespace Twenty2.VomitLib.View
         
         [Tooltip("自动绑定按钮事件")] 
         [SerializeField] private bool  _autoBindButtons = true;
-        
-        [Tooltip("记录设备打开记录")] 
-        [SerializeField] private bool  _recordOpen = false;
 
         /// <summary>
         /// 层级
@@ -64,10 +61,5 @@ namespace Twenty2.VomitLib.View
         /// 自动绑定按钮事件
         /// </summary>
         public bool AutoBindButtons => _autoBindButtons;
-        
-        /// <summary>
-        /// 记录设备打开记录
-        /// </summary>
-        public bool RecordOpen => _recordOpen;
     }
 }
