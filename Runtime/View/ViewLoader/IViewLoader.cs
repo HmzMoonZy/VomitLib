@@ -6,7 +6,9 @@ namespace Twenty2.VomitLib.View
 {
     public interface IViewLoader
     {
-        public UniTask<GameObject> CreateView(string viewName, Transform parent);
+        public UniTask<GameObject> CreateViewAsync(string viewName, Transform parent);
+        
+        public GameObject CreateView(string viewName, Transform parent);
         
         public void ReleaseView(GameObject view);
     }

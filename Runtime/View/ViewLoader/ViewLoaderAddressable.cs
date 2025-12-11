@@ -17,11 +17,16 @@ namespace Twenty2.VomitLib.View
             _getViewAddress = getViewAddress;
         }
 
-        public async UniTask<GameObject> CreateView(string viewName, Transform parent)
+        public async UniTask<GameObject> CreateViewAsync(string viewName, Transform parent)
         {
             var handle = Addressables.InstantiateAsync(_getViewAddress(viewName), parent);
             await handle.ToUniTask();
             return handle.Result;
+        }
+
+        public GameObject CreateView(string viewName, Transform parent)
+        {
+            return Addressables.InstantiateAsync(_getViewAddress(viewName), parent).WaitForCompletion();
         }
 
         public void ReleaseView(GameObject view)
