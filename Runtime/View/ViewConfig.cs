@@ -29,6 +29,9 @@ namespace Twenty2.VomitLib.View
         [Tooltip("是否缓存")] 
         [SerializeField] private bool  _isCache = true;
         
+        [Tooltip("是否存在多个")] // TODO
+        [SerializeField] private bool _allowMultiple = false;
+        
         [Tooltip("自动绑定按钮事件")] 
         [SerializeField] private bool  _autoBindButtons = true;
 
@@ -56,6 +59,11 @@ namespace Twenty2.VomitLib.View
         /// 是否缓存
         /// </summary>
         public bool IsCache => _isCache;
+        
+        /// <summary>
+        /// 是否存在多个
+        /// </summary>
+        public bool AllowMultiple => _allowMultiple;
 
         /// <summary>
         /// 自动绑定按钮事件
