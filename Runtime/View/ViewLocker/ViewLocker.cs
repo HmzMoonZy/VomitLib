@@ -9,7 +9,7 @@ namespace Twenty2.VomitLib.View
 
         public void Lock(ViewLogic view)
         {
-            if (_lockSet.Contains(view.ID))
+            if (_lockSet.Contains(view.Id))
             {
                 return;
             }
@@ -23,7 +23,7 @@ namespace Twenty2.VomitLib.View
             rectTrans.localPosition = Vector3.zero;
             rectTrans.localScale = Vector3.one;
             rectTrans.SetAsLastSibling();
-            _lockSet.Add(view.ID);
+            _lockSet.Add(view.Id);
 
 #if UNITY_EDITOR
             {
@@ -44,10 +44,10 @@ namespace Twenty2.VomitLib.View
 
         public void UnLock(ViewLogic view)
         {
-            if (_lockSet.Contains(view.ID))
+            if (_lockSet.Contains(view.Id))
             {
                 Object.Destroy(view.transform.Find("__AutoLock").gameObject);
-                _lockSet.Remove(view.ID);
+                _lockSet.Remove(view.Id);
             }
         }
     }

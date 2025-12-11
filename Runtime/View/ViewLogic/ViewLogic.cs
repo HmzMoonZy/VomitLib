@@ -36,8 +36,9 @@ namespace Twenty2.VomitLib.View
     {
         /// <summary>
         /// UI 的名称, 唯一标识.
+        /// 实例创建时框架确定, 业务层只读.
         /// </summary>
-        public string ID => GetType().Name; 
+        public string Id { get; set; } 
         
 
         private Canvas _viewCanvas;
@@ -59,13 +60,7 @@ namespace Twenty2.VomitLib.View
         /// 面板下命名为'#View'的子节点
         /// </summary>
         protected RectTransform RectView => _rectView ??= transform.Find("#View")?.GetComponent<RectTransform>();
-
-        /// <summary>
-        /// 面板下命名为'#AutoHide'的子节点
-        /// </summary>
-        private RectTransform _autoHide => transform.Find("#AutoHide")?.GetComponent<RectTransform>();
-
-
+        
         /// <summary>
         /// 动画组件
         /// </summary>
@@ -79,11 +74,6 @@ namespace Twenty2.VomitLib.View
         {
             get => ViewCanvas.sortingOrder;
             set => ViewCanvas.sortingOrder = value;
-        }
-
-        private void Awake()
-        {
-            _autoHide?.gameObject.SetActive(false);
         }
         
         #region 生命周期
@@ -168,17 +158,17 @@ namespace Twenty2.VomitLib.View
         
         protected void CloseSelf()
         {
-            View.Close(ID);
+            View.Close(Id);
         }
 
         protected void Freeze()
         {
-            View.Freeze(ID);
+            View.Freeze(Id);
         }
 
         protected void UnFreeze()
         {
-            View.UnFreeze(ID);
+            View.UnFreeze(Id);
         }
     }
     

@@ -36,7 +36,7 @@ namespace Twenty2.VomitLib.View
                 button.transition = Selectable.Transition.None;
                 button.onClick.AddListener(() =>
                 {
-                    View.Close(view.ID);
+                    View.Close(view.Id);
                 });
             }
         }

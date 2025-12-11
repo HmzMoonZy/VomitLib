@@ -11,9 +11,11 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-// TODO 适配一个情况, View1 打开 View2, View2 打开 View1.
-// 思路1 : 关闭View1后自然打开View1, View1在栈顶, View2在栈底, 代价是关闭View1, View2时, 少了一层View1.
-// 思路2 : 支持开启View1副本.
+/*
+ * TODO 预加载的View不支持多重打开
+ *
+ * TODO 自动移除缓存的View.
+ */
 
 namespace Twenty2.VomitLib.View
 {
@@ -103,7 +105,7 @@ namespace Twenty2.VomitLib.View
             
             // 初始化Update管理器
             _updateManager = new ViewUpdateManager();
-            _updateManager.StartUpdateManager().Forget();
+            _updateManager.StartUpdateManager();
 
             // 预加载
             await PreloadViews();       // TODO  外抛进度
@@ -181,35 +183,44 @@ namespace Twenty2.VomitLib.View
         
         #region Open
 
+        public static T OpenStandalone<T>(ViewParameterBase param = null) where T : ViewLogic, new()
+        {
+            return __Open($"{typeof(T).Name}_{Guid.NewGuid()}", param) as T;
+        }
+        
         public static T Open<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
             return __Open(typeof(T).Name, param) as T;
         }
         
-        public static ViewLogic Open(string viewName, ViewParameterBase param = null)
+        public static ViewLogic Open(string viewId, ViewParameterBase param = null)
         {
-            return __Open(viewName, param);
+            return __Open(viewId, param);
         }
-        private static ViewLogic __Open(string viewName, ViewParameterBase param = null)
+        
+        private static ViewLogic __Open(string viewId, ViewParameterBase param = null)
         {
-            if (_loadingViews.Contains(viewName))
+            if (_loadingViews.Contains(viewId))
             {
-                Log.Warning($"Try to open an already showed the View : {viewName}");
+                Log.Warning($"Try to open an already showed the View : {viewId}");
                 return null;
             }
             
-            if (_visibleViewMap.TryGetValue(viewName, out var logic))
+            if (_visibleViewMap.TryGetValue(viewId, out var logic))
             {
-                Log.Warning($"Try to open an already showed the View : {viewName}");
+                Log.Warning($"Try to open an already showed the View : {viewId}");
                 return logic;
             }
 
-            _hiddenViewMap.Remove(viewName, out logic); // 移除隐藏列表
+            _hiddenViewMap.Remove(viewId, out logic); // 移除隐藏列表
             
             // 进入创建流程
             if (logic == null)
             {
-                _loadingViews.Add(viewName);
+                _loadingViews.Add(viewId);
+
+                var viewName = viewId.Contains('_') ? viewId.Split('_')[0] : viewId;
+                
                 if (_preLoadMap.TryGetValue(viewName, out var viewObject))
                 {
                     viewObject.transform.SetParent(Root.transform, false);
@@ -220,7 +231,7 @@ namespace Twenty2.VomitLib.View
                 }
 
                 logic = viewObject.GetComponent<ViewLogic>();
-
+                logic.Id = viewId;
                 __OnCreateLogic(logic);
             }
             
@@ -243,11 +254,11 @@ namespace Twenty2.VomitLib.View
             });
         }
 
-        public static void OpenAsync(string viewName, ViewParameterBase param, Action<ViewLogic> callback)
+        public static void OpenAsync(string viewId, ViewParameterBase param, Action<ViewLogic> callback)
         {
             UniTask.Create(async () =>
             {
-                var logic = await __OpenAsync(viewName, param);
+                var logic = await __OpenAsync(viewId, param);
                 callback?.Invoke(logic);
             });
         }
@@ -257,34 +268,37 @@ namespace Twenty2.VomitLib.View
             return (T)await __OpenAsync(typeof(T).Name, param);
         }
         
-        public static async UniTask<ViewLogic> OpenAsync(string viewName, ViewParameterBase param = null)
+        public static async UniTask<ViewLogic> OpenAsync(string viewId, ViewParameterBase param = null)
         {
-            return await __OpenAsync(viewName, param);
+            return await __OpenAsync(viewId, param);
         }
 
         /// <summary>
         /// 内部方法, 异步开启 View
         /// </summary>
-        private static async UniTask<ViewLogic> __OpenAsync(string viewName, ViewParameterBase param = null)
+        private static async UniTask<ViewLogic> __OpenAsync(string viewId, ViewParameterBase param = null)
         {
-            if (_loadingViews.Contains(viewName))
+            if (_loadingViews.Contains(viewId))
             {
-                Log.Warning($"Try to open an already showed the View : {viewName}");
+                Log.Warning($"Try to open an already showed the View : {viewId}");
                 return null;
             }
             
-            if (_visibleViewMap.TryGetValue(viewName, out var logic))
+            if (_visibleViewMap.TryGetValue(viewId, out var logic))
             {
-                Log.Warning($"Try to open an already showed the View : {viewName}");
+                Log.Warning($"Try to open an already showed the View : {viewId}");
                 return logic;
             }
 
-            _hiddenViewMap.Remove(viewName, out logic); // 移除隐藏列表
+            _hiddenViewMap.Remove(viewId, out logic); // 移除隐藏列表
 
             // 进入创建流程
             if (logic == null)
             {
-                _loadingViews.Add(viewName);
+                _loadingViews.Add(viewId);
+
+                var viewName = viewId.Contains('_') ? viewId.Split('_')[0] : viewId;
+                
                 if (_preLoadMap.TryGetValue(viewName, out var viewObject))
                 {
                     viewObject.transform.SetParent(Root.transform, false);
@@ -297,7 +311,7 @@ namespace Twenty2.VomitLib.View
                 }
 
                 logic = viewObject.GetComponent<ViewLogic>();
-
+                logic.Id = viewId;
                 __OnCreateLogic(logic);
             }
 
@@ -317,7 +331,7 @@ namespace Twenty2.VomitLib.View
                 return;
             }
 
-            _loadingViews.Remove(logic.ID); // 移除加载中列表
+            _loadingViews.Remove(logic.Id); // 移除加载中列表
 
             // 绑定组件
             if (logic.Config.AutoBindButtons)
@@ -331,6 +345,7 @@ namespace Twenty2.VomitLib.View
                 _localizer?.Localize(logic);
             }
 
+            Log.Debug($"View - {logic.Id} Created");
             logic.OnCreated();
             Vomit.Interface?.SendEvent(new EvtView.Created
             {
@@ -341,7 +356,7 @@ namespace Twenty2.VomitLib.View
         private static void __OnOpenLogic(ViewLogic logic, ViewParameterBase param = null)
         {
             // 展示逻辑
-            _visibleViewMap[logic.ID] = logic;
+            _visibleViewMap[logic.Id] = logic;
 
             if (logic.Config.EnableAutoMask)        // 遮罩
             {
@@ -355,8 +370,8 @@ namespace Twenty2.VomitLib.View
             logic.ViewCanvas.sortingLayerID = (int)logic.Config.Layer;
             logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
 
+            Log.Debug($"View - {logic.Id} Opened");
             logic.OnOpened(param);
-            
             Vomit.Interface?.SendEvent(new EvtView.Open
             {
                 ViewLogic = logic,
@@ -410,7 +425,7 @@ namespace Twenty2.VomitLib.View
         private static void CacheLogic(ViewLogic logic)
         {
             logic.Parent(Root.HiddenCanvas);
-            _hiddenViewMap.Add(logic.ID, logic);
+            _hiddenViewMap.Add(logic.Id, logic);
             if (logic.Config.EnableAutoMask)
             {
                 _masker?.Unmask(logic);
