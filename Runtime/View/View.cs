@@ -12,8 +12,6 @@ using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 /*
- * TODO 预加载的View不支持多重打开
- *
  * TODO 自动移除缓存的View.
  */
 
@@ -185,6 +183,11 @@ namespace Twenty2.VomitLib.View
 
         public static T OpenStandalone<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
+            if (_preLoadMap.ContainsKey(typeof(T).Name))
+            {
+                Log.Error("不能独立打开一个预加载的 View");
+                return null;
+            }
             return __Open($"{typeof(T).Name}_{Guid.NewGuid()}", param) as T;
         }
         

@@ -61,11 +61,6 @@ namespace Twenty2.VomitLib.View
         public bool IsCache => _isCache;
         
         /// <summary>
-        /// 是否存在多个
-        /// </summary>
-        public bool AllowMultiple => _allowMultiple;
-
-        /// <summary>
         /// 自动绑定按钮事件
         /// </summary>
         public bool AutoBindButtons => _autoBindButtons;
