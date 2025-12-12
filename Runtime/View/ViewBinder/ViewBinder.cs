@@ -20,11 +20,6 @@ namespace Twenty2.VomitLib.View
             var buttons = view.GetComponentsInChildren<Button>(true);
             foreach (var btn in buttons)
             {
-                if (btn is CommandButton)       // 忽略 CommandButton
-                {
-                    continue;
-                }
-
                 var methodName = $"__OnClick_{btn.name}";
                 const BindingFlags bindFlag = BindingFlags.NonPublic | BindingFlags.Instance;
                 var methodInfo = view.GetType().GetMethod(methodName, bindFlag);
