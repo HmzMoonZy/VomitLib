@@ -382,6 +382,10 @@ namespace Twenty2.VomitLib.View
             
             // 注册到Update管理器
             _updateManager?.RegisterView(logic);
+            
+            #if UNITY_EDITOR
+            logic.gameObject.name = $"{logic.Id}({logic.Config.Layer.ToString()}-{logic.SortOrder.ToString()})";
+            #endif
         }
 
         #endregion
