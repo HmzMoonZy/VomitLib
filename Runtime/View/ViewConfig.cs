@@ -14,25 +14,20 @@ namespace Twenty2.VomitLib.View
     {
         [Header("View视图面板的配置信息")]
         
-        [Tooltip("层级")]
+        [Header("层级")]
         [SerializeField] private ViewSortLayer _layer;
 
-        [Tooltip("自动产生一个遮罩")]
+        [Header("遮罩")]
         [SerializeField] private bool _enableAutoMask = true;
-        
-        [Tooltip("点击遮罩关闭这个面板")]
         [SerializeField] private bool _clickMaskTriggerClose = false;
 
-        [Tooltip("本地化")]
+        [Header("本地化")]
         [SerializeField] private bool _enableLocalization = true;
         
-        [Tooltip("是否缓存")] 
+        [Header("缓存")] 
         [SerializeField] private bool  _isCache = true;
         
-        [Tooltip("是否存在多个")] // TODO
-        [SerializeField] private bool _allowMultiple = false;
-        
-        [Tooltip("自动绑定按钮事件")] 
+        [Header("绑定")] 
         [SerializeField] private bool  _autoBindButtons = true;
 
         /// <summary>
