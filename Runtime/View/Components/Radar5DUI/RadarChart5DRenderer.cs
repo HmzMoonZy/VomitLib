@@ -138,13 +138,8 @@ public class RadarChart5DRenderer : MaskableGraphic
         }
     }
 
-    public void SetAllValues(float v0, float v1, float v2, float v3, float v4)
+    public float[] GetData()
     {
-        _datas[0] = v0;
-        _datas[1] = v1;
-        _datas[2] = v2;
-        _datas[3] = v3;
-        _datas[4] = v4;
-        SetVerticesDirty();
+        return _datas;
     }
 }
