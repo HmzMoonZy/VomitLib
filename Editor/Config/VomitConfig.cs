@@ -7,6 +7,9 @@ namespace Twenty2.VomitLib.Config
     [CreateAssetMenu(fileName = "VomitLibConfig", menuName = "VomitLib/CreateConfig", order = 0)]
     public class VomitConfig : ScriptableObject
     {
+        [Header("Code Gen 配置")] 
+        public CodeGenConfig CodeGenConfig;
+        
         [Header("View 配置")] 
         public ViewConfig ViewConfig;
         

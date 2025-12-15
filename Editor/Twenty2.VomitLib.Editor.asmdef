@@ -7,7 +7,8 @@
         "Luban.Runtime",
         "Twenty2.VomitLib.LubanSupport",
         "Twenty2.VomitLib.ToolKits",
-        "Twenty2.VomitLib.FluentAPI"
+        "Twenty2.VomitLib.FluentAPI",
+        "AnnulusGames.UnityCodeGen.Editor"
     ],
     "includePlatforms": [
         "Editor"

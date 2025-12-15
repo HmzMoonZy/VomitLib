@@ -29,6 +29,7 @@ namespace Twenty2.VomitLib
         /// <summary>
         /// 依照合理的顺序关联框架的系统和数据, 性能略低, 适合在开发阶段调用
         /// </summary>
+        [Obsolete("使用生成的AutoLoad")]
         public static void AutoLoad(Assembly assembly)
         {
             if (IsInit == false)
