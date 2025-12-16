@@ -149,12 +149,12 @@ namespace Twenty2.VomitLib.View
             {
                 try
                 {
-                    var prefab = await _loader.CreateViewAsync(viewName, Root.HiddenCanvas);
-                    _preLoadMap.Add(viewName, prefab);
+                    var view = await _loader.CreateViewAsync(viewName, Root.HiddenCanvas);
+                    _preLoadMap.Add(viewName, view);
                     Log.Debug($"预加载成功: {viewName}, 优先级: {priority}");
 
                     #if UNITY_EDITOR
-                    if (prefab.GetComponent<ViewConfig>().IsCache == false)
+                    if (view.GetComponent<ViewConfig>().IsCache == false)
                     {
                         Log.Warning($"预加载的View {viewName} 未设置缓存, 可能会引发未知的错误.");
                     }
@@ -415,11 +415,11 @@ namespace Twenty2.VomitLib.View
 
             if (logic.Config.IsCache)
             {
-                CacheLogic(logic);
+                __CacheLogic(logic);
             }
             else
             {
-                DestroyLogic(logic);
+                __DestroyLogic(logic);
             }
 
             Vomit.Interface?.SendEvent(new EvtView.Close()
@@ -429,7 +429,7 @@ namespace Twenty2.VomitLib.View
             });
         }
         
-        private static void CacheLogic(ViewLogic logic)
+        private static void __CacheLogic(ViewLogic logic)
         {
             logic.Parent(Root.HiddenCanvas);
             _hiddenViewMap.Add(logic.Id, logic);
@@ -440,7 +440,7 @@ namespace Twenty2.VomitLib.View
             _locker?.UnLock(logic);            
         }
 
-        private static void DestroyLogic(ViewLogic logic)
+        private static void __DestroyLogic(ViewLogic logic)
         {
             Object.Destroy(logic.gameObject);
             _loader?.ReleaseView(logic.gameObject);
