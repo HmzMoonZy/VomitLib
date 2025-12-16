@@ -87,6 +87,14 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 注册流程
         /// </summary>
+        public void RegisterState<TProcedure>() where TProcedure : AbstractProcedure<T>, new()
+        {
+            RegisterState(new TProcedure());
+        }
+        
+        /// <summary>
+        /// 注册流程
+        /// </summary>
         public void RegisterState(AbstractProcedure<T> state)
         {
             if (IsInitialized)
