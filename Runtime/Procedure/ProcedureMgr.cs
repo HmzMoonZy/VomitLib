@@ -23,7 +23,7 @@ namespace Twenty2.VomitLib.Procedure
         
         #region Fields
         
-        private readonly Dictionary<T, AbstractProcedure<T>> _registeredStates = new();
+        private readonly Dictionary<T, AbstractProcedure<T>> _registered = new();
         
         #endregion
         
@@ -95,20 +95,20 @@ namespace Twenty2.VomitLib.Procedure
                 return;
             }
             
-            if (_registeredStates.ContainsKey(state.ProcedureKey))
+            if (_registered.ContainsKey(state.ProcedureKey))
             {
                 Log.Error($"状态 {state.ProcedureKey} 已注册，请勿重复注册");
                 return;
             }
             
-            _registeredStates[state.ProcedureKey] = state;
+            _registered[state.ProcedureKey] = state;
             Log.Debug($"注册流程状态: {state.ProcedureKey}");
         }
         
         /// <summary>
         /// 初始化并启动状态机
         /// </summary>
-        public void Initialize(T initialStateId)
+        public void Initialize(T initialStateId, ProcedureArgsBase args)
         {
             if (IsInitialized)
             {
@@ -116,13 +116,13 @@ namespace Twenty2.VomitLib.Procedure
                 return;
             }
             
-            if (_registeredStates.Count == 0)
+            if (_registered.Count == 0)
             {
                 Log.Error("没有注册任何状态，无法初始化状态机");
                 return;
             }
             
-            if (!_registeredStates.ContainsKey(initialStateId))
+            if (!_registered.ContainsKey(initialStateId))
             {
                 Log.Error($"初始状态 {initialStateId} 未注册");
                 return;
@@ -131,7 +131,7 @@ namespace Twenty2.VomitLib.Procedure
             IsInitialized = true;
             
             // 启动状态机
-            Run(initialStateId);
+            Run(initialStateId, args);
         }
         
         /// <summary>
@@ -167,7 +167,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 切换状态
         /// </summary>
-        public bool ChangeState(T newStateId)
+        public bool ChangeState(T newStateId, ProcedureArgsBase args)
         {
             if (!IsInitialized)
             {
@@ -187,7 +187,7 @@ namespace Twenty2.VomitLib.Procedure
                 return false;
             }
             
-            if (!_registeredStates.TryGetValue(newStateId, out var newState))
+            if (!_registered.TryGetValue(newStateId, out var newState))
             {
                 Log.Error($"找不到目标状态: {newStateId}");
                 return false;
@@ -214,7 +214,7 @@ namespace Twenty2.VomitLib.Procedure
                 ResetMonitor();
                 
                 // 进入新状态
-                newState.Enter();
+                newState.Enter(args);
                 
                 // 发送状态改变事件
                 OnProcedureChanged?.Invoke(oldStateId, newStateId, CurrentState);
@@ -238,7 +238,7 @@ namespace Twenty2.VomitLib.Procedure
         /// </summary>
         public IEnumerable<T> GetRegisteredStates()
         {
-            return _registeredStates.Keys;
+            return _registered.Keys;
         }
 
         #endregion
@@ -248,7 +248,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 内部启动方法
         /// </summary>
-        private void Run(T runStateId)
+        private void Run(T runStateId, ProcedureArgsBase args)
         {
             if (IsRunning)
             {
@@ -256,7 +256,7 @@ namespace Twenty2.VomitLib.Procedure
                 return;
             }
             
-            if (!_registeredStates.TryGetValue(runStateId, out var runState))
+            if (!_registered.TryGetValue(runStateId, out var runState))
             {
                 Log.Error($"找不到初始状态: {runStateId}");
                 return;
@@ -270,7 +270,7 @@ namespace Twenty2.VomitLib.Procedure
             
             try
             {
-                runState.Enter();
+                runState.Enter(args);
                 IsRunning = true;
                 
                 Log.Debug($"状态机启动成功，初始状态: {runStateId}");
