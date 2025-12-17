@@ -31,6 +31,8 @@ public class RadarChart5DRenderer : MaskableGraphic
     // 缓存：5边形的固定角度 (0, 72, 144...)
     private static readonly float[] _angles = new float[] { 0f, 72f, 144f, 216f, 288f };
 
+    #if UNITY_EDITOR
+    
     protected override void OnValidate()
     {
         base.OnValidate();
@@ -38,6 +40,8 @@ public class RadarChart5DRenderer : MaskableGraphic
         if (_datas.Length != 5) System.Array.Resize(ref _datas, 5);
         SetVerticesDirty(); // 触发重绘
     }
+    
+    #endif
 
     protected override void OnPopulateMesh(VertexHelper vh)
     {
