@@ -347,6 +347,11 @@ namespace Twenty2.VomitLib.View
             {
                 _localizer?.Localize(logic);
             }
+            
+            logic.ViewCanvas.enabled = true;
+            logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+            logic.ViewCanvas.worldCamera = Root.ViewCamera;
+            logic.ViewCanvas.sortingLayerID = (int)logic.Config.Layer;
 
             Log.Debug($"View - {logic.Id} Created");
             logic.OnCreated();
@@ -367,12 +372,8 @@ namespace Twenty2.VomitLib.View
             }
 
             // TODO 刘海屏适配
-            logic.transform.SetParent(Root.transform, false);
-            logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
-            logic.ViewCanvas.worldCamera = Root.ViewCamera;
-            logic.ViewCanvas.sortingLayerID = (int)logic.Config.Layer;
             logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
-
+            
             Log.Debug($"View - {logic.Id} Opened");
             logic.OnOpened(param);
             Vomit.Interface?.SendEvent(new EvtView.Open
