@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 namespace Twenty2.VomitLib.Procedure
 {
@@ -139,7 +140,7 @@ namespace Twenty2.VomitLib.Procedure
             IsInitialized = true;
             
             // 启动状态机
-            Run(initialStateId, args);
+            Run(initialStateId, args).Forget();
         }
         
         /// <summary>
@@ -175,7 +176,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 切换状态
         /// </summary>
-        public bool ChangeState(T newStateId, ProcedureArgsBase args)
+        public async UniTask<bool> ChangeState(T newStateId, ProcedureArgsBase args)
         {
             if (!IsInitialized)
             {
@@ -222,7 +223,7 @@ namespace Twenty2.VomitLib.Procedure
                 ResetMonitor();
                 
                 // 进入新状态
-                newState.Enter(args);
+                await newState.Enter(args);
                 
                 // 发送状态改变事件
                 OnProcedureChanged?.Invoke(oldStateId, newStateId, CurrentState);
@@ -256,7 +257,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 内部启动方法
         /// </summary>
-        private void Run(T runStateId, ProcedureArgsBase args)
+        private async UniTask Run(T runStateId, ProcedureArgsBase args)
         {
             if (IsRunning)
             {
@@ -278,7 +279,7 @@ namespace Twenty2.VomitLib.Procedure
             
             try
             {
-                runState.Enter(args);
+                await runState.Enter(args);
                 IsRunning = true;
                 
                 Log.Debug($"状态机启动成功，初始状态: {runStateId}");

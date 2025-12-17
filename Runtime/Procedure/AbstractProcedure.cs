@@ -27,7 +27,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 进入状态时调用
         /// </summary>
-        protected abstract void OnEnter(ProcedureArgsBase args);
+        protected abstract UniTask OnEnter(ProcedureArgsBase args);
         
         /// <summary>
         /// 退出状态时调用
@@ -38,11 +38,11 @@ namespace Twenty2.VomitLib.Procedure
 
         #region Public Methods
 
-        public void Enter(ProcedureArgsBase args)
+        public async UniTask Enter(ProcedureArgsBase args)
         {
             try
             {
-                OnEnter(args);
+                await OnEnter(args);
                 
                 _procedureCts ??= new CancellationTokenSource();
                 var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(Application.exitCancellationToken, _procedureCts.Token);
@@ -106,9 +106,9 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 切换状态
         /// </summary>
-        protected void ChangeState(T targetState, ProcedureArgsBase args)
+        protected UniTask ChangeState(T targetState, ProcedureArgsBase args)
         {
-            ProcedureMgr<T>.Instance.ChangeState(targetState, args);
+            return ProcedureMgr<T>.Instance.ChangeState(targetState, args);
         }
         
         /// <summary>
