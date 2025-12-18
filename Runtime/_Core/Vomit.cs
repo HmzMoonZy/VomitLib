@@ -116,4 +116,39 @@ namespace Twenty2.VomitLib
             return Vomit.Interface;
         }
     }
+    
+    
+    #region  Poolable Command   // TODO
+    
+    /// <summary>
+    /// 可池化的接口 - 所有需要池化的 Command 都应实现此接口
+    /// </summary>
+    public interface IPoolable
+    {
+        /// <summary>
+        /// 从池中取出时调用
+        /// </summary>
+        void OnAcquire();
+        
+        /// <summary>
+        /// 回收到池中时调用
+        /// </summary>
+        void OnRecycle();
+    }
+    
+    /// <summary>
+    /// 可自动回收的 Command - 执行完自动回收
+    /// </summary>
+    public interface IAutoRecycleCommand : ICommand, IPoolable
+    {
+    }
+    
+    /// <summary>
+    /// 可自动回收的带返回值 Command
+    /// </summary>
+    public interface IAutoRecycleCommand<TResult> : ICommand<TResult>, IPoolable
+    {
+    }
+    
+    #endregion
 }
