@@ -108,4 +108,12 @@ namespace Twenty2.VomitLib
             return Vomit.Interface;
         }
     }
+
+    public interface IGameInformation : ICanGetModel
+    {
+        IArchitecture IBelongToArchitecture.GetArchitecture()
+        {
+            return Vomit.Interface;
+        }
+    }
 }
