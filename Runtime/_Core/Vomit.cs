@@ -8,7 +8,9 @@ using UnityEngine;
 
 namespace Twenty2.VomitLib
 {
-    public static partial class Vomit
+    #region Vomit Class
+
+    public static class Vomit
     {
         public static IArchitecture Interface { get; private set; }
 
@@ -86,7 +88,10 @@ namespace Twenty2.VomitLib
 #endif
         }
     }
+
+    #endregion
     
+    #region Qframework Extension
 
     public class MonoController : MonoBehaviour, IAbstractController
     {
@@ -117,7 +122,6 @@ namespace Twenty2.VomitLib
         }
     }
     
-    
     #region  Poolable Command   // TODO
     
     /// <summary>
@@ -136,19 +140,33 @@ namespace Twenty2.VomitLib
         void OnRecycle();
     }
     
-    /// <summary>
-    /// 可自动回收的 Command - 执行完自动回收
-    /// </summary>
     public interface IAutoRecycleCommand : ICommand, IPoolable
     {
     }
     
-    /// <summary>
-    /// 可自动回收的带返回值 Command
-    /// </summary>
     public interface IAutoRecycleCommand<TResult> : ICommand<TResult>, IPoolable
     {
     }
+    
+    public abstract class AbstractSmartCommand : AbstractCommand, IAutoRecycleCommand
+    {
+        public abstract void Execute();
+
+        public abstract void OnAcquire();
+
+        public abstract void OnRecycle();
+    }
+    
+    public abstract class AbstractSmartCommand<TResult> : AbstractCommand<TResult>, IAutoRecycleCommand<TResult>
+    {
+        public abstract TResult Execute();
+
+        public abstract void OnAcquire();
+
+        public abstract void OnRecycle();
+    }
+    
+    #endregion
     
     #endregion
 }
