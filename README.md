@@ -1,12 +1,12 @@
 # Vomit Lib
 
-<font style="background: red">施工中...</font> <font style="background: red">开发中...</font>
+个人的基于 [QFramework](https://github.com/liangxiegame/QFramework) | [UniTask](https://github.com/Cysharp/UniTask) | [Luban](https://github.com/focus-creative-games/luban) 的小游戏快速开发框架
 
-个人的基于 [QFramework](https://github.com/liangxiegame/QFramework) | [UniTask](https://github.com/Cysharp/UniTask) | [Addressable](https://docs.unity.cn/Packages/com.unity.addressables@1.14/manual/index.html) | [Luban](https://github.com/focus-creative-games/luban) 的小游戏快速开发框架
-
-`在开发了多个小游戏的DEMO后根据个人习惯提炼出的框架,目前仍在整合中...`
+`在开发了多个小游戏的DEMO后根据个人习惯提炼出的框架,注重易用性和开发效率`
 
 `项目名称是对自己的自嘲,对所有前辈和同行保持最大尊重!`
+
+`VomitLib 是个人项目，主要用于个人独立游戏开发。文档不会及时更新`
 
 <!-- PROJECT SHIELDS -->
 
@@ -18,17 +18,17 @@
 - [Luban](https://github.com/focus-creative-games/luban)
 
 ### 提供的功能
-##### 可用(待完善)
+##### 可用功能
 - <a href="#procedure"> 扩展QF, 添加了易用的 Procedure 层 </a>
 - <a href="#view"> 符合 Unity 原生开发习惯的 UI框架 </a>
-- <a href="#addr"> 基于 Addressables 的资源框架 </a>
 - <a href="#clientdb"> 基于 Luban 本地数据库 API </a>
-- <a href="#audio"> 简单的音频系统 </a>
-- <a href="#net"> 客户端网络 </a>
+- <a href="#toolkits"> 丰富的工具包集合 </a>
+- <a href="#fluentapi"> 流式API扩展 </a>
 
-###### 不可用
+###### 不可用/开发中
+- 音频系统 (重构中)
+- 网络框架 (重构中)
 - *TapTap | Steam* 平台发布工具(整合中)
-- P2P 网络游戏开发框架(做梦中)
 
 ### **使用前**
 1. 需要知道 QFramework 的使用方式(仅核心架构)
@@ -39,9 +39,9 @@
 1. 在 UPM 中安装 Addressables
 2. 在 UPM 中安装 UniTask `https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask`
 3. 在 UPM 中安装 VomitLib `https://github.com/HmzMoonZy/VomitLib.git`
-4. 在 Assets/Resources/ 下创建 VomitConfig 根据工程配置全局数据
+4. 在项目合适位置创建 VomitConfig 配置文件
 
-### **项目验证** <font style="background: red">开发中...</font>
+### **项目验证**
 - [史莱姆咖啡厅](https://store.steampowered.com/app/2367890/Slime_Cafe)  
 个人独立开发项目 #模拟经营 #Roguelike #放置
 - [骰子剑](https://github.com/HmzMoonZy/DiceSwordDemo)      
@@ -264,46 +264,43 @@ public abstract class ProcedureState<T> : ICanGetModel, ICanGetUtility, ICanGetS
 - 整个UI开发体验上遵循原生的开发体验,仅仅提供几个增强选项.
 - 自动遮罩 \ 自动切换字体 \ 层级配置 \ 本地化 \ 自动绑定按钮事件
 - UI开发中常用的API
-- 同于解耦View 面板的 ViewComponent
-```csharp
-// 当作普通的 MonoBehaviour 去开发
-public class VCSwordIcon : ViewComponent
-{
-    public void Start()
-    {
-        this.RegisterViewEvent<>    // 监听事件, 组件销毁时自动取消监听.
-    }
-}
+- 同步/异步打开关闭面板
+- 面板预加载和缓存机制
+- 完整的生命周期管理
 
-// UI 面板
+### 使用示例
+```csharp
+// UI 面板类
 public class ViewSwordDetail : ViewLogic
 {
-    public override UniTask OnOpened(ViewParameterBase param)
+    // 面板打开时调用
+    public override void OnOpened(ViewParameterBase param)
     {
-        // 自动加载 ViewComponent 并实例化
-        var icon = View.InstantiateVC<VCSwordIcon>(transform);
+        // 初始化面板逻辑
     }
- 
-    // 运行时自动绑定 UnityEditor 中的 BtnLogin,无需额外步骤
+
+    // 运行时自动绑定按钮事件
     private void __OnClick_BtnLogin()
     {
         Log.I("Click BtnLogin");
     }
 }
 
-public class Launch
+// 打开面板
+public class GameUI
 {
-    void Start()
-    {
-        // 同步打开一个 View
-        View.OpenView<ViewSwordDetail>();
-        // 异步打开一个 View, 可以在 View 的 OnOpen 中实现动画效果.
-        await View.OpenViewAsync<ViewSwordDetail>();
-        // 在打开时通过 QFramework 的事件系统 View 链式传递参数.
-        await View.OpenViewAsync<ViewSwordDetail>().WithEvent(new ViewTestEvent {Params = "NewTest!"})
-    }
-}
+    // 同步打开面板
+    View.Open<ViewSwordDetail>();
 
+    // 异步打开面板
+    await View.OpenAsync<ViewSwordDetail>();
+
+    // 等待面板关闭
+    await View.OpenAndWaitClose<ViewSwordDetail>();
+
+    // 关闭面板
+    View.Close<ViewSwordDetail>();
+}
 ```
 
 ### 配置参数
@@ -332,127 +329,175 @@ public class Launch
 ### ViewLogic & ViewLogic<T>
 - 自动生成的 View 代码继承自 ViewLogic.
 
-## 客户端网络
-<span id="net"></span>
+## 工具包集合
+<span id="toolkits"></span>
 
-- 提供客户端 Socket 封装
-- 通过事件传递网络消息
-- 简单的参数配置
+VomitLib 提供了丰富的工具包，简化日常开发任务：
 
-## 音频系统
-<span id="audio"></span>
+### 坐标系工具 - CoordinateKit
+游戏开发中经常使用的坐标系相互转换工具，支持：
+- 屏幕坐标系 ↔ UI坐标系 ↔ 场景(World)坐标系 ↔ TileMap坐标系
+- 一致的API设计，简化坐标转换逻辑
 
-- 区分 BGM | SFX
-- 常用API封装
 ```csharp
-public static void Init(Func<string, AudioClip> onSearchAudioClip = null, float bgmFactors = 0.8f, float bgmVolume = 1f, float seFactors = 1f, float seVolume = 1f)
-   
+// 屏幕坐标转世界坐标
+Vector3 worldPos = CoordinateKit.ScreenToWorld(screenPos);
+
+// UI坐标转世界坐标
+Vector3 worldPos = CoordinateKit.UIToWorld(uiPos);
+
+// 世界坐标转Tilemap坐标
+Vector3Int tilePos = CoordinateKit.WorldToTile(worldPos);
 ```
 
+### 加密工具 - EncryptKit
+提供常用的加密算法支持：
+- MurmurHash3 哈希算法
+- 数据加密解密功能
 
-## 资源框架-Addr
-<span id="addr"></span>
-#### 为什么是 Addressables ?
-- Unity 官方库,并且已经更新多年.
-- 目前开发的是纯单机的游戏,目标平台是Steam,所以对于资源管理的需求非常简单.
-- 可视化的性能分析
-- 通常以文件夹划分Bundle,开发中操作更简单和直观.尤其是规模不大的项目.
-- 面向接口, 要封装和替换成其它资源框架都非常简单.
-- UniTask 原生支持.
-### 怎么使用
-- 按照正常的方式使用Addressable
-- AA 在原先的 AB 基础上做了增强,本质上提供了 [通过资源的唯一名称(寻址地址)找到这个资源], 而无需关心资源具体位置.
-- 实际使用中我们经常会拼接各种冗长的字符串去确定这个唯一的地址.
-- 于是,ADDR则提供,通过[类型]+[资源索引]的方式来自动拼接[唯一的资源名]
-- 因为对于同一种类的资源命名规则理应是统一的.
+### ID生成工具 - IDKit
+生成唯一标识符的工具类，支持：
+- ULID (Universally Unique Lexicographically Sortable Identifier)
+- 分布式友好的ID生成
+
+### 随机数工具 - RandomKit
+增强的随机数生成工具：
+- 更好的随机数分布
+- 种子管理功能
+- 各种范围的随机数生成
+
+### 纹理工具 - TextureKit
+纹理处理相关工具：
+- 纹理压缩
+- 格式转换
+- 纹理处理辅助功能
+
+### 日志工具 - LogKit
+统一的日志管理：
+- 分级日志 (Debug, Info, Warning, Error)
+- 自定义日志输出
+- 运行时日志控制
+
+## 流式API扩展
+<span id="fluentapi"></span>
+
+VomitLib 提供了丰富的 C# 和 Unity 流式API扩展，让代码更加简洁优雅：
+
+### C# 基础类型扩展
 ```csharp
-    // 注册一类资源的索引拼接规则, 这里是不同骰子点数的Sprite
-    Addr.RegisterRule<Sprite>(Constant.AssetType.Sprite.Dice, s => $"Sprites/Dices/Dice{s}@png.png");
-    
-    // 同步加载点数3的骰子
-    Sprite dice3Sprite = Addr.Load<Sprite>(Constant.AssetType.Sprite.Dice, 3);
-    
-    // 异步加载点数6的骰子
-    Sprite dice6Sprite = Addr.LoadAsync<Sprite>(Constant.AssetType.Sprite.Dice, 6).Forget();
-    
-    // 异步加载点数5的骰子
-    Addr.LoadAsync<Sprite>(Constant.AssetType.Sprite.Dice, 5, sprite => {
-        image.sprite = sprite;
-    });
-    
-    // 可以同时异步加载所有图标而无需担心重复Load
-    for(var itemID in Backpack.List)
-    {
-        Addr.LoadAsync<GameObejct>(Constant.AssetType.GameObejct.ItemToken, itemID, token => {
-            token.Init(itemID);
-        });
-    }
-    
-    // 或是借助UniTask
-    for(var itemID in Backpack.List)
-    {
-        var id = itemID;
-        UniTask.Create(async () => {await Addr.LoadAsync<GameObejct>(Constant.AssetType.GameObejct.ItemToken, itemID).Init(id)});
-    }
-    
+// 字符串扩展
+"hello".IsNullOrEmpty();        // 检查字符串是否为空
+"test.txt".GetFileExtension();   // 获取文件扩展名
+
+// 集合扩展
+list.ForEach(item => Debug.Log(item));
+dictionary.GetOrAdd(key, () => defaultValue);
+
+// 反射扩展
+type.GetFieldsWithAttribute<SerializeFieldAttribute>();
 ```
+
+### Unity 对象扩展
+```csharp
+// GameObject 扩展
+gameObject.DestroyChildren();                    // 销毁所有子对象
+gameObject.SetActiveWithChildren(true);          // 递归设置激活状态
+
+// Transform 扩展
+transform.ResetLocal();                          // 重置本地变换
+transform.DestroyChildren();                     // 销毁所有子对象
+transform.ChildrenForEach(child => Debug.Log(child.name));
+
+// MonoBehaviour 扩展
+monoBehaviour.DestroyAfterSeconds(2f);          // 延迟销毁
+monoBehaviour.CancelDelayDestroy();              // 取消延迟销毁
+
+// 颜色扩展
+color.WithAlpha(0.5f);                           // 修改透明度
+color.ToHex();                                   // 转换为十六进制字符串
+
+// 向量扩展
+vector3.WithX(10f);                              // 修改X分量
+vector3.Flat();                                  // 转换为2D向量(Y=0)
+```
+
+## 框架监控
+VomitLib 提供了强大的编辑器内监控工具，帮助开发者调试和分析：
+
+### 启用监控
+```csharp
+// 在初始化框架后启用监控
+Vomit.Init(V.Interface);
+Vomit.EnableMonitor();
+```
+
+### 监控功能
+- **ViewMonitor**: 监控UI面板的打开、关闭、缓存状态
+- **ModelMonitor**: 监控数据模型的状态和变化
+- **SystemMonitor**: 监控系统方法的调用情况
+- **EventMonitor**: 监控事件系统的发送和接收
+- **CommandMonitor**: 监控命令的执行情况
+- **LubanMonitor**: 监控Luban配置数据的加载
+
+监控工具仅在编辑器模式下可用，提供实时的运行状态反馈，极大提升了开发调试效率。
 
 ## 本地数据库-ClientDB
 <span id="clientdb"></span>
-####
-- 基于luban的客户端数据库扩展
-#### 配置ClientDB Config
-- lubandll路径
-- lubanconfig 路径
-- 自动 C# 代码生成路径
-- 数据文件生成路径
-- 本地化数据路径
-#### 如何使用?
-```csharp
-    
-    public class ClientDB 
-    {
-        public static Tables T => ClientDB<Tables>.T;
-        
-        public static void Init()
-        {
-            // Tables 为鲁班生成代码
-            ClientDB<Tables>.Init(new Tables(Loader, true));
-        }
-        
-        private static JSONNode Loader(string fileName)
-        {
-            // 加载数据文件
-            var asset = Addr.Load<TextAsset>(Constant.AssetType.Text.LubanData, fileName);
-            string json = asset.text;
-            Addressables.Release(asset);
-            return JSON.Parse(json);
-        }
-    }
-    
-    // 更多时候,我们不是所有数据都通过excel配置.
-    // 类似技能数据这种复杂数据,我配置excel会配到头晕,于是更喜欢自己的数据配置器
-    public class SkillData : IEditable  // 实现 IEditable 接口
-    {
-        public int GetID();
 
-        public string GetName();
-    }
-    
-    // 扩展 Tables 
-    public partial class Tables
+基于 Luban 的客户端数据库扩展，提供统一的配置数据管理：
+
+### 主要特性
+- 支持 Excel 和 JSON 配置文件
+- 自动代码生成
+- 类型安全的数据访问
+- 灵活的数据表扩展
+- 本地化数据支持
+
+### 使用示例
+```csharp
+public class GameDatabase
+{
+    public static Tables T => ClientDB<Tables>.T;
+
+    public static void Init()
     {
-        // CustomTable<T> 提供和Luban生成代码风格一致的数据表
-        public CustomTable<SkillData> TbSkill;
-        
-        public Tables(System.Func<string, JSONNode> loader, bool useSelfData) : this(loader)
-        {
-            // 加载自己实现的配置文件
-            TbSkill = new CustomTable<SkillData>(Addr.Load<TextAsset>(Constant.AssetType.Text.JGTData, nameof(SkillData)).text);
-        }
+        // Tables 为 Luban 自动生成的数据表类
+        ClientDB<Tables>.Init(new Tables(LoadDataFile, true));
     }
-    
-    // 正常使用它
-    ExecuteSkill(ClientDB.T.TbSkill[1001].Logic);
-    
+
+    private static JSONNode LoadDataFile(string fileName)
+    {
+        // 加载配置数据文件
+        var asset = Resources.Load<TextAsset>($"Data/{fileName}");
+        return JSON.Parse(asset.text);
+    }
+}
+
+// 使用配置数据
+var itemData = GameDatabase.T.TbItem[1001];
+Debug.Log($"Item: {itemData.Name}, Price: {itemData.Price}");
 ```
+
+## 框架设计理念
+
+VomitLib 的设计遵循以下原则：
+
+### 1. 简洁性
+- 遵循 Unity 原生开发习惯
+- 最小化概念学习成本
+- 避免过度封装
+
+### 2. 实用性
+- 聚焦实际开发需求
+- 提供开箱即用的工具
+- 减少样板代码
+
+### 3. 可扩展性
+- 基于 QFramework 的架构模式
+- 支持自定义扩展
+- 模块化设计
+
+### 4. 开发效率
+- 丰富的工具包集合
+- 强大的编辑器支持
+- 实时监控和调试
