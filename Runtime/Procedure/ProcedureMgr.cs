@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Cysharp.Threading.Tasks;
+using FluentAPI;
 
 namespace Twenty2.VomitLib.Procedure
 {
@@ -84,6 +87,16 @@ namespace Twenty2.VomitLib.Procedure
         #endregion
         
         #region Public Methods
+
+        public void AutoRegister(Assembly assembly)
+        {
+            foreach (var procedureType in assembly.GetTypes().Where(type => type.HasAttribute<ProcedureAttribute>()))
+            {
+                var attribute = procedureType.GetAttribute<ProcedureAttribute>();
+                var instance = Activator.CreateInstance(procedureType);
+                RegisterState((AbstractProcedure<T>)instance);
+            }
+        }
         
         /// <summary>
         /// 注册流程
