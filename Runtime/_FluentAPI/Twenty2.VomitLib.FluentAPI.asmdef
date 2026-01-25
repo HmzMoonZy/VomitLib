@@ -1,7 +1,9 @@
 {
     "name": "Twenty2.VomitLib.FluentAPI",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "UniTask"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,

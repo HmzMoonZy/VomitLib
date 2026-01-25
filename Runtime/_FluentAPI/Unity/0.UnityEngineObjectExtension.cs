@@ -13,18 +13,18 @@ namespace FluentAPI
     public static class UnityEngineObjectExtension
     {
 
+        #region Instantiate
+
         public static T Instantiate<T>(this T selfObj) where T : UnityEngine.Object
         {
             return UnityEngine.Object.Instantiate(selfObj);
         }
 
-        public static T Instantiate<T>(this T selfObj, Vector3 position, Quaternion rotation)
-            where T : UnityEngine.Object
+        public static T Instantiate<T>(this T selfObj, Vector3 position, Quaternion rotation) where T : UnityEngine.Object
         {
             return UnityEngine.Object.Instantiate(selfObj, position, rotation);
         }
-
-
+        
         public static T Instantiate<T>(
             this T selfObj,
             Vector3 position,
@@ -34,8 +34,7 @@ namespace FluentAPI
         {
             return UnityEngine.Object.Instantiate(selfObj, position, rotation, parent);
         }
-
-
+        
         public static T InstantiateWithParent<T>(this T selfObj, Transform parent, bool worldPositionStays)
             where T : UnityEngine.Object
         {
@@ -58,22 +57,15 @@ namespace FluentAPI
             return UnityEngine.Object.Instantiate(selfObj, parent.transform, false);
         }
 
+        #endregion
 
-
-        public static T Name<T>(this T selfObj, string name) where T : UnityEngine.Object
-        {
-            selfObj.name = name;
-            return selfObj;
-        }
-
-
+        #region Destroy
 
         public static void DestroySelf<T>(this T selfObj) where T : UnityEngine.Object
         {
             UnityEngine.Object.Destroy(selfObj);
         }
-
-
+        
         public static T DestroySelfGracefully<T>(this T selfObj) where T : UnityEngine.Object
         {
             if (selfObj)
@@ -84,15 +76,12 @@ namespace FluentAPI
             return selfObj;
         }
 
-
-
         public static T DestroySelfAfterDelay<T>(this T selfObj, float afterDelay) where T : UnityEngine.Object
         {
             UnityEngine.Object.Destroy(selfObj, afterDelay);
             return selfObj;
         }
-
-
+        
         public static T DestroySelfAfterDelayGracefully<T>(this T selfObj, float delay) where T : UnityEngine.Object
         {
             if (selfObj)
@@ -103,11 +92,7 @@ namespace FluentAPI
             return selfObj;
         }
 
-
-        public static T DontDestroyOnLoad<T>(this T selfObj) where T : UnityEngine.Object
-        {
-            UnityEngine.Object.DontDestroyOnLoad(selfObj);
-            return selfObj;
-        }
+        #endregion
+        
     }
 }
