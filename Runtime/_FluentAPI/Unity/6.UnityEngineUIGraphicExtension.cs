@@ -21,12 +21,19 @@ namespace FluentAPI
             selfGraphic.color = color;
             return selfGraphic;
         }
-
-
+        
         public static Image FillAmount(this Image selfImage, float fillAmount)
         {
             selfImage.fillAmount = fillAmount;
             return selfImage;
+        }
+        
+        /// <summary>
+        /// 清空按钮点击监听
+        /// </summary>
+        public static void ClearClickListener(this Button selfBtn)
+        {
+            selfBtn.onClick.RemoveAllListeners();
         }
     }
 }

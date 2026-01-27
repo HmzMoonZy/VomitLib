@@ -12,17 +12,17 @@ namespace Twenty2.VomitLib.View
     {
         #region Button - Command 
 
-        public static void BindCommand<T>(this Button btn) where T : ICommand, new()
+        public static void BindCommand<T>(this Button selfBtn) where T : ICommand, new()
         {
-            btn.onClick.AddListener(() =>
+            selfBtn.onClick.AddListener(() =>
             {
                 Vomit.Interface.SendCommand(new T());
             });
         }
         
-        public static void BindCommand<T>(this Button btn, T command) where T : ICommand, new()
+        public static void BindCommand<T>(this Button selfBtn, T command) where T : ICommand, new()
         {
-            btn.onClick.AddListener(() =>
+            selfBtn.onClick.AddListener(() =>
             {
                 Vomit.Interface.SendCommand(command);
             });
