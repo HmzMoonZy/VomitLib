@@ -8,6 +8,24 @@ using QFramework;
 namespace Twenty2.VomitLib.Procedure
 {
     /// <summary>
+    /// 带参数 Procedure状态基类
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TArgs"></typeparam>
+    public abstract class AbstractGameProcedure<T, TArgs> : AbstractProcedure<T> where T : struct, Enum where TArgs : ProcedureArgsBase
+    {
+        protected TArgs Args;
+        
+        protected abstract UniTask OnEnter(TArgs args);
+    
+        protected override UniTask OnEnter(ProcedureArgsBase args)
+        {
+            Args = args as TArgs;
+            return OnEnter(Args);
+        }
+    }
+    
+    /// <summary>
     /// Procedure状态基类
     /// </summary>
     public abstract class AbstractProcedure<T> where T : struct, Enum
