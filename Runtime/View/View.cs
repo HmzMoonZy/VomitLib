@@ -309,7 +309,7 @@ namespace Twenty2.VomitLib.View
                 else
                 {
                     _onLoadingView?.Invoke(true);
-                    viewObject = await _loader.CreateViewAsync(viewName, Root.transform);
+                    viewObject = await _loader.CreateViewAsync(viewName, Root.HiddenCanvas);
                     _onLoadingView?.Invoke(false);
                 }
 
@@ -348,6 +348,7 @@ namespace Twenty2.VomitLib.View
                 _localizer?.Localize(logic);
             }
             
+            logic.transform.SetParent(Root.transform);
             logic.ViewCanvas.enabled = true;
             logic.ViewCanvas.renderMode = RenderMode.ScreenSpaceCamera;
             logic.ViewCanvas.worldCamera = Root.ViewCamera;
