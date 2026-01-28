@@ -235,11 +235,11 @@ namespace Twenty2.VomitLib.View
 
                 logic = viewObject.GetComponent<ViewLogic>();
                 logic.Id = viewId;
-                __OnCreateLogic(logic);
+                OnCreateLogic(logic);
             }
             
             // 开启流程
-            __OnOpenLogic(logic, param);
+            OnOpenLogic(logic, param);
             
             return logic;
         }
@@ -315,18 +315,18 @@ namespace Twenty2.VomitLib.View
 
                 logic = viewObject.GetComponent<ViewLogic>();
                 logic.Id = viewId;
-                __OnCreateLogic(logic);
+                OnCreateLogic(logic);
             }
 
             // 开启流程
-            __OnOpenLogic(logic, param);
+            OnOpenLogic(logic, param);
 
             return logic;
         }
 
         #endregion
         
-        private static void __OnCreateLogic(ViewLogic logic)
+        private static void OnCreateLogic(ViewLogic logic)
         {
             if (logic == null)
             {
@@ -362,7 +362,7 @@ namespace Twenty2.VomitLib.View
             });
         }
         
-        private static void __OnOpenLogic(ViewLogic logic, ViewParameterBase param = null)
+        private static void OnOpenLogic(ViewLogic logic, ViewParameterBase param = null)
         {
             // 展示逻辑
             _visibleViewMap[logic.Id] = logic;
@@ -417,11 +417,11 @@ namespace Twenty2.VomitLib.View
 
             if (logic.Config.IsCache)
             {
-                __CacheLogic(logic);
+                OnCacheLogic(logic);
             }
             else
             {
-                __DestroyLogic(logic);
+                OnDestroyLogic(logic);
             }
 
             Vomit.Interface?.SendEvent(new EvtView.Close()
@@ -431,7 +431,59 @@ namespace Twenty2.VomitLib.View
             });
         }
         
-        private static void __CacheLogic(ViewLogic logic)
+        public static void CloseAll()
+        {
+            var viewStack = CalcViewStack();
+            
+            while (viewStack.TryPop(out var view))
+            {
+                try
+                {
+                    Close(view.Id);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error closing view {view.Id}: {ex.Message}");
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 根据视图栈关闭视图,直到关闭到 T
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public static void CloseUntil<T>(bool keepT = true, params Type[] ignores) where T : ViewLogic
+        {
+            var viewStack = CalcViewStack();
+            
+            while (viewStack.TryPop(out var view))
+            { 
+                try
+                {
+                    var viewType = view.GetType();
+                    if (ignores.Contains(viewType))
+                    {
+                        continue;
+                    }
+
+                    if (viewType != typeof(T))
+                    {
+                        Close(view.Id);
+                        continue;
+                    }
+
+                    if (!keepT) Close(view.Id);
+                    
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error closing view {view.Id}: {ex.Message}");
+                }
+            }
+        }
+        
+        private static void OnCacheLogic(ViewLogic logic)
         {
             logic.Parent(Root.HiddenCanvas);
             _hiddenViewMap.Add(logic.Id, logic);
@@ -442,7 +494,7 @@ namespace Twenty2.VomitLib.View
             _locker?.UnLock(logic);            
         }
 
-        private static void __DestroyLogic(ViewLogic logic)
+        private static void OnDestroyLogic(ViewLogic logic)
         {
             Object.Destroy(logic.gameObject);
             _loader?.ReleaseView(logic.gameObject);
@@ -612,5 +664,24 @@ namespace Twenty2.VomitLib.View
         #endregion
         
         #endregion
+        
+        private static Stack<ViewLogic> CalcViewStack()
+        {
+            var stack = new Stack<ViewLogic>();
+
+            // 按Layer和SortOrder升序排序（从低到高）
+            // 底层View先Push，顶层View后Push（在栈顶）
+            // Pop时先弹出顶层View ✓
+            var sortedViews = _visibleViewMap.Values
+                .OrderBy(view => (int)view.Config.Layer)
+                .ThenBy(view => view.SortOrder);
+
+            foreach (var view in sortedViews)
+            {
+                stack.Push(view);
+            }
+
+            return stack;
+        }
     }
 }
