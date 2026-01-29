@@ -85,7 +85,7 @@ namespace Twenty2.VomitLib.Editor.Monitor
         public static void ShowWindow()
         {
             var window = GetWindow<VomitMonitorWindow>();
-            window.titleContent = new GUIContent(WindowTitle, EditorGUIUtility.IconContent("d_ConsoleInfo").image);
+            window.titleContent = new GUIContent(WindowTitle);
             window.Show();
         }
 
