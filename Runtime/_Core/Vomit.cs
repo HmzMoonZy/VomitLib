@@ -72,21 +72,6 @@ namespace Twenty2.VomitLib
                 registerSystem!.MakeGenericMethod(type).Invoke(Interface, new[] {Activator.CreateInstance(type)});
             }
         }
-
-        /// <summary>
-        /// 启动框架监视器, 仅在编辑器下有效
-        /// </summary>
-        public static void EnableMonitor()
-        {
-#if UNITY_EDITOR
-            new GameObject("VomitMonitor", typeof(Twenty2.VomitLib.Monitor.ViewMonitor));
-            new GameObject("ModelMonitor", typeof(Twenty2.VomitLib.Monitor.ModelMonitor));
-            new GameObject("SystemMonitor", typeof(Twenty2.VomitLib.Monitor.SystemMonitor));
-            new GameObject("EventMonitor", typeof(Twenty2.VomitLib.Monitor.EventMonitor));
-            new GameObject("CommandMonitor", typeof(Twenty2.VomitLib.Monitor.CommandMonitor));
-            new GameObject("LubanMonitor", typeof(Twenty2.VomitLib.Monitor.LubanSupportMonitor));
-#endif
-        }
     }
 
     #endregion
