@@ -50,7 +50,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 退出状态时调用
         /// </summary>
-        protected abstract void OnExit();
+        protected abstract void OnExit(T toState);
         
         #endregion
 
@@ -75,7 +75,7 @@ namespace Twenty2.VomitLib.Procedure
             }
         }
         
-        public void Exit()
+        public void Exit(T toState)
         {
             try
             {
@@ -87,7 +87,7 @@ namespace Twenty2.VomitLib.Procedure
                 _procedureCts = null;
                 
                 // 再执行退出逻辑
-                OnExit();
+                OnExit(toState);
             }
             catch (Exception e)
             {

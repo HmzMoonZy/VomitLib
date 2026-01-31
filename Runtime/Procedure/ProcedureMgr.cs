@@ -157,36 +157,6 @@ namespace Twenty2.VomitLib.Procedure
         }
         
         /// <summary>
-        /// 停止状态机
-        /// </summary>
-        public void Shutdown()
-        {
-            if (!IsInitialized)
-            {
-                Log.Warning("状态机未初始化，无法停止状态机");
-                return;
-            }
-            
-            try
-            {
-                CurrentState?.Exit();
-            }
-            catch (Exception e)
-            {
-                Log.Error($"退出当前状态时发生错误: {e.Message}");
-            }
-            finally
-            {
-                IsRunning = false;
-                IsInitialized = false;
-                CurrentState = null;
-                PreviousState = null;
-                ResetMonitor();
-                Log.Debug("状态机已停止");
-            }
-        }
- 
-        /// <summary>
         /// 切换状态
         /// </summary>
         public async UniTask<bool> ChangeState(T newStateId, ProcedureArgsBase args)
@@ -228,7 +198,7 @@ namespace Twenty2.VomitLib.Procedure
                 var oldStateId = CurrentStateId;
                 
                 // 退出旧状态
-                oldState?.Exit();
+                oldState?.Exit(newStateId);
                 
                 // 更新状态引用
                 PreviousState = oldState;
