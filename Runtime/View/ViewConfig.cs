@@ -10,7 +10,8 @@ using UnityEngine.Serialization;
 
 namespace Twenty2.VomitLib.View
 {
-    public class ViewConfig : MonoBehaviour
+    [Serializable]
+    public class ViewConfig
     {
         [Header("View视图面板的配置信息")]
         

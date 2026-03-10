@@ -172,7 +172,7 @@ public partial class {selectName}
         [MenuItem("GameObject/UI/VomitCanvas")]
         public static void GenerateViewTemplate()
         {
-            var canvas = new GameObject("VomitCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(ViewConfig));
+            var canvas = new GameObject("VomitCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.GetComponent<Canvas>().pixelPerfect = true;
             canvas.GetComponent<Canvas>().additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1 |
@@ -190,7 +190,7 @@ public partial class {selectName}
         [MenuItem("GameObject/UI/VomitCanvas(No Raycast)")]
         public static void GenerateViewNoRaycastTemplate()
         {
-            var canvas = new GameObject("VomitCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(ViewConfig));
+            var canvas = new GameObject("VomitCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.GetComponent<Canvas>().pixelPerfect = true;
             canvas.GetComponent<Canvas>().additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1 |

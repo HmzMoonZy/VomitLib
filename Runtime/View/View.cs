@@ -154,7 +154,7 @@ namespace Twenty2.VomitLib.View
                     Log.Debug($"预加载成功: {viewName}, 优先级: {priority}");
 
                     #if UNITY_EDITOR
-                    if (view.GetComponent<ViewConfig>().IsCache == false)
+                    if (view.GetComponent<ViewLogic>().Config.IsCache == false)
                     {
                         Log.Warning($"预加载的View {viewName} 未设置缓存, 可能会引发未知的错误.");
                     }

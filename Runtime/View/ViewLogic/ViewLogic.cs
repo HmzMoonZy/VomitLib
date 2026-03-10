@@ -31,7 +31,6 @@ namespace Twenty2.VomitLib.View
     /// View运行时逻辑
     /// </summary>
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(ViewConfig))]
     public abstract class ViewLogic : MonoController
     {
         /// <summary>
@@ -47,12 +46,11 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         public Canvas ViewCanvas => _viewCanvas ??= GetComponent<Canvas>();
 
-
-        private ViewConfig _config;
+        [SerializeField] private ViewConfig _config;
         /// <summary>
         /// View 通用配置
         /// </summary>
-        public ViewConfig Config => _config ??= GetComponent<ViewConfig>();
+        public ViewConfig Config => _config;
         
 
         private RectTransform _rectView;
