@@ -10,165 +10,156 @@ using Object = UnityEngine.Object;
 
 namespace Twenty2.VomitLib.Audio
 {
-//     public static class Audio
-//     {
-//         private static Dictionary<int, AudioSource> _audioSources = new();
-//         
-//         private static Dictionary<string, AudioClip> _audioClipsCache = new();
-//
-//         private static AudioConfig _config;
-//         
-//         private static float _seVolume = 1f;
-//
-//         #region Init
-//
-//         public static void Init(bool preload, float bgmVolume = 1f, float seVolume = 1f)
-//         {
-//             _config = Vomit.Config.AudioConfig;
-//             
-//             GenerateAudioSource(0);
-//             
-//             SetSEVolume(seVolume);
-//             SetBgmVolume(bgmVolume);
-//
-//             if (preload)
-//             {
-//                 Preload();
-//             }
-//         }
-//
-//         private static void Preload()
-//         {
-//             var label = _config.AudioLabel;
-//
-//             Addressables.LoadAssetsAsync<AudioClip>(label, OnLoad);
-//
-//             return;
-//
-//             void OnLoad(AudioClip clip)
-//             {
-//                 _audioClipsCache.Add(clip.name, clip);
-// #if UNITY_EDITOR
-//                 Log.Debug($"Load Audio : {clip.name}");
-// #endif
-//             }
-//         }
-//
-//         #endregion
-//
-//         #region SE
-//
-//         public static void PlaySE(string se)
-//         {
-//             PlaySE(SearchAudio(se, true));
-//         }
-//
-//         public static void SetSEVolume(float v, int index = 0)
-//         {
-//             _seVolume = v;
-//         }
-//         
-//         private static void PlaySE(AudioClip se)
-//         {
-//             _audioSources[0].PlayOneShot(se, _seVolume);
-//         }
-//
-//         #endregion
-//
-//         #region BGM
-//
-//         /// <summary>
-//         /// 将 index 的音频播放器静音
-//         /// </summary>
-//         public static void Mute(int index, out float originVolume)
-//         {
-//             originVolume = _audioSources[index].volume;
-//             _audioSources[index].volume = 0;
-//         }
-//         
-//         public static void SetBgmVolume(float v, int index = 0)
-//         {
-//             _audioSources[index].volume = v;
-//         }
-//
-//         /// <summary>
-//         /// 播放BGM, 任务被取消后并不会停止BGM的播放
-//         /// </summary>
-//         public static UniTask PlayBgm(string bgm, float mix, bool isLoop, int index = 0, CancellationToken cancellationToken = default)
-//         {
-//             return PlayBgm(SearchAudio(bgm, false), mix, isLoop, index, cancellationToken);
-//         }
-//         
-//         /// <summary>
-//         /// 播放BGM, 任务被取消后并不会停止BGM的播放
-//         /// </summary>
-//         private static UniTask PlayBgm(AudioClip bgm, float mix, bool isLoop, int index = 0, CancellationToken cancellationToken = default)
-//         {
-//             var originClip = _audioSources[index].clip;
-//             
-//             if (mix > 0)
-//             {
-//                 // TODO 混合音频
-//             }
-//
-//             _audioSources[index].clip = bgm;
-//             _audioSources[index].loop = isLoop;
-//             _audioSources[index].Play();
-//
-//             if (_audioSources.Values.All(audioSource => audioSource.clip != originClip))
-//             {
-//                 Addressables.Release(originClip);
-//             }
-//
-//             return UniTask.WaitForSeconds(bgm.length, true, cancellationToken: cancellationToken);
-//         }
-//
-//         #endregion
-//
-//
-//         public static void GenerateAudioSource(int index)
-//         {
-//             if (_audioSources.ContainsKey(index))
-//             {
-//                 Debug.LogError("重复创建音频播放器!");
-//                 return;
-//             }
-//             
-//             _audioSources.Add(index, new GameObject($"__AudioSource__[{index}]").AddComponent<AudioSource>());
-//             Object.DontDestroyOnLoad(_audioSources[index].gameObject);
-//         }
-//
-//         public static void DeleteAudioSource(int index)
-//         {
-//             if (!_audioSources.ContainsKey(index))
-//             {
-//                 return;
-//             }
-//
-//             var originClip = _audioSources[index].clip;
-//             Object.Destroy(_audioSources[index].gameObject);
-//             _audioSources.Remove(index);
-//             if (_audioSources.Values.All(audioSource => audioSource.clip != originClip))
-//             {
-//                 Addressables.Release(originClip);
-//             }
-//         }
-//
-//         private static AudioClip SearchAudio(string key, bool isCache)
-//         {
-//             if (_audioClipsCache.TryGetValue(key, out var ret))
-//             {
-//                 return ret;
-//             }
-//
-//             ret = Addressables.LoadAssetAsync<AudioClip>(key).WaitForCompletion();
-//
-//             if (isCache)
-//             {
-//                 _audioClipsCache.Add(key, ret);
-//             }
-//
-//             return ret;
-//         }
-//     }
+    public static class Audio
+    {
+        public enum AudioType
+        {
+            SE,
+            BGM,
+        }
+        
+        public class AudioClipData
+        {
+            public AudioClip Clip;
+            public AudioType Type;
+            public bool IsCache;
+        }
+        
+        private static AudioSource _bgmSource;
+        private static AudioSource _seSource;
+        
+        private static Dictionary<string, AudioClipData> _clipsCaches = new();
+
+        private static Func<string, AudioClipData> _onLoadAudioClip;
+        
+        private static Action<AudioClip> _onReleaseAudioClip;
+
+        public static void Init(Func<string, AudioClipData> onLoadAudioClip, Action<AudioClip> onReleaseAudioClip)
+        {
+            if (_bgmSource != null || _seSource != null)
+            {
+                Log.Error("Audio.Init() has been called!");
+                return;
+            }
+            
+            _onLoadAudioClip = onLoadAudioClip;
+            _onReleaseAudioClip = onReleaseAudioClip;
+            
+            _bgmSource = new GameObject($"__AudioSource__[BGM]").AddComponent<AudioSource>();
+            _bgmSource.loop = true;
+            Object.DontDestroyOnLoad(_bgmSource.gameObject);
+            
+            _seSource = new GameObject($"__AudioSource__[SE]").AddComponent<AudioSource>();
+            _seSource.loop = false;
+            Object.DontDestroyOnLoad(_seSource.gameObject);
+            
+            SetSEVolume(1);
+            SetBgmVolume(1);
+        }
+
+        public static void ReleaseCaches()
+        {
+            _bgmSource.Stop();
+            _bgmSource.clip = null;
+            
+            _seSource.Stop();
+
+            CurrentBGM = null;
+            
+            var clips = _clipsCaches.Values.ToList();
+            _clipsCaches.Clear();
+            foreach (var clip in clips)
+            {
+                _onReleaseAudioClip?.Invoke(clip.Clip);
+            }
+        }
+
+        public static void Play(string key)
+        {
+            var acData = SearchAudio(key);
+            
+            if(acData != null)
+            {
+                Play(acData);
+            }
+        }
+
+        #region SE
+        public static bool IsSEMute => _seSource.mute;
+
+        public static float SeVolume => _seSource.volume;
+        
+        public static void SetSEVolume(float v)
+        {
+            _seSource.volume = v;
+        }
+        
+        #endregion
+
+        #region BGM
+        
+        public static bool IsBgmMute => _bgmSource.mute;
+        
+        public static float BGMVolume => _bgmSource.volume;
+        
+        public static bool IsBGMPlaying => _bgmSource.isPlaying;
+
+        public static AudioClipData CurrentBGM { get; private set; }
+        
+        public static void SetBgmVolume(float v)
+        {
+            _bgmSource.volume = v;
+        }
+        
+        #endregion
+        
+        private static void Play(AudioClipData acData)
+        {
+            switch (acData.Type)
+            {
+                case AudioType.BGM:
+                    if (acData.Clip == _bgmSource.clip)
+                    {
+                        Log.Info($"Audio {acData.Clip.name} is playing!");
+                        return;
+                    }
+
+                    if (CurrentBGM != null && !CurrentBGM.IsCache)
+                    {
+                        _onReleaseAudioClip?.Invoke(CurrentBGM.Clip);
+                    }
+
+                    CurrentBGM = acData;
+                    _bgmSource.clip = acData.Clip;
+                    _bgmSource.Play();
+                    break;
+                case AudioType.SE:
+                    _seSource.PlayOneShot(acData.Clip);
+                    break;
+            }
+        }
+
+        private static AudioClipData SearchAudio(string key)
+        {
+            if (_clipsCaches.TryGetValue(key, out var ret))
+            {
+                return ret;
+            }
+
+            ret = _onLoadAudioClip?.Invoke(key);
+
+            if (ret == null)
+            {
+                Log.Error($"Audio {key} Not Found!");
+                return null;
+            }
+
+            if (ret.IsCache)
+            {
+                _clipsCaches.Add(key, ret);    
+            }
+            
+            return ret;
+        }
+    }
 }
