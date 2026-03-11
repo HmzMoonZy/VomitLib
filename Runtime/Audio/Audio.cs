@@ -1,11 +1,7 @@
 ﻿using System.Collections.Generic;
-using QFramework;
 using System;
 using System.Linq;
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using Object = UnityEngine.Object;
 
 namespace Twenty2.VomitLib.Audio
@@ -34,9 +30,11 @@ namespace Twenty2.VomitLib.Audio
         
         private static Action<AudioClip> _onReleaseAudioClip;
 
+        private static bool _isInited = false;
+
         public static void Init(Func<string, AudioClipData> onLoadAudioClip, Action<AudioClip> onReleaseAudioClip)
         {
-            if (_bgmSource != null || _seSource != null)
+            if (_isInited)
             {
                 Log.Error("Audio.Init() has been called!");
                 return;
@@ -55,16 +53,15 @@ namespace Twenty2.VomitLib.Audio
             
             SetSEVolume(1);
             SetBgmVolume(1);
+            
+            _isInited = true;
         }
 
         public static void ReleaseCaches()
         {
-            _bgmSource.Stop();
-            _bgmSource.clip = null;
+            StopBGM();
             
             _seSource.Stop();
-
-            CurrentBGM = null;
             
             var clips = _clipsCaches.Values.ToList();
             _clipsCaches.Clear();
@@ -76,6 +73,12 @@ namespace Twenty2.VomitLib.Audio
 
         public static void Play(string key)
         {
+            if (!_isInited)
+            {
+                Log.Error("Audio.Init() has not been called!");
+                return;
+            }
+            
             var acData = SearchAudio(key);
             
             if(acData != null)
@@ -93,6 +96,11 @@ namespace Twenty2.VomitLib.Audio
         {
             _seSource.volume = v;
         }
+
+        public static void MuteSE(bool mute)
+        {
+            _seSource.mute = mute;
+        }
         
         #endregion
 
@@ -109,6 +117,33 @@ namespace Twenty2.VomitLib.Audio
         public static void SetBgmVolume(float v)
         {
             _bgmSource.volume = v;
+        }
+
+        public static void MuteBGM(bool mute)
+        {
+            _bgmSource.mute = mute;
+        }
+
+        public static void StopBGM()
+        {
+            _bgmSource.Stop();
+            _bgmSource.clip = null;
+            
+            if (CurrentBGM != null && !CurrentBGM.IsCache)
+            {
+                _onReleaseAudioClip?.Invoke(CurrentBGM.Clip);
+            }
+            CurrentBGM = null;
+        }
+
+        public static void PauseBGM()
+        {
+            _bgmSource.Pause();
+        }
+
+        public static void ResumeBGM()
+        {
+            _bgmSource.UnPause();
         }
         
         #endregion
