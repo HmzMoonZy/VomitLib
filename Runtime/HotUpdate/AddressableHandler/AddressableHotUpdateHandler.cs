@@ -28,6 +28,8 @@ namespace Twenty2.VomitLib.HotFix
 
         private Action<long, Action<bool>> _onConfirmMobileData;
         
+        private Action<float> _onProgress;
+        
         /// <summary>
         /// 多次初始化AA标记
         /// </summary>
@@ -50,12 +52,13 @@ namespace Twenty2.VomitLib.HotFix
         /// <param name="onForceCheck">版本比对回调, true : 需要强更</param>
         /// <param name="onCheckOriginBundle">检查是否是首包资源</param>
         /// <param name="onConfirmMobileData">移动数据确认回调</param>
-        public AddressableHotUpdateHandler(string checkForceUrl, Func<string, bool> onForceCheck, Func<string, bool> onCheckOriginBundle, Action<long, Action<bool>> onConfirmMobileData = null)
+        public AddressableHotUpdateHandler(string checkForceUrl, Func<string, bool> onForceCheck, Func<string, bool> onCheckOriginBundle, Action<float> onProgress, Action<long, Action<bool>> onConfirmMobileData = null)
         {
             _checkForceUrl = checkForceUrl;
             _onForceCheck = onForceCheck;
             _onCheckOriginBundle = onCheckOriginBundle;
             _onConfirmMobileData = onConfirmMobileData;
+            _onProgress = onProgress;
 
             _isInited = false;
             _agreeMobileDataDownload = false;
@@ -134,22 +137,36 @@ namespace Twenty2.VomitLib.HotFix
                 }
             }
 
-            if (!_agreeMobileDataDownload && _onConfirmMobileData != null && _totalDownloadSize > 1048576
-                && Application.internetReachability == NetworkReachability.ReachableViaCarrierDataNetwork)  // 1024 * 1024
+            // 流量下载确认
             {
-                Debug.Log("是否同意移动数据下载?");
-                onStatus?.Invoke(IHotUpdateHandler.Status.ConfirmMobileData);
-                await WaitConfirmMobileData();
-                if (!_agreeMobileDataDownload)
+                if (!_agreeMobileDataDownload && _onConfirmMobileData != null && _totalDownloadSize > 1048576
+                    && Application.internetReachability ==
+                    NetworkReachability.ReachableViaCarrierDataNetwork) // 1024 * 1024
                 {
-                    onFail?.Invoke(IHotUpdateHandler.ErrCode.NotAllowUseMobileData);
-                    return;
+                    Debug.Log("是否同意移动数据下载?");
+                    onStatus?.Invoke(IHotUpdateHandler.Status.ConfirmMobileData);
+                    await WaitConfirmMobileData();
+                    if (!_agreeMobileDataDownload)
+                    {
+                        onFail?.Invoke(IHotUpdateHandler.ErrCode.NotAllowUseMobileData);
+                        return;
+                    }
                 }
             }
-            
+
             onStatus?.Invoke(IHotUpdateHandler.Status.Downloading);
-            
-            
+
+            // 下载资源
+            {
+                Log.Debug("下载资源");
+                var errCode = await DownloadRes(3);
+                if (errCode != IHotUpdateHandler.ErrCode.Success)
+                {
+                    onFail?.Invoke(errCode);
+                    return;
+                }
+                onStatus?.Invoke(IHotUpdateHandler.Status.Done);
+            }
         }
         
         private async UniTask<IHotUpdateHandler.ErrCode> CheckForceUpdate(string checkUrl)
@@ -311,9 +328,56 @@ namespace Twenty2.VomitLib.HotFix
         }
 
 
-        private async UniTask DownloadRes()
+        private async UniTask<IHotUpdateHandler.ErrCode> DownloadRes(int retryCount)
         {
-            
+            var retry = 0;
+            var downHandle = new AsyncOperationHandle();
+            while (retry < retryCount)
+            {
+                if (downHandle.IsValid())
+                {
+                    Addressables.Release(downHandle);
+                }
+
+                downHandle = Addressables.DownloadDependenciesAsync((IEnumerable)_downloadKeys, Addressables.MergeMode.Union);
+                
+                while (!downHandle.IsDone)
+                {
+                    _onProgress?.Invoke(downHandle.PercentComplete);
+                    await UniTask.Yield();
+                }
+                
+                // 失败重试
+                if (downHandle.Status != AsyncOperationStatus.Succeeded)
+                {
+                    retry++;
+                    Log.Error($"下载失败, 重试 {retry}/{retryCount}, 网络状态: {Application.internetReachability}");
+                    // 还有重试次数，重试
+                    if (retry < retryCount)
+                    {
+                        await UniTask.Delay(500);
+                        continue;
+                    }
+                    
+                    // 重试耗尽，释放并返回错误
+                    if (downHandle.IsValid())
+                    {
+                        Addressables.Release(downHandle);
+                    }
+
+                    return IHotUpdateHandler.ErrCode.DownloadError;
+                }
+                
+                // 下载完成
+                if (downHandle.IsValid())
+                {
+                    Addressables.Release(downHandle);
+                }
+                _onProgress?.Invoke(1);
+                return IHotUpdateHandler.ErrCode.Success;
+            }
+
+            return IHotUpdateHandler.ErrCode.InternalError;
         }
         
     }

@@ -37,6 +37,10 @@ namespace Twenty2.VomitLib.HotFix
             /// </summary>
             TimeOut = 201,
             /// <summary>
+            /// 下载错误
+            /// </summary>
+            DownloadError = 202,
+            /// <summary>
             /// 网络无连接
             /// </summary>
             NotReachable = 202,
