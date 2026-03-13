@@ -12,7 +12,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 
-namespace Twenty2.VomitLib.HotFix
+namespace Twenty2.VomitLib.HotUpdate
 {
     /// <summary>
     /// 基于Addressable的热更新处理器
@@ -20,6 +20,64 @@ namespace Twenty2.VomitLib.HotFix
     /// </summary>
     public class AddressableHotUpdateHandler : IHotUpdateHandler
     {
+        private enum ErrCode
+        {
+            Success = 0,
+            
+            // 1xx: 强更相关
+            /// <summary>
+            /// 检查强更失败
+            /// </summary>
+            CheckForceUpdateFailed = 101,
+            /// <summary>
+            /// 版本低, 需要强更
+            /// </summary>
+            NeedForceUpdate = 102,
+            
+            // 2xx: 网络/超时
+            /// <summary>
+            /// 超时错误
+            /// </summary>
+            TimeOut = 201,
+            /// <summary>
+            /// 网络无连接
+            /// </summary>
+            NotReachable = 202,
+            
+            // 3xx: 用户操作
+            /// <summary>
+            /// 用户不同意使用移动数据
+            /// </summary>
+            NotAllowUseMobileData = 301,
+            
+            // 4xx: 资源更新流程
+            /// <summary>
+            /// Addressable初始化失败
+            /// </summary>
+            InitializeFailed = 401,
+            /// <summary>
+            /// Catalog检查失败
+            /// </summary>
+            CatalogCheckFailed = 402,
+            /// <summary>
+            /// Catalog更新失败
+            /// </summary>
+            CatalogUpdateFailed = 403,
+            /// <summary>
+            /// 获取下载大小失败
+            /// </summary>
+            GetDownloadSizeFailed = 404,
+            /// <summary>
+            /// 下载错误
+            /// </summary>
+            DownloadError = 405,
+            
+            /// <summary>
+            /// 内部错误
+            /// </summary>
+            InternalError = 10000,
+        }
+        
         private string _checkForceUrl;
 
         private Func<string, bool> _onForceCheck;
@@ -46,11 +104,12 @@ namespace Twenty2.VomitLib.HotFix
         private bool _agreeMobileDataDownload;
 
         /// <summary>
-        /// 地址资源处理器, 全量资源放置在
+        /// 地址资源处理器
         /// </summary>
         /// <param name="checkForceUrl">强更检查</param>
         /// <param name="onForceCheck">版本比对回调, true : 需要强更</param>
         /// <param name="onCheckOriginBundle">检查是否是首包资源</param>
+        /// <param name="onProgress">下载进度回调</param>
         /// <param name="onConfirmMobileData">移动数据确认回调</param>
         public AddressableHotUpdateHandler(string checkForceUrl, Func<string, bool> onForceCheck, Func<string, bool> onCheckOriginBundle, Action<float> onProgress, Action<long, Action<bool>> onConfirmMobileData = null)
         {
@@ -66,7 +125,7 @@ namespace Twenty2.VomitLib.HotFix
             Addressables.InternalIdTransformFunc = LocationTransformPath;       // 重定向资源
         }
         
-        public async UniTask HotUpdate(Action<IHotUpdateHandler.Status> onStatus, Action<IHotUpdateHandler.ErrCode> onFail)
+        public async UniTask HotUpdate(Action<IHotUpdateHandler.Status> onStatus, Action<int> onFail)
         {
             _downloadKeys.Clear();
             _totalDownloadSize = 0;
@@ -78,9 +137,9 @@ namespace Twenty2.VomitLib.HotFix
                     Log.Debug($"检查强制更新, Url : {_checkForceUrl}");
                     onStatus?.Invoke(IHotUpdateHandler.Status.CheckingForceUpdate);
                     var errCode = await CheckForceUpdate(_checkForceUrl);
-                    if (errCode != IHotUpdateHandler.ErrCode.Success)
+                    if (errCode != AddressableHotUpdateHandler.ErrCode.Success)
                     {
-                        onFail?.Invoke(errCode);
+                        onFail?.Invoke((int)errCode);
                         return;
                     }
                 }
@@ -92,9 +151,9 @@ namespace Twenty2.VomitLib.HotFix
             {
                 Log.Debug("初始化资源管理器");
                 var errCode = await InitAddressable();
-                if (errCode != IHotUpdateHandler.ErrCode.Success)
+                if (errCode != AddressableHotUpdateHandler.ErrCode.Success)
                 {
-                    onFail?.Invoke(errCode);
+                    onFail?.Invoke((int)errCode);
                     return;
                 }
             }
@@ -103,9 +162,9 @@ namespace Twenty2.VomitLib.HotFix
             {
                 Log.Debug("检查资源更新");
                 var errCode = await CheckForCatalogUpdate(30);
-                if (errCode != IHotUpdateHandler.ErrCode.Success)
+                if (errCode != AddressableHotUpdateHandler.ErrCode.Success)
                 {
-                    onFail?.Invoke(errCode);
+                    onFail?.Invoke((int)errCode);
                     return;
                 }
 
@@ -123,9 +182,9 @@ namespace Twenty2.VomitLib.HotFix
             {
                 Log.Debug("获取更新大小");
                 var errCode = await GetUpdateSizeFlow();
-                if (errCode != IHotUpdateHandler.ErrCode.Success)
+                if (errCode != AddressableHotUpdateHandler.ErrCode.Success)
                 {
-                    onFail?.Invoke(errCode);
+                    onFail?.Invoke((int)errCode);
                     return;
                 }
 
@@ -148,7 +207,7 @@ namespace Twenty2.VomitLib.HotFix
                     await WaitConfirmMobileData();
                     if (!_agreeMobileDataDownload)
                     {
-                        onFail?.Invoke(IHotUpdateHandler.ErrCode.NotAllowUseMobileData);
+                        onFail?.Invoke((int)AddressableHotUpdateHandler.ErrCode.NotAllowUseMobileData);
                         return;
                     }
                 }
@@ -160,28 +219,28 @@ namespace Twenty2.VomitLib.HotFix
             {
                 Log.Debug("下载资源");
                 var errCode = await DownloadRes(3);
-                if (errCode != IHotUpdateHandler.ErrCode.Success)
+                if (errCode != AddressableHotUpdateHandler.ErrCode.Success)
                 {
-                    onFail?.Invoke(errCode);
+                    onFail?.Invoke((int)errCode);
                     return;
                 }
                 onStatus?.Invoke(IHotUpdateHandler.Status.Done);
             }
         }
         
-        private async UniTask<IHotUpdateHandler.ErrCode> CheckForceUpdate(string checkUrl)
+        private async UniTask<AddressableHotUpdateHandler.ErrCode> CheckForceUpdate(string checkUrl)
         {
             using var uwr = UnityWebRequest.Get(checkUrl);
             var result = await uwr.SendWebRequest().ToUniTask();
             if (result == null || result.error != null || uwr.result != UnityWebRequest.Result.Success)
             {
-                return IHotUpdateHandler.ErrCode.CheckForceUpdateFailed;
+                return AddressableHotUpdateHandler.ErrCode.CheckForceUpdateFailed;
             }
 
             var needUpdate = _onForceCheck?.Invoke(uwr.downloadHandler.text);
             return needUpdate.HasValue && needUpdate.Value
-                ? IHotUpdateHandler.ErrCode.NeedForceUpdate
-                : IHotUpdateHandler.ErrCode.Success;
+                ? AddressableHotUpdateHandler.ErrCode.NeedForceUpdate
+                : AddressableHotUpdateHandler.ErrCode.Success;
         }
         
         private string LocationTransformPath(IResourceLocation location)
@@ -200,11 +259,11 @@ namespace Twenty2.VomitLib.HotFix
             return location.InternalId;
         }
         
-        private async UniTask<IHotUpdateHandler.ErrCode> InitAddressable()
+        private async UniTask<AddressableHotUpdateHandler.ErrCode> InitAddressable()
         {
             if (_isInited)
             {
-                return IHotUpdateHandler.ErrCode.Success;
+                return AddressableHotUpdateHandler.ErrCode.Success;
             }
             
             var initHandle = Addressables.InitializeAsync(false) ;
@@ -213,15 +272,15 @@ namespace Twenty2.VomitLib.HotFix
             {
                 _isInited = true;
                 Addressables.Release(initHandle);
-                return IHotUpdateHandler.ErrCode.Success;
+                return AddressableHotUpdateHandler.ErrCode.Success;
             }
 
             Log.Error("Addressables.InitializeAsync Fail!");
             Addressables.Release(initHandle);
-            return IHotUpdateHandler.ErrCode.InternalError;
+            return AddressableHotUpdateHandler.ErrCode.InitializeFailed;
         }
 
-        private async UniTask<IHotUpdateHandler.ErrCode> CheckForCatalogUpdate(double timeoutSeconds)
+        private async UniTask<AddressableHotUpdateHandler.ErrCode> CheckForCatalogUpdate(double timeoutSeconds)
         {
             // 对比文件
             var checkHandle = Addressables.CheckForCatalogUpdates(false);
@@ -235,14 +294,14 @@ namespace Twenty2.VomitLib.HotFix
             {
                 Log.Error("Addressables.CheckForCatalogUpdates Timeout!");
                 Addressables.Release(checkHandle);
-                return IHotUpdateHandler.ErrCode.TimeOut;
+                return AddressableHotUpdateHandler.ErrCode.TimeOut;
             }
 
             if (checkHandle.Status != AsyncOperationStatus.Succeeded)
             {
                 Log.Error("Addressables.CheckForCatalogUpdates Fail!");
                 Addressables.Release(checkHandle);
-                return IHotUpdateHandler.ErrCode.InternalError;
+                return AddressableHotUpdateHandler.ErrCode.CatalogCheckFailed;
             }
 
             // 更新catalog
@@ -252,7 +311,7 @@ namespace Twenty2.VomitLib.HotFix
                 {
                     Log.Error("网络未连接");
                     Addressables.Release(checkHandle);
-                    return IHotUpdateHandler.ErrCode.NotReachable;
+                    return AddressableHotUpdateHandler.ErrCode.NotReachable;
                 }
 
                 Log.Debug($"检测到{checkHandle.Result.Count}个Catalog需要更新");
@@ -268,7 +327,7 @@ namespace Twenty2.VomitLib.HotFix
                     Log.Error("Addressables.UpdateCatalogs Timeout!");
                     Addressables.Release(updateHandle);
                     Addressables.Release(checkHandle);
-                    return IHotUpdateHandler.ErrCode.TimeOut;
+                    return AddressableHotUpdateHandler.ErrCode.TimeOut;
                 }
 
                 if (updateHandle.Status != AsyncOperationStatus.Succeeded)
@@ -276,7 +335,7 @@ namespace Twenty2.VomitLib.HotFix
                     Log.Error("Addressables.UpdateCatalogs Fail!");
                     Addressables.Release(updateHandle);
                     Addressables.Release(checkHandle);
-                    return IHotUpdateHandler.ErrCode.InternalError;
+                    return AddressableHotUpdateHandler.ErrCode.CatalogUpdateFailed;
                 }
 
                 Addressables.Release(updateHandle);
@@ -294,10 +353,10 @@ namespace Twenty2.VomitLib.HotFix
                 }
             }
 
-            return IHotUpdateHandler.ErrCode.Success;
+            return AddressableHotUpdateHandler.ErrCode.Success;
         }
 
-        private async UniTask<IHotUpdateHandler.ErrCode> GetUpdateSizeFlow()
+        private async UniTask<AddressableHotUpdateHandler.ErrCode> GetUpdateSizeFlow()
         {
             // 计算大小
             var sizeHandle = Addressables.GetDownloadSizeAsync((IEnumerable)_downloadKeys.ToList());
@@ -306,12 +365,12 @@ namespace Twenty2.VomitLib.HotFix
             {
                 Log.Error("Addressables.GetDownloadSizeAsync Fail!");
                 Addressables.Release(sizeHandle);
-                return IHotUpdateHandler.ErrCode.InternalError;
+                return AddressableHotUpdateHandler.ErrCode.GetDownloadSizeFailed;
             }
             
             _totalDownloadSize = sizeHandle.Result;
             Addressables.Release(sizeHandle);
-            return IHotUpdateHandler.ErrCode.Success;
+            return AddressableHotUpdateHandler.ErrCode.Success;
         }
 
         private async UniTask WaitConfirmMobileData()
@@ -328,7 +387,7 @@ namespace Twenty2.VomitLib.HotFix
         }
 
 
-        private async UniTask<IHotUpdateHandler.ErrCode> DownloadRes(int retryCount)
+        private async UniTask<AddressableHotUpdateHandler.ErrCode> DownloadRes(int retryCount)
         {
             var retry = 0;
             var downHandle = new AsyncOperationHandle();
@@ -365,7 +424,7 @@ namespace Twenty2.VomitLib.HotFix
                         Addressables.Release(downHandle);
                     }
 
-                    return IHotUpdateHandler.ErrCode.DownloadError;
+                    return AddressableHotUpdateHandler.ErrCode.DownloadError;
                 }
                 
                 // 下载完成
@@ -374,11 +433,11 @@ namespace Twenty2.VomitLib.HotFix
                     Addressables.Release(downHandle);
                 }
                 _onProgress?.Invoke(1);
-                return IHotUpdateHandler.ErrCode.Success;
+                return AddressableHotUpdateHandler.ErrCode.Success;
             }
 
-            return IHotUpdateHandler.ErrCode.InternalError;
+            return AddressableHotUpdateHandler.ErrCode.InternalError;
         }
-        
+
     }
 }
