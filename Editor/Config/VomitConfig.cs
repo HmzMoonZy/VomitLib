@@ -16,9 +16,6 @@ namespace Twenty2.VomitLib.Config
         [Header("Luban 配置")] 
         public LubanConfig LubanConfig;
         
-        [Header("SpriteAtlas 配置")] 
-        public SpriteAtlasConfig SpriteAtlasConfig;
-        
         [Header("Net 配置")] 
         public NetConfig NetConfig;
 
