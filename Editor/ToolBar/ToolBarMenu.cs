@@ -40,6 +40,7 @@ namespace Twenty2.VomitLib.Editor
                 {
                     LubanTool.GenerateClientData();
                     LubanTool.GenerateServerData();
+                    LubanTool.GenerateBackupData();
                 }
             }
             

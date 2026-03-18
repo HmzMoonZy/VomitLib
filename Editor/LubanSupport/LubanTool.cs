@@ -28,6 +28,8 @@ namespace LubanSupport.Editor
             }
         }
 
+        private enum GenMode { Client, Server, Backup }
+
         /// <summary>
         /// 在编辑器下直接读取配置
         /// </summary>
@@ -87,8 +89,8 @@ namespace LubanSupport.Editor
             {
                 var config = Config;
             
-                string cmd = GenerateCmd(config.GenCodePath, config.GenDataPath, !string.IsNullOrEmpty(config.LocalizationPath), config.NoneStyle, config.Format);
-                await RunCmd(cmd);
+                string cmd = GenerateCmd(GenMode.Client);
+                await RunLuban(cmd);
                 EditorUtility.DisplayDialog("生成客户端数据", "生成客户端数据成功", "确定");
                 AssetDatabase.Refresh();
                 AssetDatabase.SaveAssets();
@@ -112,8 +114,8 @@ namespace LubanSupport.Editor
                     return;
                 }
 
-                string cmd = GenerateCmd(config.GenServerCodePath, config.GenServerDataPath, !string.IsNullOrEmpty(config.LocalizationPath), config.NoneStyle, config.Format);
-                await RunCmd(cmd);
+                string cmd = GenerateCmd(GenMode.Server);
+                await RunLuban(cmd);
                 EditorUtility.DisplayDialog("生成服务器数据", "生成服务器数据成功", "确定");
                 AssetDatabase.Refresh();
                 AssetDatabase.SaveAssets();
@@ -123,53 +125,114 @@ namespace LubanSupport.Editor
                 Debug.LogError(e.Message);
             }
         }
+        
+        [MenuItem("VomitLib/LubanSupport/生成备份数据")]
+        public static async void GenerateBackupData()
+        {
+            try
+            {
+                var config = Config;
 
-        private static string GenerateCmd(string outputCodeDir, string outputDataDir, bool enableL10N, bool useNoneStyle, LubanFormat format)
+                if (config.JsonBackupPath.IsNullOrEmpty())
+                {
+                    Log.Debug("备份数据目录为空, 不生成.");
+                    return;
+                }
+
+                string cmd = GenerateCmd(GenMode.Backup);
+                await RunLuban(cmd);
+                EditorUtility.DisplayDialog("生成客户端数据", "生成客户端数据成功", "确定");
+                AssetDatabase.Refresh();
+                AssetDatabase.SaveAssets();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+            }
+        }
+
+        private static string GenerateCmd(GenMode genMode)
         {
             var config = Config;
-
-            string strFormatC = format switch
-            {
-                LubanFormat.NewtonsoftJson => "cs-newtonsoft-json",
-                LubanFormat.Bin => "cs-bin",
-            };
             
-            string strFormatD = format switch
-            {
-                LubanFormat.NewtonsoftJson => "json",
-                LubanFormat.Bin => "bin",
-            };
-
-            //https://luban.doc.code-philosophy.com/docs/manual/commandtools#unity--c--json
             StringBuilder cmd = new();
-            cmd.Append($"dotnet \"{config.DllPath}\" -t all --conf \"{config.ConfigPath}\" ");
-            cmd.Append($"-c {strFormatC} -d {strFormatD} ");
-            cmd.Append($"-x \"outputCodeDir={outputCodeDir}\" ");
-            cmd.Append($"-x \"outputDataDir={outputDataDir}\" ");
-            cmd.Append($"-x \"{strFormatD}.fileExt=bytes\" ");
-
-            if (useNoneStyle)
+            
+            // 系统配置
+            cmd.Append($"-t all ");                             // 目前全导出
+            cmd.Append($"--conf \"{config.ConfigPath}\" ");     // Luban配置
+            cmd.Append($"-x lineEnding=LF ");                   // 格式化
+            // cmd.Append($"-x \"tableImporter.name=dxx\" ");   // 导入器
+            
+            // 代码生成
+            if (genMode != GenMode.Backup)
             {
-                cmd.Append($"-x \"codeStyle=none\" ");    
+                var codeTarget = FormatCodeTarget(config.Format);
+                cmd.Append($"-c {codeTarget} ");
+                if (genMode == GenMode.Client)
+                {
+                    cmd.Append($"-x \"outputCodeDir={config.GenCodePath}\" ");
+                }
+
+                if (genMode == GenMode.Server)
+                {
+                    cmd.Append($"-x \"outputCodeDir={config.GenServerCodePath}\" ");
+                }
             }
             
-            if(enableL10N)
+            // 数据生成
+            var dataTarget = FormatDataTarget(genMode == GenMode.Backup ? LubanFormat.NewtonsoftJson : config.Format);
+            cmd.Append($"-d \"{dataTarget}\" ");
+            cmd.Append($"-x \"{dataTarget}.fileExt={(genMode == GenMode.Backup ? "json" : "bytes")}\" ");
+            if (genMode == GenMode.Client)
+            {
+                cmd.Append($"-x \"{dataTarget}.outputDataDir={config.GenDataPath}\" ");    
+            }
+            else if (genMode == GenMode.Server)
+            {
+                cmd.Append($"-x \"{dataTarget}.outputDataDir={config.GenServerDataPath}\" ");    
+            }
+            else if (genMode == GenMode.Backup)
+            {
+                cmd.Append($"-x \"{dataTarget}.outputDataDir={config.JsonBackupPath}\" ");    
+            }
+            
+            // 本地化
+            if(config.LocalizationPath.IsNotNullAndEmpty())
             {
                 cmd.Append($"-x l10n.provider=default -x \"l10n.textFile.path={config.LocalizationPath}\" -x l10n.textFile.keyFieldName=key");
             }
-            // cmd.AppendLine("\n pause");
-
+            
             return cmd.ToString();
+            
+            string FormatCodeTarget(LubanFormat format)
+            {
+                return format switch
+                {
+                    LubanFormat.NewtonsoftJson => "cs-newtonsoft-json",
+                    LubanFormat.Bin => "cs-bin",
+                    _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
+                };
+            }
+            
+            string FormatDataTarget(LubanFormat format)
+            {
+                return format switch
+                {
+                    LubanFormat.NewtonsoftJson => "json",
+                    LubanFormat.Bin => "bin",
+                    _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
+                };
+            }
         }
 
-        private static async Task RunCmd(string cmd)
+        private static async Task RunLuban(string cmd)
         {
             Debug.Log($"RunCmd : {cmd}");
             // 运行 bat
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
-                Arguments = "/C " + cmd,
+                Arguments = $"/C dotnet \"{Config.DllPath}\" " + cmd,       // 运行Luban
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
