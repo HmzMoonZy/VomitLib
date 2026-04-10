@@ -158,7 +158,13 @@ namespace LubanSupport.Editor
             StringBuilder cmd = new();
             
             // 系统配置
-            cmd.Append($"-t all ");                             // 目前全导出
+            string t = genMode switch
+            {
+                GenMode.Client => "client",
+                GenMode.Server => "server",
+                _ => "all"
+            };
+            cmd.Append($"-t {t} ");                             // 目前全导出
             cmd.Append($"--conf \"{config.ConfigPath}\" ");     // Luban配置
             cmd.Append($"-x lineEnding=LF ");                   // 格式化
             // cmd.Append($"-x \"tableImporter.name=dxx\" ");   // 导入器
