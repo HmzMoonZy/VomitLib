@@ -67,17 +67,8 @@ namespace Twenty2.VomitLib.Editor
         public ToolbarBtnConfig()
         {
             text = "配置文件";
-            tooltip = "选中 VomitLib 配置文件";
-            clicked += () =>
-            {
-                var guids = AssetDatabase.FindAssets($"t:{nameof(VomitConfig)}");
-                if (guids.Length > 0)
-                {
-                    var obj = AssetDatabase.LoadAssetAtPath<Object>(AssetDatabase.GUIDToAssetPath(guids[0]));
-                    EditorGUIUtility.PingObject(obj);
-                    Selection.activeObject = obj;
-                }
-            };
+            tooltip = "打开 VomitLib 项目设置";
+            clicked += () => SettingsService.OpenProjectSettings("Project/VomitLib");
             if (!VomitEditor.Config.ShowSlecteConfigButton)
                 style.display = UnityEngine.UIElements.DisplayStyle.None;
         }
