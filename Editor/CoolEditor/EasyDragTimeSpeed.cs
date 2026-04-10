@@ -1,75 +1,91 @@
 ﻿using UnityEditor;
+using UnityEditor.Overlays;
+using UnityEditor.Toolbars;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Twenty2.VomitLib.Editor.CoolEditor
 {
-    [InitializeOnLoad]
-    public static class CoolDragTimeSpeed
+    /// <summary>
+    /// 播放模式下的时间缩放滑块（Overlay 版）
+    /// </summary>
+    [EditorToolbarElement(id, typeof(SceneView))]
+    class TimeScaleSliderElement : VisualElement
     {
+        public const string id = "VomitLib/TimeScale";
+
         private const float MinSpeed = 0f;
         private const float MaxSpeed = 10f;
         private const float DefaultSpeed = 1f;
-        private const float SliderWidth = 120f;
-        private const float LabelWidth = 30f;
-        private const float ResetButtonWidth = 18f;
 
-        private static float _timeScale = DefaultSpeed;
+        private readonly Slider _slider;
+        private readonly Label _label;
 
-        static CoolDragTimeSpeed()
+        public TimeScaleSliderElement()
         {
-            ToolbarExtender.RightToolbarGUI.Insert(0, OnToolbarGUI);
+            style.flexDirection = FlexDirection.Row;
+            style.alignItems = Align.Center;
+
+            _label = new Label($"x{DefaultSpeed:F1}");
+            _label.style.width = 30;
+            _label.style.unityTextAlign = TextAnchor.MiddleRight;
+            Add(_label);
+
+            _slider = new Slider(MinSpeed, MaxSpeed);
+            _slider.value = DefaultSpeed;
+            _slider.style.width = 120;
+            _slider.RegisterValueChangedCallback(OnSliderChanged);
+            Add(_slider);
+
+            var resetBtn = new Button(() =>
+            {
+                _slider.value = DefaultSpeed;
+                Time.timeScale = DefaultSpeed;
+                UpdateLabel(DefaultSpeed);
+            }) { text = "↺" };
+            resetBtn.style.width = 20;
+            Add(resetBtn);
+
+            // 仅播放模式可见
+            style.display = EditorApplication.isPlaying ? DisplayStyle.Flex : DisplayStyle.None;
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
         }
 
-        private static void OnPlayModeChanged(PlayModeStateChange state)
+        private void OnSliderChanged(ChangeEvent<float> evt)
         {
-            if (state == PlayModeStateChange.EnteredEditMode)
+            var rounded = Mathf.Round(evt.newValue * 10f) / 10f;
+            Time.timeScale = rounded;
+            UpdateLabel(rounded);
+        }
+
+        private void UpdateLabel(float speed)
+        {
+            _label.text = $"x{speed:F1}";
+            if (speed < 0.1f) _label.style.color = Color.red;
+            else if (speed < 1f) _label.style.color = Color.yellow;
+            else if (speed > 1f) _label.style.color = new Color(0.3f, 0.8f, 1f);
+            else _label.style.color = Color.white;
+        }
+
+        private void OnPlayModeChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.EnteredPlayMode)
             {
-                _timeScale = DefaultSpeed;
+                style.display = DisplayStyle.Flex;
+            }
+            else if (state == PlayModeStateChange.EnteredEditMode)
+            {
+                style.display = DisplayStyle.None;
+                _slider.value = DefaultSpeed;
                 Time.timeScale = DefaultSpeed;
+                UpdateLabel(DefaultSpeed);
             }
         }
+    }
 
-        private static void OnToolbarGUI()
-        {
-            // 仅在播放模式下显示
-            if (!EditorApplication.isPlaying)
-                return;
-
-            GUILayout.FlexibleSpace();
-
-            // 速度标签
-            var labelStyle = new GUIStyle(EditorStyles.miniLabel)
-            {
-                alignment = TextAnchor.MiddleRight,
-                normal = { textColor = GetSpeedColor(_timeScale) }
-            };
-            GUILayout.Label($"x{_timeScale:F1}", labelStyle, GUILayout.Width(LabelWidth));
-
-            // 拖动条
-            EditorGUI.BeginChangeCheck();
-            _timeScale = GUILayout.HorizontalSlider(_timeScale, MinSpeed, MaxSpeed, GUILayout.Width(SliderWidth));
-            if (EditorGUI.EndChangeCheck())
-            {
-                // 对齐到0.1的精度
-                _timeScale = Mathf.Round(_timeScale * 10f) / 10f;
-                Time.timeScale = _timeScale;
-            }
-
-            // 重置按钮
-            if (GUILayout.Button("↺", EditorStyles.miniButton, GUILayout.Width(ResetButtonWidth)))
-            {
-                _timeScale = DefaultSpeed;
-                Time.timeScale = DefaultSpeed;
-            }
-        }
-
-        private static Color GetSpeedColor(float speed)
-        {
-            if (speed < 0.1f) return Color.red;
-            if (speed < 1f) return Color.yellow;
-            if (speed > 1f) return new Color(0.3f, 0.8f, 1f);
-            return Color.white;
-        }
+    [Overlay(typeof(SceneView), "Time Scale")]
+    public class TimeScaleOverlay : ToolbarOverlay
+    {
+        TimeScaleOverlay() : base(TimeScaleSliderElement.id) { }
     }
 }
