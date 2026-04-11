@@ -89,6 +89,23 @@ namespace Twenty2.VomitLib.Editor
         }
     }
 
+    [EditorToolbarElement(id, typeof(SceneView))]
+    class ToolbarBtnSearchExcel : EditorToolbarButton
+    {
+        public const string id = "VomitLib/SearchExcel";
+
+        public ToolbarBtnSearchExcel()
+        {
+            text = "搜索配表";
+            tooltip = "快速搜索并打开 Excel 配表";
+            clicked += () =>
+            {
+                var dropdown = new QuickSearchDataSourceDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState());
+                dropdown.Show(new Rect(GUIUtility.GUIToScreenPoint(Event.current?.mousePosition ?? Vector2.zero), Vector2.zero));
+            };
+        }
+    }
+
     // ---- 组合成 Overlay ----
 
     [Overlay(typeof(SceneView), "VomitLib Tools")]
@@ -99,7 +116,8 @@ namespace Twenty2.VomitLib.Editor
             ToolbarBtnGenData.id,
             ToolbarBtnGenMsg.id,
             ToolbarBtnConfig.id,
-            ToolbarBtnServerDir.id
+            ToolbarBtnServerDir.id,
+            ToolbarBtnSearchExcel.id
         )
         { }
     }
