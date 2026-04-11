@@ -17,7 +17,7 @@ namespace Twenty2.VomitLib.EngineKit
             if (_preventDuplicates)
             {
                 // 检查是否已存在同名对象
-                var existingObjects = FindObjectsOfType<DontDestroyOnLoad>();
+                var existingObjects = FindObjectsByType<DontDestroyOnLoad>(FindObjectsSortMode.None);
                 foreach (var obj in existingObjects)
                 {
                     if (obj != this && obj.gameObject.name == gameObject.name)
