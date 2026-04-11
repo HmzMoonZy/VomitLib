@@ -10,7 +10,6 @@
   "dependencies": {
     "com.unity.addressables": "1.19.0",
     "com.cysharp.unitask": "2.4.0",
-    "com.code-philosophy.luban": "1.0.0",
     "com.annulusgames.unity-codegen": "1.0.0"
   }
 }
