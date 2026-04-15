@@ -15,7 +15,7 @@ namespace Twenty2.VomitLib.View
         public ViewPreloadAttribute(int priority = 0, bool alwaysDisplay = false)
         {
             AlwaysDisplay = alwaysDisplay;
-            Priority = 0;
+            Priority = priority;
         }
     }
 }
