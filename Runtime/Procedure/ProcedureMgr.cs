@@ -283,6 +283,15 @@ namespace Twenty2.VomitLib.Procedure
             StateTime = 0f;
         }
         
+        /// <summary>
+        /// 累加状态机监控数据，由 AbstractProcedure 的 Tick 调用
+        /// </summary>
+        internal void AccumulateMonitor(float deltaTime)
+        {
+            FrameCount++;
+            StateTime += deltaTime;
+        }
+        
         #endregion
 
         #region Static Methods

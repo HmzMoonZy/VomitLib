@@ -219,6 +219,9 @@ namespace Twenty2.VomitLib.Procedure
             var deltaTime = Time.deltaTime;
             var unscaledDeltaTime = Time.unscaledDeltaTime;
             
+            // 累加状态机监控数据
+            ProcedureMgr<T>.Instance.AccumulateMonitor(deltaTime);
+            
             try
             {
                 OnTick(deltaTime, unscaledDeltaTime);
