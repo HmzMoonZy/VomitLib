@@ -16,16 +16,24 @@ namespace Twenty2.VomitLib.Tools
             return NextIncreasing(typeof(T).Name);
         }
         
+        public static void Register(string key, int startValue = 0)
+        {
+            _increasingDict[key] = startValue;
+        }
+
+        public static void Register<T>(int startValue = 0)
+        {
+            Register(typeof(T).Name, startValue);
+        }
+
         public static int NextIncreasing(string key)
         {
-            if (_increasingDict.TryGetValue(key, out var result))
+            if (!_increasingDict.TryGetValue(key, out var result))
             {
-                _increasingDict.Add(key, int.MinValue);
-                _increasingDict[key]++;
+                throw new KeyNotFoundException($"IDKit: key \"{key}\" 未注册，请先调用 Register");
             }
 
-            result = _increasingDict[key];
-            _increasingDict[key]++;
+            _increasingDict[key] = result + 1;
             return result;
         }
         
