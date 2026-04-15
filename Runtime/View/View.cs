@@ -496,8 +496,9 @@ namespace Twenty2.VomitLib.View
 
         private static void OnDestroyLogic(ViewLogic logic)
         {
-            Object.Destroy(logic.gameObject);
-            _loader?.ReleaseView(logic.gameObject);
+            var go = logic.gameObject;
+            _loader?.ReleaseView(go);
+            Object.Destroy(go);
         }
         
         #endregion
