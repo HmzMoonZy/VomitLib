@@ -16,14 +16,7 @@ namespace Twenty2.VomitLib
     {
         private static ILogHelper s_LogHelper = null;
 
-        #if UNITY_EDITOR
-        static Log()
-        {
-            s_LogHelper ??= new DefaultLogHelper();
-        }
-        #endif
-
-        public static void SetLogHelper(ILogHelper logHelper)
+        public static void SetLogHelper(ILogHelper logHelper = null)
         {
             s_LogHelper = logHelper ?? new DefaultLogHelper();
         }

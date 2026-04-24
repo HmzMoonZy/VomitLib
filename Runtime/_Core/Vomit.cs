@@ -20,11 +20,8 @@ namespace Twenty2.VomitLib
         /// 关联框架的接口
         /// </summary>
         /// <param name="architecture">关联框架的接口</param>
-        /// <param name="logger">日志管理器</param>
-        public static void Init(IArchitecture architecture, ILogHelper logger = null)
+        public static void Init(IArchitecture architecture)
         {
-            Log.SetLogHelper(logger ?? new DefaultLogHelper());
-
             Interface = architecture;
         }
 
