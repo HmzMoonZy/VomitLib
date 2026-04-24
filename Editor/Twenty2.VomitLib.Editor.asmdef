@@ -5,8 +5,7 @@
         "Twenty2.VomitLib",
         "Twenty2.VomitLib.View",
         "Luban.Runtime",
-        "Twenty2.VomitLib.LubanSupport",
-        "AnnulusGames.UnityCodeGen.Editor"
+        "Twenty2.VomitLib.LubanSupport"
     ],
     "includePlatforms": [
         "Editor"

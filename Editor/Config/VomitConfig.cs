@@ -7,9 +7,6 @@ namespace Twenty2.VomitLib.Config
     [FilePath("ProjectSettings/VomitLibConfig.asset", FilePathAttribute.Location.ProjectFolder)]
     public class VomitConfig : ScriptableSingleton<VomitConfig>
     {
-        [Header("Code Gen 配置")]
-        public CodeGenConfig CodeGenConfig;
-
         [Header("View 配置")]
         public ViewConfig ViewConfig;
 
