@@ -7,7 +7,7 @@ namespace Twenty2.VomitLib.View
     {
         private HashSet<string> _lockSet = new();
 
-        public void Lock(ViewLogic view)
+        public void Freeze(ViewLogic view)
         {
             if (_lockSet.Contains(view.Id))
             {
@@ -42,7 +42,7 @@ namespace Twenty2.VomitLib.View
 #endif
         }
 
-        public void UnLock(ViewLogic view)
+        public void UnFreeze(ViewLogic view)
         {
             if (_lockSet.Contains(view.Id))
             {

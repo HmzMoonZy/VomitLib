@@ -372,7 +372,7 @@ namespace Twenty2.VomitLib.View
 
             Log.Debug($"View - {logic.Id} Created");
             logic.OnCreated();
-            Vomit.Interface?.SendEvent(new EvtView.Created
+            Vomit.Interface?.SendEvent(new ViewEvent.Created
             {
                 ViewLogic = logic
             });
@@ -393,7 +393,7 @@ namespace Twenty2.VomitLib.View
             
             Log.Debug($"View - {logic.Id} Opened");
             logic.OnOpened(param);
-            Vomit.Interface?.SendEvent(new EvtView.Open
+            Vomit.Interface?.SendEvent(new ViewEvent.Open
             {
                 ViewLogic = logic,
             });
@@ -440,7 +440,7 @@ namespace Twenty2.VomitLib.View
                 OnDestroyLogic(logic);
             }
 
-            Vomit.Interface?.SendEvent(new EvtView.Close()
+            Vomit.Interface?.SendEvent(new ViewEvent.Close()
             {
                 ViewName = viewName,
                 IsCache = logic.Config.IsCache,
@@ -507,7 +507,7 @@ namespace Twenty2.VomitLib.View
             {
                 _masker?.Unmask(logic);
             }
-            _locker?.UnLock(logic);            
+            _locker?.UnFreeze(logic);            
         }
 
         private static void OnDestroyLogic(ViewLogic logic)
@@ -658,7 +658,7 @@ namespace Twenty2.VomitLib.View
             if (view != null)
             {
                 Log.Debug($"Freeze {viewName}");
-                _locker?.Lock(view);
+                _locker?.Freeze(view);
             }
         }
 
@@ -674,7 +674,7 @@ namespace Twenty2.VomitLib.View
             if (view != null)
             {
                 Log.Debug($"UnFreeze {viewName}");
-                _locker?.UnLock(view);
+                _locker?.UnFreeze(view);
             }
         }
 

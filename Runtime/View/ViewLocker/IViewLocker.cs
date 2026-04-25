@@ -2,8 +2,8 @@ namespace Twenty2.VomitLib.View
 {
     public interface IViewLocker
     {
-        public void Lock(ViewLogic view);
+        public void Freeze(ViewLogic view);
 
-        public void UnLock(ViewLogic view);
+        public void UnFreeze(ViewLogic view);
     }
 }
