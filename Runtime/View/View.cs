@@ -227,6 +227,7 @@ namespace Twenty2.VomitLib.View
                 if (_preLoadMap.TryGetValue(viewName, out var viewObject))
                 {
                     viewObject.transform.SetParent(Root.transform, false);
+                    _preLoadMap.Remove(viewName);
                 }
                 else
                 {
@@ -234,13 +235,20 @@ namespace Twenty2.VomitLib.View
                 }
 
                 logic = viewObject.GetComponent<ViewLogic>();
+                if (logic == null)
+                {
+                    _loadingViews.Remove(viewId);
+                    Log.Error($"预制体上未找到 ViewLogic 组件: {viewName}");
+                    return null;
+                }
+
                 logic.Id = viewId;
                 OnCreateLogic(logic);
             }
-            
+
             // 开启流程
             OnOpenLogic(logic, param);
-            
+
             return logic;
         }
 
@@ -305,6 +313,7 @@ namespace Twenty2.VomitLib.View
                 if (_preLoadMap.TryGetValue(viewName, out var viewObject))
                 {
                     viewObject.transform.SetParent(Root.transform, false);
+                    _preLoadMap.Remove(viewName);
                 }
                 else
                 {
@@ -314,6 +323,13 @@ namespace Twenty2.VomitLib.View
                 }
 
                 logic = viewObject.GetComponent<ViewLogic>();
+                if (logic == null)
+                {
+                    _loadingViews.Remove(viewId);
+                    Log.Error($"预制体上未找到 ViewLogic 组件: {viewName}");
+                    return null;
+                }
+
                 logic.Id = viewId;
                 OnCreateLogic(logic);
             }
@@ -373,7 +389,7 @@ namespace Twenty2.VomitLib.View
             }
 
             // TODO 刘海屏适配
-            logic.SortOrder = _visibleViewMap.Count <= 0 ? 0 : _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
+            logic.SortOrder = _visibleViewMap.Values.Max(i => i.SortOrder) + 1;
             
             Log.Debug($"View - {logic.Id} Opened");
             logic.OnOpened(param);
@@ -510,7 +526,11 @@ namespace Twenty2.VomitLib.View
         /// </summary>
         public static async UniTask OpenAndWaitClose<T>(ViewParameterBase param = null) where T : ViewLogic, new()
         {
-            await (await OpenAsync<T>(param)).WaitClose();
+            var logic = await OpenAsync<T>(param);
+            if (logic != null)
+            {
+                await logic.WaitClose();
+            }
         }
         
         /// <summary>
@@ -553,6 +573,7 @@ namespace Twenty2.VomitLib.View
         /// <returns></returns>
         public static ViewLogic GetTop()
         {
+            if (_visibleViewMap.Count == 0) return null;
             var maxLayer = _visibleViewMap.Values.Max(info => info.Config.Layer);
             var maxSort = _visibleViewMap.Values.Where(info => info.Config.Layer == maxLayer).Max(info => info.SortOrder);
             return _visibleViewMap.Values.First(info => info.SortOrder == maxSort && info.Config.Layer == maxLayer);
@@ -636,7 +657,7 @@ namespace Twenty2.VomitLib.View
 
             if (view != null)
             {
-                Debug.Log($"Freeze {viewName}");
+                Log.Debug($"Freeze {viewName}");
                 _locker?.Lock(view);
             }
         }
@@ -652,7 +673,7 @@ namespace Twenty2.VomitLib.View
 
             if (view != null)
             {
-                Debug.Log($"UnFreeze {viewName}");
+                Log.Debug($"UnFreeze {viewName}");
                 _locker?.UnLock(view);
             }
         }
