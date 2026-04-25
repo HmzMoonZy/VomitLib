@@ -260,11 +260,12 @@ namespace Twenty2.VomitLib.Procedure
             
             ResetMonitor();
             
+            IsRunning = true;
+
             try
             {
                 await runState.Enter(args);
-                IsRunning = true;
-                
+
                 Log.Debug($"状态机启动成功，初始状态: {runStateId}");
             }
             catch (Exception e)
