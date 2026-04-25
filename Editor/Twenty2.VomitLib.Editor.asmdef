@@ -4,8 +4,9 @@
     "references": [
         "Twenty2.VomitLib",
         "Twenty2.VomitLib.View",
-        "Luban.Runtime",
-        "Twenty2.VomitLib.LubanSupport"
+        "Twenty2.VomitLib.Procedure",
+        "Twenty2.VomitLib.LubanSupport",
+        "UniTask"
     ],
     "includePlatforms": [
         "Editor"
