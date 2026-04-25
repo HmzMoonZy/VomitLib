@@ -79,9 +79,9 @@ namespace Twenty2.VomitLib.View
         private static IViewLocker _locker;
 
         /// <summary>
-        /// Update循环管理
+        /// 每帧遍历可见 View 的缓存列表，避免迭代中修改集合
         /// </summary>
-        private static ViewUpdateManager _updateManager;
+        private static readonly List<ViewLogic> _tickList = new();
 
         #region Init
         
@@ -100,10 +100,6 @@ namespace Twenty2.VomitLib.View
             _locker = locker ?? new ViewLocker();
             
             _onLoadingView = onLoadingView;
-            
-            // 初始化Update管理器
-            _updateManager = new ViewUpdateManager();
-            _updateManager.StartUpdateManager();
 
             // 预加载
             await PreloadViews();       // TODO  外抛进度
@@ -328,10 +324,7 @@ namespace Twenty2.VomitLib.View
             {
                 ViewLogic = logic,
             });
-            
-            // 注册到Update管理器
-            _updateManager?.RegisterView(logic);
-            
+
             #if UNITY_EDITOR
             logic.gameObject.name = $"{logic.Id}({logic.Config.Layer.ToString()}-{logic.SortOrder.ToString()})";
             #endif
@@ -356,9 +349,6 @@ namespace Twenty2.VomitLib.View
 
             // 取消监听器
             logic.Cancel();
-
-            // 从Update管理器中移除
-            _updateManager?.UnregisterView(logic);
 
             logic.OnClose(param);
 
@@ -617,7 +607,35 @@ namespace Twenty2.VomitLib.View
         #endregion
         
         #endregion
-        
+
+        /// <summary>
+        /// 由 ViewRoot.Update 每帧调用，遍历所有可见 View 的 OnUpdate
+        /// </summary>
+        internal static void TickVisibleViews()
+        {
+            if (_visibleViewMap.Count == 0) return;
+
+            _tickList.Clear();
+            _tickList.AddRange(_visibleViewMap.Values);
+
+            var deltaTime = Time.deltaTime;
+            var unscaledDeltaTime = Time.unscaledDeltaTime;
+
+            foreach (var logic in _tickList)
+            {
+                if (logic == null || logic.gameObject == null) continue;
+
+                try
+                {
+                    logic.OnTick(deltaTime, unscaledDeltaTime);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"ViewLogic {logic.Id} Update failed: {ex.Message}");
+                }
+            }
+        }
+
         private static Stack<ViewLogic> CalcViewStack()
         {
             var stack = new Stack<ViewLogic>();

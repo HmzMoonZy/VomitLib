@@ -101,12 +101,12 @@ namespace Twenty2.VomitLib.View
         }
 
         /// <summary>
-        /// Update 回调，由ViewUpdateManager统一调用
+        /// Update 回调，由 ViewRoot 每帧统一调用
         /// 子类可以重写此方法来实现自定义的Update逻辑
         /// </summary>
         /// <param name="deltaTime">帧间时间</param>
         /// <param name="unscaledDeltaTime">未缩放的帧间时间</param>
-        public virtual void OnUpdate(float deltaTime, float unscaledDeltaTime)
+        public virtual void OnTick(float deltaTime, float unscaledDeltaTime)
         {
             // 默认实现为空，子类可以重写
         }

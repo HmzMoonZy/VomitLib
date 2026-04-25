@@ -17,5 +17,10 @@ namespace Twenty2.VomitLib.View
         {
             DontDestroyOnLoad(gameObject);
         }
+
+        private void Update()
+        {
+            View.TickVisibleViews();
+        }
     }
 }
