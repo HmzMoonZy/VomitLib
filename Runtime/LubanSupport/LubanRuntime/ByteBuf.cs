@@ -1,3 +1,5 @@
+#if ENABLE_LUBAN_RUNTIME
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
@@ -1566,3 +1568,5 @@ namespace Luban
 #endif
     }
 }
+
+#endif

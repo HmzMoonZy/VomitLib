@@ -1,4 +1,6 @@
 
+#if ENABLE_LUBAN_RUNTIME
+
 namespace Luban
 {
     public abstract class BeanBase
@@ -6,3 +8,5 @@ namespace Luban
         public abstract int GetTypeId();
     }
 }
+
+#endif
