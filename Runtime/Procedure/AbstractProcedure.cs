@@ -60,9 +60,8 @@ namespace Twenty2.VomitLib.Procedure
         {
             try
             {
-                await OnEnter(args);
-                
                 ProcedureCts ??= new CancellationTokenSource();
+                await OnEnter(args);
                 var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(Application.exitCancellationToken, ProcedureCts.Token);
 
                 UniTask.WaitWhile(Tick, PlayerLoopTiming.Update, cancellationToken: tokenSource.Token).Forget();
