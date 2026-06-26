@@ -31,11 +31,20 @@ namespace Twenty2.VomitLib.Procedure
     public abstract class AbstractProcedure<T> where T : struct, Enum
     {
         #region Fields
-        
+
         protected CancellationTokenSource ProcedureCts = null;
-        
+
         private readonly List<IUnRegister> _eventRegisters = new();
-        
+
+        /// <summary>
+        /// 进入就绪信号源。OnEnter 全部异步初始化完成后 resolve。
+        /// 默认行为(见 DelayReadyUntilExplicitSet):OnEnter 返回即视为就绪,向后兼容;
+        /// 需要异步加载(场景/角色等)的子类可重写 DelayReadyUntilExplicitSet 为 true,
+        /// 并在加载完成时显式调用 SetReady()。
+        /// 调用方(如遮罩切换)可 await WaitReady() 决定揭幕时机。
+        /// </summary>
+        private UniTaskCompletionSource _readyTcs;
+
         #endregion
         
         #region Abstract Methods
@@ -58,6 +67,9 @@ namespace Twenty2.VomitLib.Procedure
 
         public async UniTask Enter(ProcedureArgsBase args)
         {
+            // 每次进入重置就绪信号(支持状态复用)
+            _readyTcs = new UniTaskCompletionSource();
+
             try
             {
                 ProcedureCts ??= new CancellationTokenSource();
@@ -69,8 +81,16 @@ namespace Twenty2.VomitLib.Procedure
             }
             catch (Exception e)
             {
+                // OnEnter 抛异常:释放等待者,避免调用方死等,并如实向上抛
+                _readyTcs.TrySetException(e);
                 Log.Error($"进入状态 {ProcedureKey} 时发生异常: {e.Message} \n{e.StackTrace}");
                 throw;
+            }
+
+            // 同步进入或无需延迟就绪:OnEnter 返回即视为就绪(向后兼容)
+            if (!DelayReadyUntilExplicitSet)
+            {
+                _readyTcs.TrySetResult();
             }
         }
         
@@ -84,6 +104,9 @@ namespace Twenty2.VomitLib.Procedure
                 ProcedureCts?.Cancel();
                 ProcedureCts?.Dispose();
                 ProcedureCts = null;
+
+                // 退出时若仍未就绪(例如延迟就绪的 OnEnter 中途切换出去),释放等待者避免死等
+                _readyTcs?.TrySetCanceled();
                 
                 // 再执行退出逻辑
                 OnExit(toState);
@@ -99,7 +122,14 @@ namespace Twenty2.VomitLib.Procedure
         #endregion
         
         #region Virtual Methods
-        
+
+        /// <summary>
+        /// 为 true 时,OnEnter 返回后不会自动置为就绪,
+        /// 子类必须在所有异步初始化(场景/角色/UI 等)完成后显式调用 SetReady()。
+        /// 默认 false:OnEnter 返回即就绪,向后兼容。
+        /// </summary>
+        protected virtual bool DelayReadyUntilExplicitSet => false;
+
         /// <summary>
         /// 每帧更新，子类可以重写
         /// </summary>
@@ -126,6 +156,27 @@ namespace Twenty2.VomitLib.Procedure
         protected UniTask ChangeState(T targetState, ProcedureArgsBase args)
         {
             return ProcedureMgr<T>.Instance.ChangeState(targetState, args);
+        }
+
+        /// <summary>
+        /// 等待本状态进入就绪。
+        /// 与 ProcedureCts 取消信号对称:取消表示"何时停",就绪表示"何时准备好可揭幕/可交互"。
+        /// 由调用方(如遮罩切换 ChangeStateWithMask)在切换完成后 await,以决定揭幕时机。
+        /// </summary>
+        public UniTask WaitReady()
+        {
+            _readyTcs ??= new UniTaskCompletionSource();
+            return _readyTcs.Task;
+        }
+
+        /// <summary>
+        /// 声明本状态已就绪,可揭幕/可交互。
+        /// 仅对 DelayReadyUntilExplicitSet 为 true 的状态有效;
+        /// 默认状态下 OnEnter 返回时已由基类自动调用。
+        /// </summary>
+        protected void SetReady()
+        {
+            _readyTcs?.TrySetResult();
         }
         
         /// <summary>
