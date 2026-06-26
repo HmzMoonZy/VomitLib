@@ -31,10 +31,10 @@ namespace Twenty2.VomitLib.Procedure
     public abstract class AbstractProcedure<T> where T : struct, Enum
     {
         #region Fields
-
+        
+        protected CancellationTokenSource ProcedureCts = null;
+        
         private readonly List<IUnRegister> _eventRegisters = new();
-
-        private CancellationTokenSource _procedureCts = null;
         
         #endregion
         
@@ -62,8 +62,8 @@ namespace Twenty2.VomitLib.Procedure
             {
                 await OnEnter(args);
                 
-                _procedureCts ??= new CancellationTokenSource();
-                var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(Application.exitCancellationToken, _procedureCts.Token);
+                ProcedureCts ??= new CancellationTokenSource();
+                var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(Application.exitCancellationToken, ProcedureCts.Token);
 
                 UniTask.WaitWhile(Tick, PlayerLoopTiming.Update, cancellationToken: tokenSource.Token).Forget();
                 UniTask.WaitWhile(FixedTick, PlayerLoopTiming.FixedUpdate, cancellationToken: tokenSource.Token).Forget();
@@ -82,9 +82,9 @@ namespace Twenty2.VomitLib.Procedure
                 // 先清理事件注册
                 ClearEventRegisters();
                 
-                _procedureCts?.Cancel();
-                _procedureCts?.Dispose();
-                _procedureCts = null;
+                ProcedureCts?.Cancel();
+                ProcedureCts?.Dispose();
+                ProcedureCts = null;
                 
                 // 再执行退出逻辑
                 OnExit(toState);
