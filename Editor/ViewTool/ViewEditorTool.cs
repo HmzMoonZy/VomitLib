@@ -77,7 +77,6 @@ namespace Twenty2.VomitLib.Editor
             var selectCount = Selection.count;
             var selectName = Selection.activeObject.name;
             if (selectCount != 1) return;
-            if (!selectName.StartsWith("View")) return;
             
             var folderPath = Path.Combine(Application.dataPath[..^7], VomitEditor.Config.ViewConfig.ScriptGeneratePath);
             if (VomitEditor.Config.ViewConfig.IsGenerateFolder)
