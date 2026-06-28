@@ -143,14 +143,23 @@ namespace Twenty2.VomitLib.Editor
         }
 
         /// <summary>
-        /// 在 searchRoot 的子树内按唯一名查找节点,并取字段类型对应的组件引用。
+        /// 解析字段引用。
+        /// <para>无参 <see cref="UIFastBindAttribute"/>:绑定到 searchRoot 所在 GameObject 自身(GetComponent,不查子树)。</para>
+        /// <para>带参:在 searchRoot 的子树内按唯一名查找节点,再取字段类型对应的组件引用。</para>
         /// </summary>
         private static bool TryResolve(
             FieldInfo field, UIFastBindAttribute attr, Transform searchRoot,
             out Object resolved, out string error)
         {
+            // 无参:绑定到当前组件所在 GameObject 自身
+            if (attr.NodeName == null)
+            {
+                return TryGetComponentOn(searchRoot.gameObject, field.FieldType, out resolved, out error);
+            }
+
+            // 带参:子树唯一名查找
             var matches = new List<Transform>();
-            FindByName(searchRoot, attr.NodeName, matches);
+            FindByName(searchRoot, attr.NodeName, matches); 
 
             if (matches.Count == 0)
             {
@@ -168,20 +177,27 @@ namespace Twenty2.VomitLib.Editor
             }
 
             var node = matches[0];
+            return TryGetComponentOn(node.gameObject, field.FieldType, out resolved, out error);
+        }
 
-            // 字段类型为 GameObject → 直接给节点;为 Component 子类 → GetComponent
-            if (field.FieldType == typeof(GameObject))
+        /// <summary>
+        /// 在指定 GameObject 上取 type 对应的引用。
+        /// 字段类型为 GameObject → 给节点本身;为 Component 子类 → GetComponent。
+        /// </summary>
+        private static bool TryGetComponentOn(GameObject go, Type fieldType, out Object resolved, out string error)
+        {
+            if (fieldType == typeof(GameObject))
             {
-                resolved = node.gameObject;
+                resolved = go;
                 error = null;
                 return true;
             }
 
-            var comp = node.GetComponent(field.FieldType);
+            var comp = go.GetComponent(fieldType);
             if (comp == null)
             {
                 resolved = null;
-                error = $"节点 '{attr.NodeName}' 上找不到组件 {field.FieldType.Name}";
+                error = $"节点 '{go.name}' 上找不到组件 {fieldType.Name}";
                 return false;
             }
 
