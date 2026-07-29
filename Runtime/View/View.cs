@@ -307,6 +307,9 @@ namespace Twenty2.VomitLib.View
         
         private static void OnOpenLogic(ViewLogic logic, ViewParameterBase param = null)
         {
+            // 缓存 View 关闭时会被移入 HiddenCanvas，重开时必须归位到可见根节点。
+            logic.transform.SetParent(Root.transform, false);
+
             // 展示逻辑
             _visibleViewMap[logic.Id] = logic;
 
