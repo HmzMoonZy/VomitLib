@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -10,10 +11,8 @@ namespace Twenty2.VomitLib.Editor.SharpWindow
     /// </summary>
     internal class SharpWindow : EditorWindow
     {
-        private readonly List<ISharpModule> _modules = new List<ISharpModule>
-        {
-            new TimeScaleModule(),
-        };
+        private readonly List<ISharpModule> _modules =
+            new List<ISharpModule>();
 
         private Vector2 _scrollPos;
 
@@ -33,6 +32,7 @@ namespace Twenty2.VomitLib.Editor.SharpWindow
 
         private void OnEnable()
         {
+            DiscoverModules();
             foreach (var m in _modules)
             {
                 m.OnEnable();
@@ -67,6 +67,41 @@ namespace Twenty2.VomitLib.Editor.SharpWindow
             }
 
             EditorGUILayout.EndScrollView();
+        }
+
+        private void DiscoverModules()
+        {
+            _modules.Clear();
+            foreach (var type in TypeCache.GetTypesDerivedFrom<ISharpModule>())
+            {
+                if (type.IsAbstract ||
+                    type.IsInterface ||
+                    type.ContainsGenericParameters)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var module = Activator.CreateInstance(type, true) as
+                        ISharpModule;
+                    if (module != null)
+                    {
+                        _modules.Add(module);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogError(
+                        $"SharpWindow 无法创建模块 {type.FullName}: " +
+                        exception.Message);
+                }
+            }
+
+            _modules.Sort((left, right) => string.Compare(
+                left.Name,
+                right.Name,
+                StringComparison.Ordinal));
         }
     }
 }

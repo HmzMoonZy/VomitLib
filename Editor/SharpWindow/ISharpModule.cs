@@ -2,9 +2,9 @@ namespace Twenty2.VomitLib.Editor.SharpWindow
 {
     /// <summary>
     /// SharpWindow 的可插拔调试模块。
-    /// 新增调试功能 = 实现接口 + 在 SharpWindow._modules 中加一行。
+    /// 任意 Editor 程序集实现此接口后，会被 SharpWindow 自动发现。
     /// </summary>
-    internal interface ISharpModule
+    public interface ISharpModule
     {
         /// <summary>
         /// Section 标题（由窗口统一渲染，模块不自行绘制）。
