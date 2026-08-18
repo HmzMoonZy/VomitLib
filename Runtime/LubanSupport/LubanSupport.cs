@@ -4,6 +4,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
+// DOCS : 如果没有其它来源的newtonsoft.Json, 在UPM中直接添加 : com.unity.nuget.newtonsoft-json
+// DOCS : 如果没有其它来源的luban库, 添加编译宏 : ENABLE_LUBAN_RUNTIME
+
 namespace Twenty2.VomitLib.LubanSupport
 {
     /// <summary>
