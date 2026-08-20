@@ -130,7 +130,7 @@ namespace Twenty2.VomitLib.Procedure
         /// <summary>
         /// 初始化并启动状态机
         /// </summary>
-        public void Initialize(T initialStateId, ProcedureArgsBase args)
+        public async UniTask Initialize(T initialStateId, ProcedureArgsBase args)
         {
             if (IsInitialized)
             {
@@ -153,7 +153,7 @@ namespace Twenty2.VomitLib.Procedure
             IsInitialized = true;
             
             // 启动状态机
-            Run(initialStateId, args).Forget();
+            await Run(initialStateId, args);
         }
         
         /// <summary>
