@@ -234,16 +234,28 @@ namespace LubanSupport.Editor
         private static async Task RunLuban(string cmd)
         {
             Debug.Log($"RunCmd : {cmd}");
-            // 运行 bat
+
+#if !UNITY_EDITOR_WIN
+            // 配置 asset 中记录的路径可能是 Windows 反斜杠格式, Unix 下统一转为正斜杠
+            cmd = cmd.Replace('\\', '/');
+#endif
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
-                FileName = "cmd.exe",
-                Arguments = $"/C dotnet \"{Config.DllPath}\" " + cmd,       // 运行Luban
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
+
+#if UNITY_EDITOR_WIN
+            // Windows: 经由 cmd.exe /C 执行 dotnet
+            startInfo.FileName = "cmd.exe";
+            startInfo.Arguments = $"/C dotnet \"{Config.DllPath}\" " + cmd;       // 运行Luban
+#else
+            // macOS/Linux: 无 cmd.exe, 直接启动 dotnet 可执行文件
+            startInfo.FileName = ResolveDotnetPath();
+            startInfo.Arguments = $"\"{Config.DllPath.Replace('\\', '/')}\" " + cmd;       // 运行Luban
+#endif
 
             EditorUtility.DisplayProgressBar("正在生成客户端数据...", "", 0);
             
@@ -290,6 +302,47 @@ namespace LubanSupport.Editor
             await tcs.Task;
             EditorUtility.ClearProgressBar();
         }
+
+#if !UNITY_EDITOR_WIN
+        /// <summary>
+        /// 解析 dotnet 可执行文件路径。
+        /// 从 Finder/Dock 启动的 Unity 继承的 PATH 常缺少 dotnet 安装目录,
+        /// 先按 PATH 查找, 再探测常见安装位置, 均未命中时返回 "dotnet" 交由系统报错。
+        /// </summary>
+        private static string ResolveDotnetPath()
+        {
+            var pathVar = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+            foreach (var dir in pathVar.Split(Path.PathSeparator))
+            {
+                if (string.IsNullOrWhiteSpace(dir)) continue;
+
+                var candidate = Path.Combine(dir.Trim(), "dotnet");
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+
+            // PATH 中未找到时, 依次探测 macOS/Linux 常见安装位置
+            string[] commonPaths =
+            {
+                "/usr/local/share/dotnet/dotnet",   // macOS x64 官方安装包
+                "/opt/homebrew/bin/dotnet",         // macOS arm64 Homebrew
+                "/usr/local/bin/dotnet",            // macOS Homebrew(x64) / 手动链接
+                "/usr/share/dotnet/dotnet",         // Linux
+                "/usr/bin/dotnet",                  // Linux
+            };
+            foreach (var path in commonPaths)
+            {
+                if (File.Exists(path))
+                {
+                    return path;
+                }
+            }
+
+            return "dotnet";
+        }
+#endif
     }
 
 
