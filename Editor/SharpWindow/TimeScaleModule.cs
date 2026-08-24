@@ -7,7 +7,7 @@ namespace Twenty2.VomitLib.Editor.SharpWindow
     /// 时间缩放调试模块。直接读写 <see cref="Time.timeScale"/>。
     /// 编辑模式照常渲染，但调速仅在 Play 模式生效。
     /// </summary>
-    internal class TimeScaleModule : ISharpModule
+    internal class TimeScaleModule : ISharpTabModule
     {
         private const float MinSpeed = 0f;
         private const float MaxSpeed = 10f;
@@ -25,6 +25,7 @@ namespace Twenty2.VomitLib.Editor.SharpWindow
         };
 
         public string Name => "时间缩放";
+        public string TabName => "系统调试";
 
         private float _sliderValue = DefaultSpeed;
 
