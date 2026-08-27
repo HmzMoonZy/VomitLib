@@ -40,12 +40,13 @@ namespace Twenty2.VomitLib
             
             foreach (var type in assembly.GetTypes())
             {
-                if (type.IsSubclassOf(typeof(AbstractModel)))
+                // 跳过抽象基类：只注册可实例化的具体 Model/System
+                if (type.IsSubclassOf(typeof(AbstractModel)) && !type.IsAbstract)
                 {
                     modelTypes.Add(type);
                 }
-                
-                if (type.IsSubclassOf(typeof(AbstractSystem)))
+
+                if (type.IsSubclassOf(typeof(AbstractSystem)) && !type.IsAbstract)
                 {
                     systemTypes.Add(type);
                 }
